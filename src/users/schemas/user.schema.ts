@@ -1,20 +1,10 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
-import { Document } from 'mongoose';
+import { Document, SchemaTypes } from 'mongoose';
+import { PublicKey, PublicKeySchema } from './embedded/public-key.embedded';
 
 export type UserDocument = User & Document;
-
-// export class UserPersonalData {
-//   @ApiProperty({ example: 'John Doe' })
-//   nickname: string;
-
-//   @ApiProperty()
-//   password: string;
-
-//   @ApiProperty({ example: 'john@doe.com' })
-//   email: string;
-// }
 
 @Schema({ versionKey: false })
 export class User {
@@ -26,10 +16,6 @@ export class User {
   @ApiProperty({ required: false })
   @IsOptional()
   vault_user_id: string;
-
-  // @Prop(UserPersonalData)
-  // @ApiProperty({ type: UserPersonalData })
-  // personal: UserPersonalData;
 
   @Prop(
     raw({
@@ -50,10 +36,20 @@ export class User {
   @IsOptional()
   personal: Record<string, any>;
 
+  @Prop({ type: [PublicKeySchema] })
+  @ApiProperty({ type: [PublicKey], required: false })
+  @IsOptional()
+  publicKeys: [PublicKey];
+
   @Prop([String])
   @ApiProperty({ required: false })
   @IsOptional()
   roles: string[];
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: User.name, required: false })
+  @ApiProperty({ type: () => User, required: false })
+  @IsOptional()
+  relationhipManager: User;
 
   @Prop()
   @ApiProperty({ required: false })
