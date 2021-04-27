@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigType } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
 import commonConfig from 'config/common.config';
-import databaseConfig from 'config/database.config';
+import databaseConfig from '../config/database.config';
+import openapiConfig from '../config/openapi.config';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -12,8 +15,16 @@ import databaseConfig from 'config/database.config';
       isGlobal: true,
       // ignoreEnvFile: true,
       envFilePath: ['.env.local', '.env.dev', '.env'],
-      load: [commonConfig, databaseConfig],
+      load: [commonConfig, databaseConfig, openapiConfig],
     }),
+    MongooseModule.forRootAsync({
+      useFactory: async (dbConfig: ConfigType<typeof databaseConfig>) => ({
+        uri: dbConfig.uri,
+        useFindAndModify: false,
+      }),
+      inject: [databaseConfig.KEY],
+    }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
