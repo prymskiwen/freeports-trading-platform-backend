@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { Document } from 'mongoose';
 import { Details } from './embedded/details.embedded';
-import { Identification } from './embedded/Identification.embedded';
+import { Identification } from './embedded/identification.embedded';
 
 export type TransactionRequestDocument = TransactionRequest & Document;
 
