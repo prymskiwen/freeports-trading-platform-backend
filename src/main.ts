@@ -3,9 +3,10 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import commonConfig from '../config/common.config';
 import openapiConfig from '../config/openapi.config';
+import { Account } from './accounts/schemas/account.schema';
 import { AppModule } from './app.module';
 import { User } from './users/schemas/user.schema';
-import { TransactionRequest } from './transactionRequests/schemas/transactionRequest.schema';
+import { TransactionRequest } from './transaction-requests/schemas/transaction-request.schema';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,7 +20,8 @@ async function bootstrap() {
     .addTag(apiConf.tag)
     .build();
   const document = SwaggerModule.createDocument(app, config, {
-    extraModels: [User, TransactionRequest],
+    // TODO: Remove extra classes definition when API ready
+    extraModels: [User, TransactionRequest, Account],
   });
   SwaggerModule.setup(apiConf.path, app, document);
 
