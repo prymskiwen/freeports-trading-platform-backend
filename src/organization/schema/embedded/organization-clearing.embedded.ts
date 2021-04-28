@@ -5,7 +5,7 @@ import { SchemaTypes } from 'mongoose';
 import { Account } from 'src/account/schema/account.schema';
 
 @Schema({ versionKey: false, _id: false })
-export class Clearing {
+export class OrganizationClearing {
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
@@ -17,4 +17,6 @@ export class Clearing {
   account: Account;
 }
 
-export const ClearingSchema = SchemaFactory.createForClass(Clearing);
+export const OrganizationClearingSchema = SchemaFactory.createForClass(
+  OrganizationClearing,
+);

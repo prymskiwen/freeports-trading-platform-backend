@@ -6,7 +6,7 @@ import { Account } from 'src/account/schema/account.schema';
 import { User } from 'src/user/schema/user.schema';
 
 @Schema({ versionKey: false, _id: false })
-export class Details {
+export class OperationRequestDetails {
   @Prop({ type: SchemaTypes.ObjectId, ref: User.name, required: false })
   @ApiProperty({ type: () => User, required: false })
   @IsOptional()
@@ -31,16 +31,8 @@ export class Details {
   @ApiProperty({ required: false })
   @IsOptional()
   amount: number;
-
-  @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  operationDate: Date;
-
-  @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  operationLabel: string;
 }
 
-export const DetailsSchema = SchemaFactory.createForClass(Details);
+export const OperationRequestDetailsSchema = SchemaFactory.createForClass(
+  OperationRequestDetails,
+);

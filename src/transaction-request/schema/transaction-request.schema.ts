@@ -1,20 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
-import { Document } from 'mongoose';
+import { Document, SchemaTypes } from 'mongoose';
 import {
-  RequestDetails,
-  RequestDetailsSchema,
-} from './embedded/request-details.embedded';
+  TransactionRequestRequestDetails,
+  TransactionRequestRequestDetailsSchema,
+} from './embedded/transaction-request-request-details.embedded';
 import {
-  Identification,
-  IdentificationSchema,
-} from './embedded/identification.embedded';
+  TransactionRequestIdentification,
+  TransactionRequestIdentificationSchema,
+} from './embedded/transaction-request-identification.embedded';
 import {
-  RequestForQuotes,
-  RequestForQuotesSchema,
-} from './embedded/request-for-quotes.embedded';
-import { Orders, OrdersSchema } from './embedded/orders.embedded';
+  TransactionRequestRequestForQuotes,
+  TransactionRequestRequestForQuotesSchema,
+} from './embedded/transaction-request-request-for-quotes.embedded';
+import {
+  TransactionRequestOrders,
+  TransactionRequestOrdersSchema,
+} from './embedded/transaction-request-orders.embedded';
+import { OperationRequest } from 'src/operation-request/schema/operation-request.schema';
 
 export type TransactionRequestDocument = TransactionRequest & Document;
 
@@ -29,35 +33,35 @@ export class TransactionRequest {
   @IsOptional()
   transactionDate: Date;
 
-  @Prop({ type: IdentificationSchema })
+  @Prop({ type: TransactionRequestIdentificationSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  identification: Identification;
+  identification: TransactionRequestIdentification;
 
-  @Prop({ type: RequestDetailsSchema })
+  @Prop({ type: TransactionRequestRequestDetailsSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  requestDetails: RequestDetails;
+  requestDetails: TransactionRequestRequestDetails;
 
-  @Prop({ type: [RequestForQuotesSchema] })
-  @ApiProperty({ type: [RequestForQuotes], required: false })
+  @Prop({ type: [TransactionRequestRequestForQuotesSchema] })
+  @ApiProperty({ type: [TransactionRequestRequestForQuotes], required: false })
   @IsOptional()
-  requestForQuotes: [RequestForQuotes];
+  requestForQuotes: [TransactionRequestRequestForQuotes];
 
-  @Prop({ type: [OrdersSchema] })
-  @ApiProperty({ type: [Orders], required: false })
+  @Prop({ type: [TransactionRequestOrdersSchema] })
+  @ApiProperty({ type: [TransactionRequestOrders], required: false })
   @IsOptional()
-  succededOrders: [Orders];
+  succededOrders: [TransactionRequestOrders];
 
-  @Prop({ type: [OrdersSchema] })
-  @ApiProperty({ type: [Orders], required: false })
+  @Prop({ type: [TransactionRequestOrdersSchema] })
+  @ApiProperty({ type: [TransactionRequestOrders], required: false })
   @IsOptional()
-  failedOrders: [Orders];
+  failedOrders: [TransactionRequestOrders];
 
-  @Prop()
-  @ApiProperty({ required: false })
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: OperationRequest.name }] })
+  @ApiProperty({ type: () => [OperationRequest], required: false })
   @IsOptional()
-  requestedOperations: [];
+  requestedOperations: OperationRequest[];
 
   @Prop()
   @ApiProperty({ required: false })

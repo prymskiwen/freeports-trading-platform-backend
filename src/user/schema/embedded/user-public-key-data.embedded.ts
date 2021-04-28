@@ -1,24 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
-import { Currencies, CurrenciesSchema } from './currencies.embedded';
 
 @Schema({ versionKey: false, _id: false })
-export class Sale {
+export class UserPublicKeyData {
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  nbTokens: number;
-
-  @Prop({ type: CurrenciesSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  currencies: Currencies;
+  key: string;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  minimalUnitPrice: number;
+  current: boolean;
+
+  @Prop()
+  @ApiProperty({ required: false })
+  @IsOptional()
+  status: string;
 }
 
-export const SaleSchema = SchemaFactory.createForClass(Sale);
+export const UserPublicKeyDataSchema = SchemaFactory.createForClass(
+  UserPublicKeyData,
+);

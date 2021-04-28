@@ -3,26 +3,38 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
 @Schema({ versionKey: false, _id: false })
-export class Logs {
+export class OrganizationDetails {
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  rawBrokerQuery: string;
+  orgName: string;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  rawBrokerResponse: string;
+  street: string;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  statusCode: string;
+  street2: string;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  rfqId: string;
+  zip: string;
+
+  @Prop()
+  @ApiProperty({ required: false })
+  @IsOptional()
+  city: string;
+
+  @Prop()
+  @ApiProperty({ required: false })
+  @IsOptional()
+  country: string;
 }
 
-export const LogsSchema = SchemaFactory.createForClass(Logs);
+export const OrganizationDetailsSchema = SchemaFactory.createForClass(
+  OrganizationDetails,
+);

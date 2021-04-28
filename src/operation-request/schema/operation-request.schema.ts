@@ -2,8 +2,14 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { Document } from 'mongoose';
-import { AuditLog, AuditLogSchema } from './embedded/audit-log.embedded';
-import { Details, DetailsSchema } from './embedded/details.embedded';
+import {
+  OperationRequestAuditLog,
+  OperationRequestAuditLogSchema,
+} from './embedded/operation-request-audit-log.embedded';
+import {
+  OperationRequestDetails,
+  OperationRequestDetailsSchema,
+} from './embedded/operation-request-details.embedded';
 
 export type OperationRequestDocument = OperationRequest & Document;
 
@@ -13,10 +19,10 @@ export class OperationRequest {
   @IsOptional()
   _id: string;
 
-  @Prop({ type: DetailsSchema })
+  @Prop({ type: OperationRequestDetailsSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  details: Details;
+  details: OperationRequestDetails;
 
   @Prop()
   @ApiProperty({ required: false })
@@ -28,10 +34,10 @@ export class OperationRequest {
   @IsOptional()
   confirmed: boolean;
 
-  @Prop({ type: [AuditLogSchema] })
-  @ApiProperty({ type: [AuditLog], required: false })
+  @Prop({ type: [OperationRequestAuditLogSchema] })
+  @ApiProperty({ type: [OperationRequestAuditLog], required: false })
   @IsOptional()
-  auditLog: [AuditLog];
+  auditLog: [OperationRequestAuditLog];
 }
 
 export const OperationRequestSchema = SchemaFactory.createForClass(

@@ -2,7 +2,10 @@ import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { Document, SchemaTypes } from 'mongoose';
-import { PublicKey, PublicKeySchema } from './embedded/public-key.embedded';
+import {
+  UserPublicKey,
+  UserPublicKeySchema,
+} from './embedded/user-public-key.embedded';
 
 export type UserDocument = User & Document;
 
@@ -36,10 +39,10 @@ export class User {
   @IsOptional()
   personal: Record<string, any>;
 
-  @Prop({ type: [PublicKeySchema] })
-  @ApiProperty({ type: [PublicKey], required: false })
+  @Prop({ type: [UserPublicKeySchema] })
+  @ApiProperty({ type: [UserPublicKey], required: false })
   @IsOptional()
-  publicKeys: [PublicKey];
+  publicKeys: [UserPublicKey];
 
   @Prop([String])
   @ApiProperty({ required: false })

@@ -3,14 +3,17 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
 import { User } from '../user.schema';
-import { PublicKeyData, PublicKeyDataSchema } from './public-key-data.embedded';
+import {
+  UserPublicKeyData,
+  UserPublicKeyDataSchema,
+} from './user-public-key-data.embedded';
 
 @Schema({ versionKey: false, _id: false })
-export class PublicKey {
-  @Prop({ type: PublicKeyDataSchema })
+export class UserPublicKey {
+  @Prop({ type: UserPublicKeyDataSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  data: PublicKeyData;
+  data: UserPublicKeyData;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: false })
   @ApiProperty({ type: () => User, required: false })
@@ -18,4 +21,4 @@ export class PublicKey {
   approvedBy: User;
 }
 
-export const PublicKeySchema = SchemaFactory.createForClass(PublicKey);
+export const UserPublicKeySchema = SchemaFactory.createForClass(UserPublicKey);

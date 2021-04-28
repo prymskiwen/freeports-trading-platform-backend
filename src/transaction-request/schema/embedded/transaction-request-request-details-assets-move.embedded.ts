@@ -3,21 +3,23 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
 @Schema({ versionKey: false, _id: false })
-export class PublicKeyData {
+export class TransactionRequestRequestDetailsAssetsMove {
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  key: string;
+  vaultWalletId: string;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  current: boolean;
+  publicTargetWalletId: string;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  status: string;
+  currency: string;
 }
 
-export const PublicKeyDataSchema = SchemaFactory.createForClass(PublicKeyData);
+export const TransactionRequestRequestDetailsAssetsMoveSchema = SchemaFactory.createForClass(
+  TransactionRequestRequestDetailsAssetsMove,
+);

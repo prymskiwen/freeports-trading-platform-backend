@@ -5,16 +5,23 @@ import { SchemaTypes } from 'mongoose';
 import { User } from 'src/user/schema/user.schema';
 
 @Schema({ versionKey: false, _id: false })
-export class Creation {
+export class OperationRequestAuditLog {
+  @Prop()
+  @ApiProperty({ required: false })
+  @IsOptional()
+  editedAt: Date;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: User.name, required: false })
   @ApiProperty({ type: () => User, required: false })
   @IsOptional()
-  initiator: User;
+  editedBy: User;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  createdAt: Date;
+  jsonUpdate: string;
 }
 
-export const CreationSchema = SchemaFactory.createForClass(Creation);
+export const OperationRequestAuditLogSchema = SchemaFactory.createForClass(
+  OperationRequestAuditLog,
+);

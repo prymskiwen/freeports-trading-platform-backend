@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
 @Schema({ versionKey: false, _id: false })
-export class Commission {
+export class OrganizationCommission {
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
@@ -15,4 +15,6 @@ export class Commission {
   organization: string;
 }
 
-export const CommissionSchema = SchemaFactory.createForClass(Commission);
+export const OrganizationCommissionSchema = SchemaFactory.createForClass(
+  OrganizationCommission,
+);

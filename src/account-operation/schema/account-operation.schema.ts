@@ -2,12 +2,18 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { Document } from 'mongoose';
-import { Details, DetailsSchema } from './embedded/details.embedded';
 import {
-  Reconciliation,
-  ReconciliationSchema,
-} from './embedded/reconciliation.embedded';
-import { AuditLog, AuditLogSchema } from './embedded/audit-log.embedded';
+  AccountOperationDetails,
+  AccountOperationDetailsSchema,
+} from './embedded/account-operation-details.embedded';
+import {
+  AccountOperationReconciliation,
+  AccountOperationReconciliationSchema,
+} from './embedded/account-operation-reconciliation.embedded';
+import {
+  AccountOperationAuditLog,
+  AccountOperationAuditLogSchema,
+} from './embedded/account-operation-audit-log.embedded';
 
 export type AccountOperationDocument = AccountOperation & Document;
 
@@ -17,20 +23,20 @@ export class AccountOperation {
   @IsOptional()
   _id: string;
 
-  @Prop({ type: DetailsSchema })
+  @Prop({ type: AccountOperationDetailsSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  details: Details;
+  details: AccountOperationDetails;
 
-  @Prop({ type: ReconciliationSchema })
+  @Prop({ type: AccountOperationReconciliationSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  reconciliation: Reconciliation;
+  reconciliation: AccountOperationReconciliation;
 
-  @Prop({ type: [AuditLogSchema] })
-  @ApiProperty({ type: [AuditLog], required: false })
+  @Prop({ type: [AccountOperationAuditLogSchema] })
+  @ApiProperty({ type: [AccountOperationAuditLog], required: false })
   @IsOptional()
-  auditLog: [AuditLog];
+  auditLog: [AccountOperationAuditLog];
 }
 
 export const AccountOperationSchema = SchemaFactory.createForClass(

@@ -8,13 +8,13 @@ import {
   AccountDetailsSchema,
 } from './embedded/account-details.embedded';
 import {
-  CryptoDetails,
-  CryptoDetailsSchema,
-} from './embedded/crypto-details.embedded';
+  AccountCryptoDetails,
+  AccountCryptoDetailsSchema,
+} from './embedded/account-crypto-details.embedded';
 import {
-  FiatDetails,
-  FiatDetailsSchema,
-} from './embedded/fiat-details.embedded';
+  AccountFiatDetails,
+  AccountFiatDetailsSchema,
+} from './embedded/account-fiat-details.embedded';
 
 export type AccountDocument = Account & Document;
 
@@ -32,17 +32,17 @@ export class Account {
   @Prop({ type: AccountDetailsSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  accountDetails: AccountDetails;
+  details: AccountDetails;
 
-  @Prop({ type: FiatDetailsSchema })
+  @Prop({ type: AccountFiatDetailsSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  fiatDetails: FiatDetails;
+  fiatDetails: AccountFiatDetails;
 
-  @Prop({ type: CryptoDetailsSchema })
+  @Prop({ type: AccountCryptoDetailsSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  cryptotDetails: CryptoDetails;
+  cryptotDetails: AccountCryptoDetails;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

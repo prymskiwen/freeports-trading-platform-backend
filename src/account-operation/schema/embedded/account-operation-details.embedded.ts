@@ -2,11 +2,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
+import { Account } from 'src/account/schema/account.schema';
 import { User } from 'src/user/schema/user.schema';
-import { Logs, LogsSchema } from './logs.embedded';
 
 @Schema({ versionKey: false, _id: false })
-export class Orders {
+export class AccountOperationDetails {
   @Prop({ type: SchemaTypes.ObjectId, ref: User.name, required: false })
   @ApiProperty({ type: () => User, required: false })
   @IsOptional()
@@ -17,20 +17,32 @@ export class Orders {
   @IsOptional()
   createdAt: Date;
 
-  @Prop()
-  @ApiProperty({ required: false })
+  @Prop({ type: SchemaTypes.ObjectId, ref: Account.name, required: false })
+  @ApiProperty({ type: () => Account, required: false })
   @IsOptional()
-  rfqId: string;
+  accountFrom: Account;
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: Account.name, required: false })
+  @ApiProperty({ type: () => Account, required: false })
+  @IsOptional()
+  accountTo: Account;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  orderId: string;
+  amount: number;
 
-  @Prop({ type: LogsSchema })
+  @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  logs: Logs;
+  operationDate: Date;
+
+  @Prop()
+  @ApiProperty({ required: false })
+  @IsOptional()
+  operationLabel: string;
 }
 
-export const OrdersSchema = SchemaFactory.createForClass(Orders);
+export const AccountOperationDetailsSchema = SchemaFactory.createForClass(
+  AccountOperationDetails,
+);

@@ -3,11 +3,17 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { Document } from 'mongoose';
 import {
-  GeneralDetails,
-  GeneralDetailsSchema,
-} from './embedded/general-details.embedded';
-import { Clearing, ClearingSchema } from './embedded/clearing.embedded';
-import { Commission, CommissionSchema } from './embedded/commission.embedded';
+  OrganizationDetails,
+  OrganizationDetailsSchema,
+} from './embedded/organization-details.embedded';
+import {
+  OrganizationClearing,
+  OrganizationClearingSchema,
+} from './embedded/organization-clearing.embedded';
+import {
+  OrganizationCommission,
+  OrganizationCommissionSchema,
+} from './embedded/organization-commission.embedded';
 
 export type OrganizationDocument = Organization & Document;
 
@@ -17,20 +23,20 @@ export class Organization {
   @IsOptional()
   _id: string;
 
-  @Prop({ type: GeneralDetailsSchema })
+  @Prop({ type: OrganizationDetailsSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  generalDetails: GeneralDetails;
+  details: OrganizationDetails;
 
-  @Prop({ type: [ClearingSchema] })
-  @ApiProperty({ type: [Clearing], required: false })
+  @Prop({ type: [OrganizationClearingSchema] })
+  @ApiProperty({ type: [OrganizationClearing], required: false })
   @IsOptional()
-  clearing: [Clearing];
+  clearing: [OrganizationClearing];
 
-  @Prop({ type: CommissionSchema })
+  @Prop({ type: OrganizationCommissionSchema })
   @ApiProperty({ required: false })
   @IsOptional()
-  commission: Commission;
+  commission: OrganizationCommission;
 }
 
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);

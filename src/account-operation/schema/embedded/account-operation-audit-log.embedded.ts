@@ -5,7 +5,7 @@ import { SchemaTypes } from 'mongoose';
 import { User } from 'src/user/schema/user.schema';
 
 @Schema({ versionKey: false, _id: false })
-export class AuditLog {
+export class AccountOperationAuditLog {
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
@@ -22,4 +22,6 @@ export class AuditLog {
   jsonUpdate: string;
 }
 
-export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);
+export const AccountOperationAuditLogSchema = SchemaFactory.createForClass(
+  AccountOperationAuditLog,
+);

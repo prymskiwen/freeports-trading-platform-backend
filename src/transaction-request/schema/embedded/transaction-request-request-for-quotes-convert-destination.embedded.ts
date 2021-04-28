@@ -3,16 +3,18 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
 @Schema({ versionKey: false, _id: false })
-export class Currencies {
+export class TransactionRequestRequestForQuotesConvertDestination {
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  from: string;
+  amount: number;
 
   @Prop()
   @ApiProperty({ required: false })
   @IsOptional()
-  to: string;
+  currency: string;
 }
 
-export const CurrenciesSchema = SchemaFactory.createForClass(Currencies);
+export const TransactionRequestRequestForQuotesConvertDestinationSchema = SchemaFactory.createForClass(
+  TransactionRequestRequestForQuotesConvertDestination,
+);

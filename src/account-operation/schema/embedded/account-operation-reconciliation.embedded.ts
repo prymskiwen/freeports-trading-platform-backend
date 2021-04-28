@@ -6,7 +6,7 @@ import { OperationRequest } from 'src/operation-request/schema/operation-request
 import { User } from 'src/user/schema/user.schema';
 
 @Schema({ versionKey: false, _id: false })
-export class Reconciliation {
+export class AccountOperationReconciliation {
   @Prop({
     type: SchemaTypes.ObjectId,
     ref: OperationRequest.name,
@@ -27,6 +27,6 @@ export class Reconciliation {
   reconciliatedAt: Date;
 }
 
-export const ReconciliationSchema = SchemaFactory.createForClass(
-  Reconciliation,
+export const AccountOperationReconciliationSchema = SchemaFactory.createForClass(
+  AccountOperationReconciliation,
 );
