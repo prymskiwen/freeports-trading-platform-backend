@@ -19,6 +19,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 
 @Controller('transaction-requests')
 @ApiTags('transaction-requests')
@@ -53,7 +54,7 @@ export class TransactionRequestController {
   @ApiOkResponse({
     type: ReadTransactionRequestDto,
   })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.transactionRequestService.findOne(id);
   }
 
@@ -63,7 +64,7 @@ export class TransactionRequestController {
     type: ReadTransactionRequestDto,
   })
   update(
-    @Param('id') id: string,
+    @Param('id', ParseObjectIdPipe) id: string,
     @Body() updateTransactionRequestDto: UpdateTransactionRequestDto,
   ) {
     return this.transactionRequestService.update(
@@ -79,22 +80,20 @@ export class TransactionRequestController {
     description: 'id of TransactionRequest we want to delete.',
   })
   @ApiOkResponse({})
-  async remove(@Param('id') id: string) {
-    try {
-      const tr = await this.transactionRequestService.remove(id);
+  async remove(@Param('id', ParseObjectIdPipe) id: string) {
+    const tr = await this.transactionRequestService.remove(id);
 
-      if (tr) {
-        return {
-          success: true,
-          message: 'TransactionRequest has been deleted',
-          id: tr._id,
-        };
-      }
-    } catch (ex) {}
+    if (!tr) {
+      throw new NotFoundException({
+        success: false,
+        message: 'TransactionRequest does not exist',
+      });
+    }
 
-    throw new NotFoundException({
-      success: false,
-      message: 'TransactionRequest does not exist',
-    });
+    return {
+      success: true,
+      message: 'TransactionRequest has been deleted',
+      id: tr._id,
+    };
   }
 }
