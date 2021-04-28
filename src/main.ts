@@ -3,10 +3,13 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import commonConfig from '../config/common.config';
 import openapiConfig from '../config/openapi.config';
-import { Account } from './accounts/schemas/account.schema';
+import { Account } from './account/schema/account.schema';
 import { AppModule } from './app.module';
-import { User } from './users/schemas/user.schema';
-import { TransactionRequest } from './transaction-requests/schemas/transaction-request.schema';
+import { User } from './user/schema/user.schema';
+import { TransactionRequest } from './transaction-request/schema/transaction-request.schema';
+import { Organization } from './organization/schema/organization.schema';
+import { AccountOperation } from './account-operation/schema/account-operation.schema';
+import { OperationRequest } from './operation-request/schema/operation-request.schema';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,11 +20,18 @@ async function bootstrap() {
     .setTitle(apiConf.title)
     .setDescription(apiConf.description)
     .setVersion(apiConf.version)
-    .addTag(apiConf.tag)
+    // .addTag(apiConf.tag)
     .build();
   const document = SwaggerModule.createDocument(app, config, {
     // TODO: Remove extra classes definition when API ready
-    extraModels: [User, TransactionRequest, Account],
+    extraModels: [
+      Account,
+      AccountOperation,
+      OperationRequest,
+      Organization,
+      TransactionRequest,
+      User,
+    ],
   });
   SwaggerModule.setup(apiConf.path, app, document);
 

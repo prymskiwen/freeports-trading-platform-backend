@@ -6,8 +6,8 @@ import { AppService } from './app.service';
 import commonConfig from 'config/common.config';
 import databaseConfig from '../config/database.config';
 import openapiConfig from '../config/openapi.config';
-import { UsersModule } from './users/users.module';
-import { TransactionRequestsModule } from './transaction-requests/transaction-requests.module';
+import { UserModule } from './user/user.module';
+import { TransactionRequestModule } from './transaction-request/transaction-request.module';
 
 @Module({
   imports: [
@@ -25,8 +25,8 @@ import { TransactionRequestsModule } from './transaction-requests/transaction-re
       }),
       inject: [databaseConfig.KEY],
     }),
-    UsersModule,
-    TransactionRequestsModule,
+    UserModule,
+    TransactionRequestModule,
   ],
   controllers: [AppController],
   providers: [AppService],
