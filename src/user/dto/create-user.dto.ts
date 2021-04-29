@@ -1,8 +1,25 @@
-import { OmitType } from '@nestjs/swagger';
-import { User } from '../schema/user.schema';
+import { Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNotEmptyObject,
+  ValidateNested,
+} from 'class-validator';
 
-export class CreateUserDto extends OmitType(User, [
-  '_id',
-  'vault_user_id',
-  'roles',
-] as const) {}
+class CreateUserPersonalDto {
+  @IsNotEmpty()
+  nickname: string;
+
+  @IsNotEmpty()
+  password: string;
+
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+}
+export class CreateUserDto {
+  @IsNotEmptyObject()
+  @ValidateNested()
+  @Type(() => CreateUserPersonalDto) // <= Mandatory to validate subobject
+  personal: CreateUserPersonalDto;
+}

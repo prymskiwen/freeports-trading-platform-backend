@@ -1,6 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import {
   TransactionRequestRequestDetailsClearingMoveAccounts,
   TransactionRequestRequestDetailsClearingMoveAccountsSchema,
@@ -9,14 +7,10 @@ import {
 @Schema({ versionKey: false, _id: false })
 export class TransactionRequestRequestDetailsClearingMove {
   @Prop({ type: TransactionRequestRequestDetailsClearingMoveAccountsSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  accounts: TransactionRequestRequestDetailsClearingMoveAccounts;
+  accounts?: TransactionRequestRequestDetailsClearingMoveAccounts;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  amount: number;
+  amount?: number;
 }
 
 export const TransactionRequestRequestDetailsClearingMoveSchema = SchemaFactory.createForClass(

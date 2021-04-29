@@ -1,6 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import {
   TransactionRequestRequestDetailsCurrencies,
   TransactionRequestRequestDetailsCurrenciesSchema,
@@ -9,19 +7,13 @@ import {
 @Schema({ versionKey: false, _id: false })
 export class TransactionRequestRequestDetailsSale {
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  nbTokens: number;
+  nbTokens?: number;
 
   @Prop({ type: TransactionRequestRequestDetailsCurrenciesSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  currencies: TransactionRequestRequestDetailsCurrencies;
+  currencies?: TransactionRequestRequestDetailsCurrencies;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  minimalUnitPrice: number;
+  minimalUnitPrice?: number;
 }
 
 export const TransactionRequestRequestDetailsSaleSchema = SchemaFactory.createForClass(

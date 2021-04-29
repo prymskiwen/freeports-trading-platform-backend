@@ -1,6 +1,5 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import { Document, SchemaTypes } from 'mongoose';
 import {
   UserPublicKey,
@@ -11,14 +10,13 @@ export type UserDocument = User & Document;
 
 @Schema({ versionKey: false })
 export class User {
-  @ApiProperty({ required: false })
-  @IsOptional()
+  @ApiProperty({
+    format: 'ObjectId',
+  })
   _id: string;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  vault_user_id: string;
+  vault_user_id?: string;
 
   @Prop(
     raw({
@@ -36,28 +34,19 @@ export class User {
       email: { type: 'string', example: 'john@doe.com' },
     },
   })
-  @IsOptional()
-  personal: Record<string, any>;
+  personal?: Record<string, any>;
 
   @Prop({ type: [UserPublicKeySchema] })
-  @ApiProperty({ type: [UserPublicKey], required: false })
-  @IsOptional()
-  publicKeys: [UserPublicKey];
+  publicKeys?: UserPublicKey[];
 
   @Prop([String])
-  @ApiProperty({ required: false })
-  @IsOptional()
-  roles: string[];
+  roles?: string[];
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: User.name, required: false })
-  @ApiProperty({ type: () => User, required: false })
-  @IsOptional()
-  relationhipManager: User;
+  @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
+  relationhipManager?: User;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  commission: number;
+  commission?: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

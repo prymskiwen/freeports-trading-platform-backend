@@ -1,6 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import {
   TransactionRequestRequestDetailsAssetsMove,
   TransactionRequestRequestDetailsAssetsMoveSchema,
@@ -21,34 +19,22 @@ import {
 @Schema({ versionKey: false, _id: false })
 export class TransactionRequestRequestDetails {
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  type: string;
+  type?: string;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  mode: string;
+  mode?: string;
 
   @Prop({ type: TransactionRequestRequestDetailsSaleSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  sale: TransactionRequestRequestDetailsSale;
+  sale?: TransactionRequestRequestDetailsSale;
 
   @Prop({ type: TransactionRequestRequestDetailsPurchaseSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  purchase: TransactionRequestRequestDetailsPurchase;
+  purchase?: TransactionRequestRequestDetailsPurchase;
 
   @Prop({ type: TransactionRequestRequestDetailsClearingMoveSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  clearingMove: TransactionRequestRequestDetailsClearingMove;
+  clearingMove?: TransactionRequestRequestDetailsClearingMove;
 
   @Prop({ type: TransactionRequestRequestDetailsAssetsMoveSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  assetsMove: TransactionRequestRequestDetailsAssetsMove;
+  assetsMove?: TransactionRequestRequestDetailsAssetsMove;
 }
 
 export const TransactionRequestRequestDetailsSchema = SchemaFactory.createForClass(

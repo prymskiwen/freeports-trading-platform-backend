@@ -17,6 +17,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ReadUserDto } from './dto/read-user.dto';
+import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 
 @Controller('users')
 @ApiTags('users')
@@ -47,7 +48,7 @@ export class UserController {
   @ApiOkResponse({
     type: ReadUserDto,
   })
-  findOne(@Param('id') id: string): Promise<ReadUserDto> {
+  findOne(@Param('id', ParseObjectIdPipe) id: string): Promise<ReadUserDto> {
     return this.userService.findOne(id);
   }
 
@@ -57,14 +58,14 @@ export class UserController {
     type: ReadUserDto,
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseObjectIdPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<ReadUserDto> {
     return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<ReadUserDto> {
+  remove(@Param('id', ParseObjectIdPipe) id: string): Promise<ReadUserDto> {
     return this.userService.remove(id);
   }
 }

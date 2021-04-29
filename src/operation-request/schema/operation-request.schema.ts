@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import { Document } from 'mongoose';
 import {
   OperationRequestAuditLog,
@@ -15,29 +14,22 @@ export type OperationRequestDocument = OperationRequest & Document;
 
 @Schema({ versionKey: false })
 export class OperationRequest {
-  @ApiProperty({ required: false })
-  @IsOptional()
-  _id: string;
+  @ApiProperty({
+    format: 'ObjectId',
+  })
+  _id?: string;
 
   @Prop({ type: OperationRequestDetailsSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  details: OperationRequestDetails;
+  details?: OperationRequestDetails;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  processed: boolean;
+  processed?: boolean;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  confirmed: boolean;
+  confirmed?: boolean;
 
   @Prop({ type: [OperationRequestAuditLogSchema] })
-  @ApiProperty({ type: [OperationRequestAuditLog], required: false })
-  @IsOptional()
-  auditLog: [OperationRequestAuditLog];
+  auditLog?: OperationRequestAuditLog[];
 }
 
 export const OperationRequestSchema = SchemaFactory.createForClass(

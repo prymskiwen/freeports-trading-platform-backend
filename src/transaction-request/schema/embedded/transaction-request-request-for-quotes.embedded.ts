@@ -1,6 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import {
   TransactionRequestRequestForQuotesCreation,
   TransactionRequestRequestForQuotesCreationSchema,
@@ -13,19 +11,13 @@ import {
 @Schema({ versionKey: false, _id: false })
 export class TransactionRequestRequestForQuotes {
   @Prop({ type: TransactionRequestRequestForQuotesCreationSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  creation: TransactionRequestRequestForQuotesCreation;
+  creation?: TransactionRequestRequestForQuotesCreation;
 
   @Prop({ type: TransactionRequestRequestForQuotesDetailsSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  details: TransactionRequestRequestForQuotesDetails;
+  details?: TransactionRequestRequestForQuotesDetails;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  status: string;
+  status?: string;
 }
 
 export const TransactionRequestRequestForQuotesSchema = SchemaFactory.createForClass(

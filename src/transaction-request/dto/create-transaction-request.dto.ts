@@ -1,6 +1,37 @@
-import { OmitType } from '@nestjs/swagger';
-import { TransactionRequest } from '../schema/transaction-request.schema';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsDateString,
+  IsMongoId,
+  IsNotEmptyObject,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 
-export class CreateTransactionRequestDto extends OmitType(TransactionRequest, [
-  '_id',
-] as const) {}
+class IdentificationDTO {
+  @ApiProperty({
+    format: 'ObjectId',
+    pattern: '/^[a-f\\d]{24}$/',
+    description: 'User Id',
+  })
+  @IsMongoId()
+  initiator: string;
+
+  @ApiProperty({
+    format: 'ObjectId',
+    pattern: '/^[a-f\\d]{24}$/',
+    description: 'User Id',
+  })
+  @IsMongoId()
+  investor: string;
+}
+export class CreateTransactionRequestDto {
+  @IsOptional()
+  @IsDateString()
+  transactionDate?: Date;
+
+  @IsNotEmptyObject()
+  @ValidateNested()
+  @Type(() => IdentificationDTO) // <= Mandatory to validate subobject
+  identification: IdentificationDTO;
+}

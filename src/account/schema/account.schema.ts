@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import { Document, SchemaTypes } from 'mongoose';
 import { User } from 'src/user/schema/user.schema';
 import {
@@ -20,29 +19,22 @@ export type AccountDocument = Account & Document;
 
 @Schema({ versionKey: false })
 export class Account {
-  @ApiProperty({ required: false })
-  @IsOptional()
-  _id: string;
+  @ApiProperty({
+    format: 'ObjectId',
+  })
+  _id?: string;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: User.name, required: false })
-  @ApiProperty({ type: () => User, required: false })
-  @IsOptional()
-  owner: User;
+  @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
+  owner?: User;
 
   @Prop({ type: AccountDetailsSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  details: AccountDetails;
+  details?: AccountDetails;
 
   @Prop({ type: AccountFiatDetailsSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  fiatDetails: AccountFiatDetails;
+  fiatDetails?: AccountFiatDetails;
 
   @Prop({ type: AccountCryptoDetailsSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  cryptotDetails: AccountCryptoDetails;
+  cryptotDetails?: AccountCryptoDetails;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

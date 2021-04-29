@@ -1,6 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import {
   TransactionRequestLogs,
   TransactionRequestLogsSchema,
@@ -13,24 +11,16 @@ import {
 @Schema({ versionKey: false, _id: false })
 export class TransactionRequestRequestForQuotesDetails {
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  borkerIdentifier: string;
+  borkerIdentifier?: string;
 
   @Prop({ type: TransactionRequestRequestForQuotesConvertDestinationSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  from: TransactionRequestRequestForQuotesConvertDestination;
+  from?: TransactionRequestRequestForQuotesConvertDestination;
 
   @Prop({ type: TransactionRequestRequestForQuotesConvertDestinationSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  to: TransactionRequestRequestForQuotesConvertDestination;
+  to?: TransactionRequestRequestForQuotesConvertDestination;
 
   @Prop({ type: TransactionRequestLogsSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  logs: TransactionRequestLogs;
+  logs?: TransactionRequestLogs;
 }
 
 export const TransactionRequestRequestForQuotesDetailsSchema = SchemaFactory.createForClass(

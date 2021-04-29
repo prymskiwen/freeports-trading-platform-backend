@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import { Document } from 'mongoose';
 import {
   AccountOperationDetails,
@@ -19,24 +18,19 @@ export type AccountOperationDocument = AccountOperation & Document;
 
 @Schema({ versionKey: false })
 export class AccountOperation {
-  @ApiProperty({ required: false })
-  @IsOptional()
-  _id: string;
+  @ApiProperty({
+    format: 'ObjectId',
+  })
+  _id?: string;
 
   @Prop({ type: AccountOperationDetailsSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  details: AccountOperationDetails;
+  details?: AccountOperationDetails;
 
   @Prop({ type: AccountOperationReconciliationSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  reconciliation: AccountOperationReconciliation;
+  reconciliation?: AccountOperationReconciliation;
 
   @Prop({ type: [AccountOperationAuditLogSchema] })
-  @ApiProperty({ type: [AccountOperationAuditLog], required: false })
-  @IsOptional()
-  auditLog: [AccountOperationAuditLog];
+  auditLog?: AccountOperationAuditLog[];
 }
 
 export const AccountOperationSchema = SchemaFactory.createForClass(

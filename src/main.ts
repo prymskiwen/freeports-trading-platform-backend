@@ -10,6 +10,7 @@ import { TransactionRequest } from './transaction-request/schema/transaction-req
 import { Organization } from './organization/schema/organization.schema';
 import { AccountOperation } from './account-operation/schema/account-operation.schema';
 import { OperationRequest } from './operation-request/schema/operation-request.schema';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -34,6 +35,9 @@ async function bootstrap() {
     ],
   });
   SwaggerModule.setup(apiConf.path, app, document);
+
+  app.useGlobalPipes(new ValidationPipe());
+  // useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   await app.listen(commonConf.port);
 }

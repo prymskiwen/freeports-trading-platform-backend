@@ -1,25 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
 import { User } from 'src/user/schema/user.schema';
 
 @Schema({ versionKey: false, _id: false })
 export class OperationRequestAuditLog {
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  editedAt: Date;
+  editedAt?: Date;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: User.name, required: false })
-  @ApiProperty({ type: () => User, required: false })
-  @IsOptional()
-  editedBy: User;
+  @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
+  editedBy?: User;
 
   @Prop()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  jsonUpdate: string;
+  jsonUpdate?: string;
 }
 
 export const OperationRequestAuditLogSchema = SchemaFactory.createForClass(

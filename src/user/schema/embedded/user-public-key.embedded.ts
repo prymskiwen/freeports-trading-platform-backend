@@ -1,6 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
 import { User } from '../user.schema';
 import {
@@ -11,14 +9,10 @@ import {
 @Schema({ versionKey: false, _id: false })
 export class UserPublicKey {
   @Prop({ type: UserPublicKeyDataSchema })
-  @ApiProperty({ required: false })
-  @IsOptional()
-  data: UserPublicKeyData;
+  data?: UserPublicKeyData;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: false })
-  @ApiProperty({ type: () => User, required: false })
-  @IsOptional()
-  approvedBy: User;
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User' }) // <= 'User' instead of User.name because it refers a parent class
+  approvedBy?: User;
 }
 
 export const UserPublicKeySchema = SchemaFactory.createForClass(UserPublicKey);
