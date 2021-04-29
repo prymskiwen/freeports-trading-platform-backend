@@ -19,6 +19,14 @@ import {
 } from './embedded/transaction-request-orders.embedded';
 import { OperationRequest } from 'src/operation-request/schema/operation-request.schema';
 
+export enum TransactionRequestDocumentStatus {
+  'requested',
+  'approved',
+  'pending',
+  'completed',
+  'refused',
+}
+
 export type TransactionRequestDocument = TransactionRequest & Document;
 
 @Schema({ versionKey: false })
@@ -49,8 +57,8 @@ export class TransactionRequest {
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: OperationRequest.name }] })
   requestedOperations?: OperationRequest[];
 
-  @Prop()
-  status?: string;
+  @Prop({ type: String, enum: TransactionRequestDocumentStatus })
+  status?: TransactionRequestDocumentStatus;
 }
 
 export const TransactionRequestSchema = SchemaFactory.createForClass(

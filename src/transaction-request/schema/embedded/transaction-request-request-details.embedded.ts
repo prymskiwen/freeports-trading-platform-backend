@@ -16,13 +16,26 @@ import {
   TransactionRequestRequestDetailsSaleSchema,
 } from './transaction-request-request-details-sale.embedded';
 
+export enum TransactionRequestRequestDetailsType {
+  'purchase',
+  'sale',
+  'assets_move',
+  'clearer_acount_funding',
+  'clearer_account_refunding',
+}
+
+export enum TransactionRequestRequestDetailsMode {
+  'limit',
+  'market',
+}
+
 @Schema({ versionKey: false, _id: false })
 export class TransactionRequestRequestDetails {
-  @Prop()
-  type?: string;
+  @Prop({ type: String, enum: TransactionRequestRequestDetailsType })
+  type?: TransactionRequestRequestDetailsType;
 
-  @Prop()
-  mode?: string;
+  @Prop({ type: String, enum: TransactionRequestRequestDetailsMode })
+  mode?: TransactionRequestRequestDetailsMode;
 
   @Prop({ type: TransactionRequestRequestDetailsSaleSchema })
   sale?: TransactionRequestRequestDetailsSale;

@@ -6,6 +6,14 @@ import {
   UserPublicKeySchema,
 } from './embedded/user-public-key.embedded';
 
+export enum UserRoles {
+  'admin',
+  'org_user',
+  'investor',
+  'permissions_manager',
+  'clearer',
+}
+
 export type UserDocument = User & Document;
 
 @Schema({ versionKey: false })
@@ -13,7 +21,7 @@ export class User {
   @ApiProperty({
     format: 'ObjectId',
   })
-  _id: string;
+  _id?: string;
 
   @Prop()
   vault_user_id?: string;
@@ -39,8 +47,8 @@ export class User {
   @Prop({ type: [UserPublicKeySchema] })
   publicKeys?: UserPublicKey[];
 
-  @Prop([String])
-  roles?: string[];
+  @Prop({ type: [String], enum: UserRoles })
+  roles?: UserRoles[];
 
   @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
   relationhipManager?: User;
