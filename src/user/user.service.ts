@@ -5,6 +5,8 @@ import { User, UserDocument } from './schema/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ReadUserDto } from './dto/read-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AddUserPublicKeyDto } from './dto/add-user-public-key.dto';
+import { UserPublicKeyDataStatus } from './schema/embedded/user-public-key-data.embedded';
 
 @Injectable()
 export class UserService {
@@ -37,5 +39,20 @@ export class UserService {
   // TODO: It makes no sense to return data before remove
   remove(id: string): Promise<ReadUserDto> {
     return this.userModel.findByIdAndRemove(id).exec();
+  }
+
+  async addPublicKey(id: string, publicKey: AddUserPublicKeyDto) {
+    const user = await this.userModel.findById(id);
+
+    user.publicKeys.push({
+      data: {
+        key: publicKey.key,
+        current: publicKey.current,
+        status: UserPublicKeyDataStatus.requested,
+      },
+      approvedBy: null,
+    });
+
+    return user.save();
   }
 }

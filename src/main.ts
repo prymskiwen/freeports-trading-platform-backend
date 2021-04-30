@@ -11,6 +11,7 @@ import { Organization } from './organization/schema/organization.schema';
 import { AccountOperation } from './account-operation/schema/account-operation.schema';
 import { OperationRequest } from './operation-request/schema/operation-request.schema';
 import { ValidationPipeCustomException } from './pipe/validation.pipe';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -37,7 +38,8 @@ async function bootstrap() {
   SwaggerModule.setup(apiConf.path, app, document);
 
   app.useGlobalPipes(new ValidationPipeCustomException());
-  // useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  // to inject nestJS services to class-validator
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   await app.listen(commonConf.port);
 }

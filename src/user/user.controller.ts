@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { ReadUserDto } from './dto/read-user.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
+import { AddUserPublicKeyDto } from './dto/add-user-public-key.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -67,5 +68,18 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id', ParseObjectIdPipe) id: string): Promise<ReadUserDto> {
     return this.userService.remove(id);
+  }
+
+  @Post(':id/public-key')
+  @ApiOperation({ summary: 'Add a public key to a user' })
+  @ApiCreatedResponse({
+    description: 'Public key has been successfully added.',
+    type: ReadUserDto,
+  })
+  addPublicKey(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() publicKey: AddUserPublicKeyDto,
+  ) {
+    return this.userService.addPublicKey(id, publicKey);
   }
 }

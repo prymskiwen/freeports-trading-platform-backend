@@ -1,6 +1,7 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document, SchemaTypes } from 'mongoose';
+import { Organization } from 'src/organization/schema/organization.schema';
 import {
   UserPublicKey,
   UserPublicKeySchema,
@@ -23,6 +24,12 @@ export class User {
   })
   _id?: string;
 
+  /**
+   * This field will be set when registering an user, then it will be read only. Nobody will be transfered to another organization
+   */
+  @Prop({ type: SchemaTypes.ObjectId, ref: Organization.name })
+  organization?: Organization;
+
   @Prop()
   vault_user_id?: string;
 
@@ -30,7 +37,7 @@ export class User {
     raw({
       nickname: { type: String },
       password: { type: String },
-      email: { type: String },
+      email: { type: String, unique: true },
     }),
   )
   @ApiProperty({
