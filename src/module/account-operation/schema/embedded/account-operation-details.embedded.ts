@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
-import { Account } from 'src/account/schema/account.schema';
-import { User } from 'src/user/schema/user.schema';
+import { Account } from 'src/module/account/schema/account.schema';
+import { User } from 'src/module/user/schema/user.schema';
 
 @Schema({ versionKey: false, _id: false })
 export class AccountOperationDetails {

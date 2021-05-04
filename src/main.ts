@@ -1,15 +1,15 @@
 import { ConfigType } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import commonConfig from '../config/common.config';
-import openapiConfig from '../config/openapi.config';
-import { Account } from './account/schema/account.schema';
-import { AppModule } from './app.module';
-import { User } from './user/schema/user.schema';
-import { TransactionRequest } from './transaction-request/schema/transaction-request.schema';
-import { Organization } from './organization/schema/organization.schema';
-import { AccountOperation } from './account-operation/schema/account-operation.schema';
-import { OperationRequest } from './operation-request/schema/operation-request.schema';
+import commonConfig from './config/common.config';
+import openapiConfig from './config/openapi.config';
+import { AppModule } from './module/app.module';
+import { Account } from './module/account/schema/account.schema';
+import { AccountOperation } from './module/account-operation/schema/account-operation.schema';
+import { OperationRequest } from './module/operation-request/schema/operation-request.schema';
+import { Organization } from './module/organization/schema/organization.schema';
+import { TransactionRequest } from './module/transaction-request/schema/transaction-request.schema';
+import { User } from './module/user/schema/user.schema';
 import { ValidationPipeCustomException } from './pipe/validation.pipe';
 import { useContainer } from 'class-validator';
 

@@ -17,7 +17,7 @@ import {
   TransactionRequestOrders,
   TransactionRequestOrdersSchema,
 } from './embedded/transaction-request-orders.embedded';
-import { OperationRequest } from 'src/operation-request/schema/operation-request.schema';
+import { OperationRequest } from 'src/module/operation-request/schema/operation-request.schema';
 
 export enum TransactionRequestDocumentStatus {
   'requested',

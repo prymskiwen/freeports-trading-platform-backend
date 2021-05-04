@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
-import { Account } from 'src/account/schema/account.schema';
+import { Account } from 'src/module/account/schema/account.schema';
 
 @Schema({ versionKey: false, _id: false })
 export class TransactionRequestRequestDetailsClearingMoveAccounts {

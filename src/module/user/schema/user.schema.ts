@@ -1,7 +1,7 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document, SchemaTypes } from 'mongoose';
-import { Organization } from 'src/organization/schema/organization.schema';
+import { Organization } from 'src/module/organization/schema/organization.schema';
 import {
   UserPublicKey,
   UserPublicKeySchema,
