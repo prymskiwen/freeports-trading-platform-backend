@@ -10,9 +10,9 @@ import {
   OrganizationClearingSchema,
 } from './embedded/organization-clearing.embedded';
 import {
-  OrganizationCommission,
-  OrganizationCommissionSchema,
-} from './embedded/organization-commission.embedded';
+  OrganizationCommissionRatio,
+  OrganizationCommissionRatioSchema,
+} from './embedded/organization-commission-ratio.embedded';
 
 export type OrganizationDocument = Organization & Document;
 
@@ -24,13 +24,13 @@ export class Organization {
   _id?: string;
 
   @Prop({ type: OrganizationDetailsSchema })
-  details?: OrganizationDetails;
+  details: OrganizationDetails;
 
   @Prop({ type: [OrganizationClearingSchema] })
   clearing?: OrganizationClearing[];
 
-  @Prop({ type: OrganizationCommissionSchema })
-  commission?: OrganizationCommission;
+  @Prop({ type: OrganizationCommissionRatioSchema })
+  commissionRatio?: OrganizationCommissionRatio;
 }
 
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({ versionKey: false, _id: false })
-export class OrganizationCommission {
+export class OrganizationCommissionRatio {
   @Prop()
   clearer?: string;
 
@@ -9,6 +9,6 @@ export class OrganizationCommission {
   organization?: string;
 }
 
-export const OrganizationCommissionSchema = SchemaFactory.createForClass(
-  OrganizationCommission,
+export const OrganizationCommissionRatioSchema = SchemaFactory.createForClass(
+  OrganizationCommissionRatio,
 );

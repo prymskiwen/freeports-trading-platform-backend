@@ -25,6 +25,7 @@ class IdentificationDTO {
   @IsMongoId()
   investor: string;
 }
+
 export class CreateTransactionRequestDto {
   @IsOptional()
   @IsDateString()

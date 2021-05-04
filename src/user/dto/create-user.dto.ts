@@ -25,6 +25,7 @@ class CreateUserPersonalDto {
   @IsUniqueInDb({ schema: 'users', path: 'personal.email' })
   email: string;
 }
+
 export class CreateUserDto {
   @ApiProperty({
     format: 'ObjectId',

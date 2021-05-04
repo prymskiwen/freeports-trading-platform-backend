@@ -6,8 +6,10 @@ import { AppService } from './app.service';
 import commonConfig from 'config/common.config';
 import databaseConfig from '../config/database.config';
 import openapiConfig from '../config/openapi.config';
+import { OrganizationModule } from './organization/organization.module';
 import { UserModule } from './user/user.module';
 import { TransactionRequestModule } from './transaction-request/transaction-request.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -22,9 +24,12 @@ import { TransactionRequestModule } from './transaction-request/transaction-requ
       useFactory: async (dbConfig: ConfigType<typeof databaseConfig>) => ({
         uri: dbConfig.uri,
         useFindAndModify: false,
+        useCreateIndex: true,
       }),
       inject: [databaseConfig.KEY],
     }),
+    AccountModule,
+    OrganizationModule,
     UserModule,
     TransactionRequestModule,
   ],
