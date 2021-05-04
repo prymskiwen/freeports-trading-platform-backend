@@ -8,9 +8,6 @@ export class AccountOperationDetails {
   @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
   initiator?: User;
 
-  @Prop()
-  createdAt?: Date;
-
   @Prop({ type: SchemaTypes.ObjectId, ref: Account.name })
   accountFrom?: Account;
 
@@ -19,6 +16,9 @@ export class AccountOperationDetails {
 
   @Prop()
   amount?: number;
+
+  @Prop()
+  createdAt?: Date;
 
   @Prop()
   operationDate?: Date;

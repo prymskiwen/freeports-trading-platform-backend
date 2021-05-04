@@ -6,10 +6,12 @@ import { AppService } from './app.service';
 import commonConfig from 'config/common.config';
 import databaseConfig from '../config/database.config';
 import openapiConfig from '../config/openapi.config';
-import { OrganizationModule } from './organization/organization.module';
-import { UserModule } from './user/user.module';
-import { TransactionRequestModule } from './transaction-request/transaction-request.module';
 import { AccountModule } from './account/account.module';
+import { AccountOperationModule } from './account-operation/account-operation.module';
+import { OrganizationModule } from './organization/organization.module';
+import { TransactionRequestModule } from './transaction-request/transaction-request.module';
+import { UserModule } from './user/user.module';
+import { OperationRequestModule } from './operation-request/operation-request.module';
 
 @Module({
   imports: [
@@ -29,7 +31,9 @@ import { AccountModule } from './account/account.module';
       inject: [databaseConfig.KEY],
     }),
     AccountModule,
+    AccountOperationModule,
     OrganizationModule,
+    OperationRequestModule,
     UserModule,
     TransactionRequestModule,
   ],

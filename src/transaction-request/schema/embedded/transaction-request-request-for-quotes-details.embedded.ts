@@ -11,7 +11,7 @@ import {
 @Schema({ versionKey: false, _id: false })
 export class TransactionRequestRequestForQuotesDetails {
   @Prop()
-  borkerIdentifier?: string;
+  brokerIdentifier?: string;
 
   @Prop({ type: TransactionRequestRequestForQuotesConvertDestinationSchema })
   from?: TransactionRequestRequestForQuotesConvertDestination;

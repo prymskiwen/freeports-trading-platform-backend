@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { AccountDetailsType } from '../schema/embedded/account-details.embedded';
 
-export class CreateAccountDetailsDto {
+class CreateAccountDetailsDto {
   @IsNotEmpty()
   internalName: string;
 
@@ -23,13 +23,13 @@ export class CreateAccountDetailsDto {
   currency: string;
 }
 
-export class CreateAccountFiatDetailsDto {
+class CreateAccountFiatDetailsDto {
   @IsNotEmpty()
   @IsIBAN()
   iban: string;
 }
 
-export class CreateAccountCryptoDetailsDto {
+class CreateAccountCryptoDetailsDto {
   @IsNotEmpty()
   publicAddress: string;
 

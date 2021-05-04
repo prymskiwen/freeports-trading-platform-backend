@@ -22,7 +22,7 @@ import {
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 
 @Controller('transaction-requests')
-@ApiTags('transaction-requests')
+@ApiTags('transaction requests')
 export class TransactionRequestController {
   constructor(
     private readonly transactionRequestService: TransactionRequestService,
