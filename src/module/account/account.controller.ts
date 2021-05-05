@@ -11,7 +11,7 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { AccountService } from './account.service';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
-@Controller('accounts')
+@Controller('api/v1/accounts')
 @ApiTags('accounts')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}

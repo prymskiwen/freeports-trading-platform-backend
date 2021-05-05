@@ -20,7 +20,7 @@ import { ReadUserDto } from './dto/read-user.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { AddUserPublicKeyDto } from './dto/add-user-public-key.dto';
 
-@Controller('users')
+@Controller('api/v1/users')
 @ApiTags('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}

@@ -11,7 +11,7 @@ import { UpdateAccountOperationDto } from './dto/update-account-operation.dto';
 import { ReadAccountOperationDto } from './dto/read-account-operation.dto';
 import { AccountOperationService } from './account-operation.service';
 
-@Controller('account-operations')
+@Controller('api/v1/account-operations')
 @ApiTags('account operations')
 export class AccountOperationController {
   constructor(

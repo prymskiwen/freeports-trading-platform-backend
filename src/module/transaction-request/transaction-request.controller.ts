@@ -21,7 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 
-@Controller('transaction-requests')
+@Controller('api/v1/transaction-requests')
 @ApiTags('transaction requests')
 export class TransactionRequestController {
   constructor(

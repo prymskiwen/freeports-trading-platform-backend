@@ -11,7 +11,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { OrganizationService } from './organiztion.service';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 
-@Controller('organizations')
+@Controller('api/v1/organizations')
 @ApiTags('organizations')
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}

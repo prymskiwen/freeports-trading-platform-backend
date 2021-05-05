@@ -11,7 +11,7 @@ import { UpdateOperationRequestDto } from './dto/update-operation-request.dto';
 import { ReadOperationRequestDto } from './dto/read-operation-request.dto';
 import { OperationRequestService } from './operation-request.service';
 
-@Controller('operation-requests')
+@Controller('api/v1/operation-requests')
 @ApiTags('operation requests')
 export class OperationRequestController {
   constructor(
