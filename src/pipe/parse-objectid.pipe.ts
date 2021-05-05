@@ -1,5 +1,6 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { ErrorType } from 'src/exeption/enum/error-type.enum';
 
 @Injectable()
 export class ParseObjectIdPipe implements PipeTransform<any, Types.ObjectId> {
@@ -8,7 +9,7 @@ export class ParseObjectIdPipe implements PipeTransform<any, Types.ObjectId> {
 
     if (!validObjectId) {
       throw new BadRequestException({
-        success: false,
+        errorType: ErrorType.IdInvalid,
         message: 'Invalid Id',
       });
     }

@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ValidationPipe,
 } from '@nestjs/common';
+import { ErrorType } from 'src/exeption/enum/error-type.enum';
 
 export class ValidationPipeCustomException extends ValidationPipe {
   public async transform(value: any, metadata: ArgumentMetadata) {
@@ -11,7 +12,7 @@ export class ValidationPipeCustomException extends ValidationPipe {
     } catch (e) {
       if (e instanceof BadRequestException) {
         throw new BadRequestException({
-          success: false,
+          errorType: ErrorType.FormInvalid,
           message: e.getResponse()['message'],
         });
       }

@@ -6,6 +6,7 @@ import { RegisterRequestDto } from './dto/register-request.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { InvalidCredentialsException } from 'src/exeption/invalid-credentials.exception';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +41,6 @@ export class AuthService {
     await createdUser.save();
 
     return {
-      success: true,
       id: createdUser._id,
     };
   }
@@ -50,22 +50,11 @@ export class AuthService {
       .findOne({ 'personal.email': loginRequest.email })
       .exec();
 
-    if (!user) {
-      return {
-        success: false,
-        message: 'No user found',
-      };
-    }
-
-    if (!this.compare(loginRequest.password, user.personal.password)) {
-      return {
-        success: false,
-        message: 'Bad credentials',
-      };
+    if (!user || !this.compare(loginRequest.password, user.personal.password)) {
+      throw new InvalidCredentialsException();
     }
 
     return {
-      success: true,
       key: this.getKey(user),
     };
   }
