@@ -15,8 +15,9 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return at least one API link', () => {
+      expect(appController.getApiLinks()).toContain('<a href');
+      expect(appController.getApiLinks()).toContain('</a>');
     });
   });
 });

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+  getApiLinks(): string {
+    return '<a href="/api/v0">API V0</a><a href="/api/v1">API V1</a>';
   }
 }

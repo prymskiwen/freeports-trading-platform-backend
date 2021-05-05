@@ -6,12 +6,8 @@ import { AppService } from './app.service';
 import commonConfig from 'src/config/common.config';
 import databaseConfig from 'src/config/database.config';
 import openapiConfig from 'src/config/openapi.config';
-import { AccountModule } from './account/account.module';
-import { AccountOperationModule } from './account-operation/account-operation.module';
-import { OrganizationModule } from './organization/organization.module';
-import { TransactionRequestModule } from './transaction-request/transaction-request.module';
-import { UserModule } from './user/user.module';
-import { OperationRequestModule } from './operation-request/operation-request.module';
+import { APIV0Module } from './api-v0/api.v0.module';
+import { APIV1Module } from './api-v1/api.v1.module';
 
 @Module({
   imports: [
@@ -30,12 +26,8 @@ import { OperationRequestModule } from './operation-request/operation-request.mo
       }),
       inject: [databaseConfig.KEY],
     }),
-    AccountModule,
-    AccountOperationModule,
-    OrganizationModule,
-    OperationRequestModule,
-    UserModule,
-    TransactionRequestModule,
+    APIV0Module,
+    APIV1Module,
   ],
   controllers: [AppController],
   providers: [AppService],
