@@ -17,7 +17,9 @@ export class AuthService {
 
   // dummy
   private encrypt(st: string): string {
-    return '##$#%';
+    st = '#@$#%';
+
+    return st;
   }
 
   // dummy
