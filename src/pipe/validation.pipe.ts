@@ -1,21 +1,20 @@
-import {
-  ArgumentMetadata,
-  BadRequestException,
-  ValidationPipe,
-} from '@nestjs/common';
-import { ErrorType } from 'src/exeption/enum/error-type.enum';
+import { ValidationPipe } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
+import { InvalidFormException } from 'src/exeption/invalid-form.exception';
 
 export class ValidationPipeCustomException extends ValidationPipe {
-  public async transform(value: any, metadata: ArgumentMetadata) {
-    try {
-      return await super.transform(value, metadata);
-    } catch (e) {
-      if (e instanceof BadRequestException) {
-        throw new BadRequestException({
-          errorType: ErrorType.FormInvalid,
-          message: e.getResponse()['message'],
-        });
+  public createExceptionFactory() {
+    return (errors?: ValidationError[]) => {
+      const messages = errors.map((error) => {
+        return {
+          path: error.property,
+          constraints: error.constraints,
+        };
+      });
+
+      if (messages.length) {
+        throw new InvalidFormException(messages);
       }
-    }
+    };
   }
 }

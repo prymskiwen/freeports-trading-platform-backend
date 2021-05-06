@@ -6,6 +6,7 @@ import openapiConfig from './config/openapi.config';
 import { AppModule } from './module/app.module';
 import { ValidationPipeCustomException } from './pipe/validation.pipe';
 import { useContainer } from 'class-validator';
+import { HttpExceptionFilter } from './exeption/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,7 @@ async function bootstrap() {
     SwaggerModule.setup(apiConf.path, app, document);
   });
 
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(new ValidationPipeCustomException());
   // to inject nestJS services to class-validator
   useContainer(app.select(AppModule), { fallbackOnErrors: true });

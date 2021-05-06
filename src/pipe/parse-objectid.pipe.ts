@@ -1,6 +1,6 @@
-import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
+import { PipeTransform, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { ErrorType } from 'src/exeption/enum/error-type.enum';
+import { InvalidMongoIdException } from 'src/exeption/invalid-mongoid.exception';
 
 @Injectable()
 export class ParseObjectIdPipe implements PipeTransform<any, Types.ObjectId> {
@@ -8,10 +8,7 @@ export class ParseObjectIdPipe implements PipeTransform<any, Types.ObjectId> {
     const validObjectId = Types.ObjectId.isValid(value);
 
     if (!validObjectId) {
-      throw new BadRequestException({
-        errorType: ErrorType.IdInvalid,
-        message: 'Invalid Id',
-      });
+      throw new InvalidMongoIdException();
     }
 
     return Types.ObjectId.createFromHexString(value);

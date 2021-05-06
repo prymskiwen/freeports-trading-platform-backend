@@ -13,6 +13,7 @@ import { RegisterResponseDto } from './dto/register-response.dto';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
+import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
 
 @Controller('api/v1/auth')
 @ApiTags('auth')
@@ -25,8 +26,14 @@ export class AuthController {
     description: 'Successfully registered user id',
     type: RegisterResponseDto,
   })
-  @ApiBadRequestResponse({ description: 'Bad request', type: ExceptionDto })
-  @ApiInternalServerErrorResponse({ description: 'Server error' })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
   register(
     @Body() registerRequest: RegisterRequestDto,
   ): Promise<RegisterResponseDto> {
@@ -43,8 +50,14 @@ export class AuthController {
     description: 'Invalid credentials',
     type: ExceptionDto,
   })
-  @ApiBadRequestResponse({ description: 'Bad request', type: ExceptionDto })
-  @ApiInternalServerErrorResponse({ description: 'Server error' })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
   login(@Body() loginRequest: LoginRequestDto): Promise<LoginResponseDto> {
     return this.authService.login(loginRequest);
   }

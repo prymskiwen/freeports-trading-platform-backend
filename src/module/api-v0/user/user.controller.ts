@@ -11,14 +11,18 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { ReadUserDto } from './dto/read-user.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { AddUserPublicKeyDto } from './dto/add-user-public-key.dto';
+import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
+import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 
 @Controller('api/v0/users')
 @ApiTags('users')
@@ -30,6 +34,10 @@ export class UserController {
   @ApiCreatedResponse({
     description: 'The user has been successfully created.',
     type: ReadUserDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
   })
   create(@Body() createUserDto: CreateUserDto): Promise<ReadUserDto> {
     return this.userService.create(createUserDto);
@@ -49,6 +57,10 @@ export class UserController {
   @ApiOkResponse({
     type: ReadUserDto,
   })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
   findOne(@Param('id', ParseObjectIdPipe) id: string): Promise<ReadUserDto> {
     return this.userService.findOne(id);
   }
@@ -57,6 +69,14 @@ export class UserController {
   @ApiOperation({ summary: 'Update a user by id' })
   @ApiOkResponse({
     type: ReadUserDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
   })
   async update(
     @Param('id', ParseObjectIdPipe) id: string,
