@@ -23,6 +23,10 @@ import { GetOrganizationManagerResponseDto } from './dto/get-organization-manage
 import { UpdateOrganizationManagerRequestDto } from './dto/update-organization-manager-request';
 import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
 import { UpdateOrganizationManagerResponseDto } from './dto/update-organization-manager-response.dto';
+import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
+import { PaginationParams } from 'src/pagination/pagination-params.decorator';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 
 @Controller('api/v1/clearer')
 @ApiTags('clearer')
@@ -80,16 +84,11 @@ export class ClearerController {
 
   @Get('organization')
   @ApiOperation({ summary: 'Get organization list' })
-  @ApiOkResponse({
-    description: 'Organization list',
-    type: [GetOrganizationResponseDto],
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
-  getOrganizations(): Promise<GetOrganizationResponseDto[]> {
-    return this.clearerService.getOrganizations();
+  @ApiPaginationResponse(GetOrganizationResponseDto)
+  getOrganizations(
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetOrganizationResponseDto>> {
+    return this.clearerService.getOrganizations(pagination);
   }
 
   @Post('organization/:id/manager')
@@ -152,10 +151,7 @@ export class ClearerController {
 
   @Get('organization/:id/manager')
   @ApiOperation({ summary: 'Get organization manager list' })
-  @ApiOkResponse({
-    description: 'Organization manager list',
-    type: [GetOrganizationManagerResponseDto],
-  })
+  @ApiPaginationResponse(GetOrganizationManagerResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -164,13 +160,10 @@ export class ClearerController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   getOrganizationManagers(
     @Param('id', ParseObjectIdPipe) id: string,
-  ): Promise<GetOrganizationManagerResponseDto[]> {
-    return this.clearerService.getOrganizationManagers(id);
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetOrganizationManagerResponseDto>> {
+    return this.clearerService.getOrganizationManagers(id, pagination);
   }
 }

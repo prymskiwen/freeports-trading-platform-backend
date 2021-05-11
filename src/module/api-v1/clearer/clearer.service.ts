@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserDocument, UserRoles } from 'src/schema/user/user.schema';
 import {
   Organization,
@@ -17,6 +17,9 @@ import { UpdateOrganizationManagerRequestDto } from './dto/update-organization-m
 import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
 import { ManagerMapper } from './mapper/manager.mapper';
 import { GetOrganizationManagerResponseDto } from './dto/get-organization-manager-response.dto';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
+import { PaginationHelper } from 'src/pagination/pagination.helper';
 
 @Injectable()
 export class ClearerService {
@@ -59,11 +62,49 @@ export class ClearerService {
     return OrganizationMapper.toUpdateDto(organization);
   }
 
-  async getOrganizations(): Promise<GetOrganizationResponseDto[]> {
-    const organizations = await this.organizationModel.find().exec();
+  async getOrganizations(
+    pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetOrganizationResponseDto>> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
 
-    return organizations.map((organization) =>
+    const query: any[] = [];
+
+    if (search) {
+      query.push({
+        $match: {
+          'details.name': { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.organizationModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+
+    const organizationDtos = paginatedResult.map((organization) =>
       OrganizationMapper.toGetDto(organization),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      organizationDtos,
     );
   }
 
@@ -104,17 +145,66 @@ export class ClearerService {
 
   async getOrganizationManagers(
     id: string,
-  ): Promise<GetOrganizationManagerResponseDto[]> {
+    pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetOrganizationManagerResponseDto>> {
     const organization = await this.organizationModel.findById(id).exec();
 
     if (!organization) {
       throw new NotFoundException();
     }
 
-    const managers = await this.userModel
-      .find({ organization: organization })
-      .exec();
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
 
-    return managers.map((manager) => ManagerMapper.toGetDto(manager));
+    const query: any[] = [
+      {
+        $match: { organization: Types.ObjectId(organization.id) },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          $or: [
+            {
+              'personal.nickname': {
+                $regex: '.*' + search + '.*',
+                $options: 'i',
+              },
+            },
+            {
+              'personal.email': { $regex: '.*' + search + '.*', $options: 'i' },
+            },
+          ],
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    const [{ paginatedResult, totalResult }] = await this.userModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+
+    const managerDtos = paginatedResult.map((manager) =>
+      ManagerMapper.toGetDto(manager),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      managerDtos,
+    );
   }
 }
