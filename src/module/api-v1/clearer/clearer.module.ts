@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { AdminController } from './admin.controller';
+import { ClearerService } from './clearer.service';
+import { ClearerController } from './clearer.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/schema/user/user.schema';
 import { IsUniqueInDbConstraint } from 'src/validation/is-unique-in-db.validation';
@@ -16,7 +16,7 @@ import {
       { name: User.name, schema: UserSchema },
     ]),
   ],
-  controllers: [AdminController],
-  providers: [AdminService, IsUniqueInDbConstraint],
+  controllers: [ClearerController],
+  providers: [ClearerService, IsUniqueInDbConstraint],
 })
-export class AdminModule {}
+export class ClearerModule {}

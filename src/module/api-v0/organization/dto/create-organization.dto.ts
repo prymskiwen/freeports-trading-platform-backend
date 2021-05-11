@@ -10,7 +10,7 @@ import {
 
 class CreateOrganizationDetailslDto {
   @IsNotEmpty()
-  orgName: string;
+  name: string;
   street?: string;
   street2?: string;
   zip?: string;
@@ -33,10 +33,10 @@ class CreateOrganizationClearingDto {
 
 class CreateOrganizationCommissionRatioDto {
   @IsNotEmpty()
-  clearer: string;
+  clearer: number;
 
   @IsNotEmpty()
-  organization: string;
+  organization: number;
 }
 
 export class CreateOrganizationDto {

@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNotEmptyObject, ValidateNested } from 'class-validator';
 
 class ReadOrganizationDetailslDto {
   @IsNotEmpty()
-  orgName: string;
+  name: string;
   street?: string;
   street2?: string;
   zip?: string;
