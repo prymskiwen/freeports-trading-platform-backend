@@ -2,7 +2,7 @@ import { UserDocument } from 'src/schema/user/user.schema';
 import { CreateOrganizationManagerRequestDto } from '../dto/create-organization-manager-request.dto';
 import { CreateOrganizationManagerResponseDto } from '../dto/create-organization-manager-response.dto';
 import { GetOrganizationManagerResponseDto } from '../dto/get-organization-manager-response.dto';
-import { UpdateOrganizationManagerRequestDto } from '../dto/update-organization-manager-request';
+import { UpdateOrganizationManagerRequestDto } from '../dto/update-organization-manager-request.dto';
 import { UpdateOrganizationManagerResponseDto } from '../dto/update-organization-manager-response.dto';
 
 export class ManagerMapper {

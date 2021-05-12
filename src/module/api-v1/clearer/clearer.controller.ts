@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, Patch, Get } from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, Get, Delete } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -17,16 +17,19 @@ import { CreateOrganizationResponseDto } from './dto/create-organization-respons
 import { ClearerService } from './clearer.service';
 import { CreateOrganizationManagerRequestDto } from './dto/create-organization-manager-request.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
-import { UpdateOrganizationRequestDto } from './dto/update-organization-request';
+import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
 import { GetOrganizationResponseDto } from './dto/get-organization-response.dto';
 import { GetOrganizationManagerResponseDto } from './dto/get-organization-manager-response.dto';
-import { UpdateOrganizationManagerRequestDto } from './dto/update-organization-manager-request';
+import { UpdateOrganizationManagerRequestDto } from './dto/update-organization-manager-request.dto';
 import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
 import { UpdateOrganizationManagerResponseDto } from './dto/update-organization-manager-response.dto';
 import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
+import { CreateOrganizationAccountRequestDto } from './dto/create-organization-account-request.dto';
+import { CreateOrganizationAccountResponseDto } from './dto/create-organization-account-response.dto';
+import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
 
 @Controller('api/v1/clearer')
 @ApiTags('clearer')
@@ -165,5 +168,59 @@ export class ClearerController {
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetOrganizationManagerResponseDto>> {
     return this.clearerService.getOrganizationManagers(id, pagination);
+  }
+
+  @Post('organization/:id/account')
+  @ApiOperation({ summary: 'Create organization account' })
+  @ApiCreatedResponse({
+    description: 'Successfully registered organization account id',
+    type: CreateOrganizationAccountResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  createAccount(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() request: CreateOrganizationAccountRequestDto,
+  ): Promise<CreateOrganizationAccountResponseDto> {
+    return this.clearerService.createAccount(id, request);
+  }
+
+  @Delete('organization/:organizationId/account/:accountId')
+  @ApiOperation({ summary: 'Delete organization account' })
+  @ApiOkResponse({
+    description: 'Successfully deleted organization account id',
+    type: DeleteOrganizationAccountResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization or account has not been found',
+    type: ExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  deleteAccount(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('accountId', ParseObjectIdPipe) accountId: string,
+  ): Promise<DeleteOrganizationAccountResponseDto> {
+    return this.clearerService.deleteAccount(organizationId, accountId);
   }
 }

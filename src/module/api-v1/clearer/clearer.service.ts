@@ -10,20 +10,27 @@ import { CreateOrganizationRequestDto } from './dto/create-organization-request.
 import { CreateOrganizationResponseDto } from './dto/create-organization-response.dto';
 import { CreateOrganizationManagerRequestDto } from './dto/create-organization-manager-request.dto';
 import { CreateOrganizationManagerResponseDto } from './dto/create-organization-manager-response.dto';
-import { UpdateOrganizationRequestDto } from './dto/update-organization-request';
+import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
 import { OrganizationMapper } from './mapper/organization.mapper';
 import { GetOrganizationResponseDto } from './dto/get-organization-response.dto';
-import { UpdateOrganizationManagerRequestDto } from './dto/update-organization-manager-request';
+import { UpdateOrganizationManagerRequestDto } from './dto/update-organization-manager-request.dto';
 import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
 import { ManagerMapper } from './mapper/manager.mapper';
 import { GetOrganizationManagerResponseDto } from './dto/get-organization-manager-response.dto';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
+import { CreateOrganizationAccountRequestDto } from './dto/create-organization-account-request.dto';
+import { CreateOrganizationAccountResponseDto } from './dto/create-organization-account-response.dto';
+import { Account, AccountDocument } from 'src/schema/account/account.schema';
+import { AccountMapper } from './mapper/account.mapper';
+import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
 
 @Injectable()
 export class ClearerService {
   constructor(
+    @InjectModel(Account.name)
+    private accountModel: Model<AccountDocument>,
     @InjectModel(Organization.name)
     private organizationModel: Model<OrganizationDocument>,
     @InjectModel(User.name)
@@ -206,5 +213,50 @@ export class ClearerService {
       totalResult[0]?.total || 0,
       managerDtos,
     );
+  }
+
+  async createAccount(
+    id: string,
+    request: CreateOrganizationAccountRequestDto,
+  ): Promise<CreateOrganizationAccountResponseDto> {
+    let account = new this.accountModel();
+    const organization = await this.organizationModel.findById(id).exec();
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    account = AccountMapper.toCreateDocument(account, request);
+    await account.save();
+
+    organization.clearing.push({
+      currency: request.currency,
+      account: account,
+    });
+    await organization.save();
+
+    return AccountMapper.toCreateDto(account);
+  }
+
+  async deleteAccount(
+    organizationId: string,
+    accountId: string,
+  ): Promise<DeleteOrganizationAccountResponseDto> {
+    const account = await this.accountModel.findById(accountId).exec();
+    const organization = await this.organizationModel
+      .findById(organizationId)
+      .exec();
+
+    if (!account || !organization) {
+      throw new NotFoundException();
+    }
+
+    await account.remove();
+    await this.organizationModel.updateOne(
+      { _id: Types.ObjectId(organization.id) },
+      { $pull: { clearing: { account: Types.ObjectId(account.id) } } },
+    );
+
+    return AccountMapper.toDeleteDto(account);
   }
 }

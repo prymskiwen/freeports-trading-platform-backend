@@ -2,7 +2,7 @@ import { OrganizationDocument } from 'src/schema/organization/organization.schem
 import { CreateOrganizationRequestDto } from '../dto/create-organization-request.dto';
 import { CreateOrganizationResponseDto } from '../dto/create-organization-response.dto';
 import { GetOrganizationResponseDto } from '../dto/get-organization-response.dto';
-import { UpdateOrganizationRequestDto } from '../dto/update-organization-request';
+import { UpdateOrganizationRequestDto } from '../dto/update-organization-request.dto';
 import { UpdateOrganizationResponseDto } from '../dto/update-organization-response.dto';
 
 export class OrganizationMapper {

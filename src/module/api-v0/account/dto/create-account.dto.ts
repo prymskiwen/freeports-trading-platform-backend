@@ -13,7 +13,7 @@ import { AccountDetailsType } from 'src/schema/account/embedded/account-details.
 
 class CreateAccountDetailsDto {
   @IsNotEmpty()
-  internalName: string;
+  name: string;
 
   @IsNotEmpty()
   @IsEnum(AccountDetailsType)

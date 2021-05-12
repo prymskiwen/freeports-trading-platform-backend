@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export enum AccountDetailsType {
-  'fiat',
-  'crypto',
+  fiat = 'fiat',
+  crypto = 'crypto',
 }
 
 @Schema({ versionKey: false, _id: false })
 export class AccountDetails {
   @Prop()
-  internalName?: string;
+  name?: string;
 
   @Prop({ type: String, enum: AccountDetailsType })
   type?: AccountDetailsType;
