@@ -3,6 +3,7 @@ import { ConfigModule, ConfigType } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import authConfig from 'src/config/auth.config';
 import commonConfig from 'src/config/common.config';
 import databaseConfig from 'src/config/database.config';
 import openapiConfig from 'src/config/openapi.config';
@@ -16,7 +17,7 @@ import { APIV1Module } from './api-v1/api.v1.module';
       isGlobal: true,
       // ignoreEnvFile: true,
       envFilePath: ['.env.local', '.env.dev', '.env'],
-      load: [commonConfig, databaseConfig, openapiConfig],
+      load: [authConfig, commonConfig, databaseConfig, openapiConfig],
     }),
     MongooseModule.forRootAsync({
       useFactory: async (dbConfig: ConfigType<typeof databaseConfig>) => ({

@@ -1,9 +1,10 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -14,6 +15,11 @@ import { LoginRequestDto } from './dto/login-request.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
+import { LocalAuthGuard } from './guard/local-auth.guard';
+import { RefreshTokenRequestDto } from './dto/refresh-token-request.dto';
+import { TokenDto } from './dto/token.dto';
+import { ValidateTokenRequestDto } from './dto/validate-token-request.dto';
+import { ValidateTokenResponseDto } from './dto/validate-token-response.dto';
 
 @Controller('api/v1/auth')
 @ApiTags('auth')
@@ -40,6 +46,7 @@ export class AuthController {
     return this.authService.register(registerRequest);
   }
 
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   @ApiOperation({ summary: 'Sign in', description: 'User authentication' })
   @ApiCreatedResponse({
@@ -58,7 +65,45 @@ export class AuthController {
     description: 'Server error',
     type: ExceptionDto,
   })
-  login(@Body() loginRequest: LoginRequestDto): Promise<LoginResponseDto> {
-    return this.authService.login(loginRequest);
+  login(
+    @Request() req,
+    // Keep request here to validate login form
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Body() loginRequest: LoginRequestDto,
+  ): Promise<LoginResponseDto> {
+    return this.authService.login(req.user);
+  }
+
+  @Post('/token/refresh')
+  @ApiOperation({
+    summary: 'Refresh token',
+    description: 'Renew access in the application',
+  })
+  @ApiOkResponse({ description: 'Token successfully renewed', type: TokenDto })
+  @ApiUnauthorizedResponse({ description: 'Refresh token invalid or expired' })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  async getNewToken(
+    @Body() refreshTokenDto: RefreshTokenRequestDto,
+  ): Promise<TokenDto> {
+    return this.authService.generateRefreshToken(refreshTokenDto.refreshToken);
+  }
+
+  @Post('/token/validate')
+  @ApiOperation({ description: 'Validate token' })
+  @ApiOkResponse({
+    description: 'Validation was successful',
+    type: ValidateTokenResponseDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  async validateToken(
+    @Body() validateTokenDto: ValidateTokenRequestDto,
+  ): Promise<ValidateTokenResponseDto> {
+    return this.authService.validateToken(validateTokenDto.token);
   }
 }

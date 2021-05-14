@@ -4,6 +4,7 @@ import {
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiQuery,
+  ApiUnauthorizedResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
 import { PaginationResponseDto } from './pagination-response.dto';
@@ -39,7 +40,10 @@ export const ApiPaginationResponse = <TModel extends Type<any>>(
         ],
       },
     }),
-    // ApiUnauthorizedResponse({ description: 'Not authenticated' }),
+    ApiUnauthorizedResponse({
+      description: 'Not authenticated',
+      type: ExceptionDto,
+    }),
     // ApiForbiddenResponse({ description: 'Access denied' }),
     ApiInternalServerErrorResponse({
       description: 'Server error',

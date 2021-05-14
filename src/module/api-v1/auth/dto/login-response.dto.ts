@@ -1,3 +1,7 @@
+import { TokenDto } from './token.dto';
+import { UserDto } from './user.dto';
+
 export class LoginResponseDto {
-  key: string;
+  user: UserDto;
+  token: TokenDto;
 }

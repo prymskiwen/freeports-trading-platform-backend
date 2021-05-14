@@ -1,12 +1,23 @@
-import { Controller, Post, Body, Param, Patch, Get, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Get,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
@@ -30,9 +41,14 @@ import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { CreateOrganizationAccountRequestDto } from './dto/create-organization-account-request.dto';
 import { CreateOrganizationAccountResponseDto } from './dto/create-organization-account-response.dto';
 import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { UserDocument } from 'src/schema/user/user.schema';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/v1/clearer')
 @ApiTags('clearer')
+@ApiBearerAuth()
 export class ClearerController {
   constructor(private readonly clearerService: ClearerService) {}
 
@@ -45,6 +61,10 @@ export class ClearerController {
   @ApiBadRequestResponse({
     description: 'Invalid form',
     type: InvalidFormExceptionDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
+    type: ExceptionDto,
   })
   @ApiInternalServerErrorResponse({
     description: 'Server error',
@@ -72,6 +92,10 @@ export class ClearerController {
   })
   @ApiNotFoundResponse({
     description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
     type: ExceptionDto,
   })
   @ApiInternalServerErrorResponse({
@@ -112,6 +136,10 @@ export class ClearerController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
+    type: ExceptionDto,
+  })
   @ApiInternalServerErrorResponse({
     description: 'Server error',
     type: ExceptionDto,
@@ -139,6 +167,10 @@ export class ClearerController {
   })
   @ApiNotFoundResponse({
     description: 'Organization manager has not been found',
+    type: ExceptionDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
     type: ExceptionDto,
   })
   @ApiInternalServerErrorResponse({
@@ -188,6 +220,10 @@ export class ClearerController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
+    type: ExceptionDto,
+  })
   @ApiInternalServerErrorResponse({
     description: 'Server error',
     type: ExceptionDto,
@@ -195,8 +231,9 @@ export class ClearerController {
   createAccount(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() request: CreateOrganizationAccountRequestDto,
+    @CurrentUser() user: UserDocument,
   ): Promise<CreateOrganizationAccountResponseDto> {
-    return this.clearerService.createAccount(id, request);
+    return this.clearerService.createAccount(id, request, user);
   }
 
   @Delete('organization/:organizationId/account/:accountId')
@@ -211,6 +248,10 @@ export class ClearerController {
   })
   @ApiNotFoundResponse({
     description: 'Organization or account has not been found',
+    type: ExceptionDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
     type: ExceptionDto,
   })
   @ApiInternalServerErrorResponse({

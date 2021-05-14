@@ -9,6 +9,7 @@ export default registerAs('openapi', () => [
     description: 'API description',
     version: '0.0.1',
     tag: 'tag',
+    auth: false,
     root: [APIV0Module],
   },
   {
@@ -17,6 +18,7 @@ export default registerAs('openapi', () => [
     description: 'API description',
     version: '1.0.0',
     tag: 'tag',
+    auth: true,
     root: [APIV1Module],
   },
 ]);

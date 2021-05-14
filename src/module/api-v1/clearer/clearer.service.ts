@@ -25,6 +25,7 @@ import { CreateOrganizationAccountResponseDto } from './dto/create-organization-
 import { Account, AccountDocument } from 'src/schema/account/account.schema';
 import { AccountMapper } from './mapper/account.mapper';
 import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ClearerService {
@@ -36,13 +37,6 @@ export class ClearerService {
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
   ) {}
-
-  // dummy
-  private encrypt(st: string): string {
-    st = '#@$#%';
-
-    return st;
-  }
 
   async createOrganization(
     request: CreateOrganizationRequestDto,
@@ -128,7 +122,10 @@ export class ClearerService {
 
     manager = ManagerMapper.toCreateDocument(manager, request);
     manager.organization = organization;
-    manager.personal.password = this.encrypt(manager.personal.password);
+    manager.personal.password = await bcrypt.hash(
+      manager.personal.password,
+      13,
+    );
     manager.roles.push(UserRoles.org_user);
     await manager.save();
 
@@ -218,6 +215,7 @@ export class ClearerService {
   async createAccount(
     id: string,
     request: CreateOrganizationAccountRequestDto,
+    user: UserDocument,
   ): Promise<CreateOrganizationAccountResponseDto> {
     let account = new this.accountModel();
     const organization = await this.organizationModel.findById(id).exec();
@@ -227,6 +225,7 @@ export class ClearerService {
     }
 
     account = AccountMapper.toCreateDocument(account, request);
+    account.owner = user;
     await account.save();
 
     organization.clearing.push({

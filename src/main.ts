@@ -14,14 +14,17 @@ async function bootstrap() {
   const apiConfs = app.get<ConfigType<typeof openapiConfig>>(openapiConfig.KEY);
 
   apiConfs.forEach((apiConf) => {
-    const conf = new DocumentBuilder()
+    const builder = new DocumentBuilder()
       .setTitle(apiConf.title)
       .setDescription(apiConf.description)
-      .setVersion(apiConf.version)
       // .addTag(apiConf.tag)
-      .build();
+      .setVersion(apiConf.version);
 
-    const document = SwaggerModule.createDocument(app, conf, {
+    if (apiConf.auth) {
+      builder.addBearerAuth();
+    }
+
+    const document = SwaggerModule.createDocument(app, builder.build(), {
       include: apiConf.root,
       deepScanRoutes: true,
     });
