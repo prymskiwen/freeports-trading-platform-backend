@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
@@ -20,6 +20,8 @@ import { RefreshTokenRequestDto } from './dto/refresh-token-request.dto';
 import { TokenDto } from './dto/token.dto';
 import { ValidateTokenRequestDto } from './dto/validate-token-request.dto';
 import { ValidateTokenResponseDto } from './dto/validate-token-response.dto';
+import { UserDocument } from 'src/schema/user/user.schema';
+import { CurrentUser } from './decorator/current-user.decorator';
 
 @Controller('api/v1/auth')
 @ApiTags('auth')
@@ -66,12 +68,12 @@ export class AuthController {
     type: ExceptionDto,
   })
   login(
-    @Request() req,
     // Keep request here to validate login form
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() loginRequest: LoginRequestDto,
+    @CurrentUser() user: UserDocument,
   ): Promise<LoginResponseDto> {
-    return this.authService.login(req.user);
+    return this.authService.login(user);
   }
 
   @Post('/token/refresh')

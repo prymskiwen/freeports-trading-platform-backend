@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { User, UserDocument, UserRoles } from 'src/schema/user/user.schema';
+import { User, UserDocument } from 'src/schema/user/user.schema';
 import {
   Organization,
   OrganizationDocument,
@@ -26,6 +26,7 @@ import { Account, AccountDocument } from 'src/schema/account/account.schema';
 import { AccountMapper } from './mapper/account.mapper';
 import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
 import * as bcrypt from 'bcrypt';
+import { Role } from 'src/schema/user/enum/role.enum';
 
 @Injectable()
 export class ClearerService {
@@ -126,7 +127,7 @@ export class ClearerService {
       manager.personal.password,
       13,
     );
-    manager.roles.push(UserRoles.org_user);
+    manager.roles.push(Role.OrganizationManager);
     await manager.save();
 
     return ManagerMapper.toCreateDto(manager);

@@ -6,14 +6,7 @@ import {
   UserPublicKey,
   UserPublicKeySchema,
 } from './embedded/user-public-key.embedded';
-
-export enum UserRoles {
-  'admin',
-  'org_user',
-  'investor',
-  'permissions_manager',
-  'clearer',
-}
+import { Role } from './enum/role.enum';
 
 export type UserDocument = User & Document;
 
@@ -54,8 +47,11 @@ export class User {
   @Prop({ type: [UserPublicKeySchema] })
   publicKeys?: UserPublicKey[];
 
-  @Prop({ type: [String], enum: UserRoles })
-  roles?: UserRoles[];
+  @Prop({ type: [String], enum: Role })
+  roles?: Role[];
+
+  @Prop({ type: [String] })
+  permissions?: string[];
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   relationhipManager?: User;

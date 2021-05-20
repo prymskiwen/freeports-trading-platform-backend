@@ -13,6 +13,14 @@ import {
   OrganizationCommissionRatio,
   OrganizationCommissionRatioSchema,
 } from './embedded/organization-commission-ratio.embedded';
+import {
+  OrganizationRoleClearer,
+  OrganizationRoleClearerSchema,
+} from './embedded/organization-role-clearer.embedded';
+import {
+  OrganizationRoleOrganization,
+  OrganizationRoleOrganizationSchema,
+} from './embedded/organization-role-organization.embedded';
 
 export type OrganizationDocument = Organization & Document;
 
@@ -31,6 +39,12 @@ export class Organization {
 
   @Prop({ type: OrganizationCommissionRatioSchema })
   commissionRatio?: OrganizationCommissionRatio;
+
+  @Prop({ type: [OrganizationRoleClearerSchema] })
+  roleClearer?: OrganizationRoleClearer[];
+
+  @Prop({ type: [OrganizationRoleOrganizationSchema] })
+  roleOrganization?: OrganizationRoleOrganization[];
 }
 
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);

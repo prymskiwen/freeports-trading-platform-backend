@@ -12,12 +12,10 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
-  ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
@@ -44,8 +42,11 @@ import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { Permissions } from '../auth/decorator/permissions.decorator';
+import { PermissionClearer } from 'src/schema/user/enum/permission.enum';
+import { PermissionsGuard } from '../auth/guard/permissions.guard';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/clearer')
 @ApiTags('clearer')
 @ApiBearerAuth()
@@ -53,6 +54,7 @@ export class ClearerController {
   constructor(private readonly clearerService: ClearerService) {}
 
   @Post('organization')
+  @Permissions(PermissionClearer.OrganizationCreate)
   @ApiOperation({ summary: 'Create organization' })
   @ApiCreatedResponse({
     description: 'Successfully registered organization id',
@@ -62,14 +64,6 @@ export class ClearerController {
     description: 'Invalid form',
     type: InvalidFormExceptionDto,
   })
-  @ApiUnauthorizedResponse({
-    description: 'Not authenticated',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   createOrganization(
     @Body() createRequest: CreateOrganizationRequestDto,
   ): Promise<CreateOrganizationResponseDto> {
@@ -77,6 +71,7 @@ export class ClearerController {
   }
 
   @Patch('organization/:id')
+  @Permissions(PermissionClearer.OrganizationUpdate)
   @ApiOperation({ summary: 'Update organization' })
   @ApiOkResponse({
     description: 'Successfully updated organization id',
@@ -94,14 +89,6 @@ export class ClearerController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  @ApiUnauthorizedResponse({
-    description: 'Not authenticated',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   updateOrganization(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() request: UpdateOrganizationRequestDto,
@@ -110,6 +97,7 @@ export class ClearerController {
   }
 
   @Get('organization')
+  @Permissions(PermissionClearer.OrganizationRead)
   @ApiOperation({ summary: 'Get organization list' })
   @ApiPaginationResponse(GetOrganizationResponseDto)
   getOrganizations(
@@ -119,6 +107,7 @@ export class ClearerController {
   }
 
   @Post('organization/:id/manager')
+  @Permissions(PermissionClearer.OrganizationManagerCreate)
   @ApiOperation({ summary: 'Create organization manager' })
   @ApiCreatedResponse({
     description: 'Successfully registered organization manager id',
@@ -136,14 +125,6 @@ export class ClearerController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  @ApiUnauthorizedResponse({
-    description: 'Not authenticated',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   createOrganizationManager(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() createRequest: CreateOrganizationManagerRequestDto,
@@ -152,6 +133,7 @@ export class ClearerController {
   }
 
   @Patch('organization/manager/:id')
+  @Permissions(PermissionClearer.OrganizationManagerUpdate)
   @ApiOperation({ summary: 'Update organization manager' })
   @ApiOkResponse({
     description: 'Successfully updated organization manager id',
@@ -169,14 +151,6 @@ export class ClearerController {
     description: 'Organization manager has not been found',
     type: ExceptionDto,
   })
-  @ApiUnauthorizedResponse({
-    description: 'Not authenticated',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   updateOrganizationManager(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() request: UpdateOrganizationManagerRequestDto,
@@ -185,6 +159,7 @@ export class ClearerController {
   }
 
   @Get('organization/:id/manager')
+  @Permissions(PermissionClearer.OrganizationManagerRead)
   @ApiOperation({ summary: 'Get organization manager list' })
   @ApiPaginationResponse(GetOrganizationManagerResponseDto)
   @ApiUnprocessableEntityResponse({
@@ -203,6 +178,7 @@ export class ClearerController {
   }
 
   @Post('organization/:id/account')
+  @Permissions(PermissionClearer.OrganizationAccountCreate)
   @ApiOperation({ summary: 'Create organization account' })
   @ApiCreatedResponse({
     description: 'Successfully registered organization account id',
@@ -220,14 +196,6 @@ export class ClearerController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  @ApiUnauthorizedResponse({
-    description: 'Not authenticated',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   createAccount(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() request: CreateOrganizationAccountRequestDto,
@@ -237,6 +205,7 @@ export class ClearerController {
   }
 
   @Delete('organization/:organizationId/account/:accountId')
+  @Permissions(PermissionClearer.OrganizationAccountDelete)
   @ApiOperation({ summary: 'Delete organization account' })
   @ApiOkResponse({
     description: 'Successfully deleted organization account id',
@@ -248,14 +217,6 @@ export class ClearerController {
   })
   @ApiNotFoundResponse({
     description: 'Organization or account has not been found',
-    type: ExceptionDto,
-  })
-  @ApiUnauthorizedResponse({
-    description: 'Not authenticated',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
     type: ExceptionDto,
   })
   deleteAccount(

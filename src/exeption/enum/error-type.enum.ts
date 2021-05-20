@@ -5,4 +5,5 @@ export enum ErrorType {
   TokenInvalid = 'TOKEN_INVALID',
   TokenExpired = 'TOKEN_EXPIRED',
   TokenWrong = 'TOKEN_WRONG',
+  ParameterMissed = 'PARAMETER_MISSED',
 }

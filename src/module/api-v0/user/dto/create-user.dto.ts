@@ -10,8 +10,8 @@ import {
   IsNotEmptyObject,
   ValidateNested,
 } from 'class-validator';
+import { Role } from 'src/schema/user/enum/role.enum';
 import { IsUniqueInDb } from 'src/validation/is-unique-in-db.validation';
-import { UserRoles } from 'src/schema/user/user.schema';
 
 class CreateUserPersonalDto {
   @IsNotEmpty()
@@ -42,6 +42,6 @@ export class CreateUserDto {
 
   @IsArray()
   @ArrayNotEmpty()
-  @IsEnum(UserRoles, { each: true })
-  roles: UserRoles[];
+  @IsEnum(Role, { each: true })
+  roles: Role[];
 }

@@ -44,7 +44,6 @@ export const ApiPaginationResponse = <TModel extends Type<any>>(
       description: 'Not authenticated',
       type: ExceptionDto,
     }),
-    // ApiForbiddenResponse({ description: 'Access denied' }),
     ApiInternalServerErrorResponse({
       description: 'Server error',
       type: ExceptionDto,

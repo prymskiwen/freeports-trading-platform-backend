@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument, UserRoles } from 'src/schema/user/user.schema';
+import { User, UserDocument } from 'src/schema/user/user.schema';
 import {
   Organization,
   OrganizationDocument,
@@ -11,6 +11,7 @@ import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
 import { CreateDeskResponseDto } from './dto/create-desk-response.dto';
 import { CreatePermissionManagerRequestDto } from './dto/create-permission-manager-request.dto';
 import { CreatePermissionManagerResponseDto } from './dto/create-permission-manager-response.dto';
+import { Role } from 'src/schema/user/enum/role.enum';
 
 @Injectable()
 export class OrganizationService {
@@ -67,7 +68,7 @@ export class OrganizationService {
     manager.personal.email = createRequest.email;
     manager.personal.nickname = createRequest.nickname;
     manager.personal.password = this.encrypt(createRequest.password);
-    manager.roles.push(UserRoles.permissions_manager);
+    manager.roles.push(Role.DeskManager);
     await manager.save();
 
     return {
