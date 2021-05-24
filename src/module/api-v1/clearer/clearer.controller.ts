@@ -43,8 +43,8 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
-import { PermissionClearer } from 'src/schema/user/enum/permission.enum';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
+import { PermissionClearer } from 'src/schema/role/enum/permission.enum';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/clearer')
@@ -66,8 +66,9 @@ export class ClearerController {
   })
   createOrganization(
     @Body() createRequest: CreateOrganizationRequestDto,
+    @CurrentUser() user: UserDocument,
   ): Promise<CreateOrganizationResponseDto> {
-    return this.clearerService.createOrganization(createRequest);
+    return this.clearerService.createOrganization(createRequest, user);
   }
 
   @Patch('organization/:id')

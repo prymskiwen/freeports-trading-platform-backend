@@ -26,11 +26,19 @@ import { Account, AccountDocument } from 'src/schema/account/account.schema';
 import { AccountMapper } from './mapper/account.mapper';
 import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
 import * as bcrypt from 'bcrypt';
-import { Role } from 'src/schema/user/enum/role.enum';
+import {
+  RoleOrganization,
+  RoleOrganizationDocument,
+} from 'src/schema/role/role-organization.schema';
+import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
 
 @Injectable()
 export class ClearerService {
   constructor(
+    @InjectModel(RoleOrganization.name)
+    private roleClearerModel: Model<RoleOrganizationDocument>,
+    @InjectModel(RoleOrganization.name)
+    private roleOrganizationModel: Model<RoleOrganizationDocument>,
     @InjectModel(Account.name)
     private accountModel: Model<AccountDocument>,
     @InjectModel(Organization.name)
@@ -41,10 +49,23 @@ export class ClearerService {
 
   async createOrganization(
     request: CreateOrganizationRequestDto,
+    user: UserDocument,
   ): Promise<CreateOrganizationResponseDto> {
     const organization = new this.organizationModel();
 
     await OrganizationMapper.toCreateDocument(organization, request).save();
+
+    const role = new this.roleOrganizationModel();
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    role.name = '_default';
+    role.organization = organization;
+    role.owner = user;
+    role.permissions.push(PermissionOrganization.Default);
+    await role.save();
 
     return OrganizationMapper.toCreateDto(organization);
   }
@@ -127,7 +148,11 @@ export class ClearerService {
       manager.personal.password,
       13,
     );
-    manager.roles.push(Role.OrganizationManager);
+
+    const roleDefault = await this.roleOrganizationModel
+      .findOne({ organization: organization, name: '_default' })
+      .exec();
+    manager.roles.push(roleDefault);
     await manager.save();
 
     return ManagerMapper.toCreateDto(manager);

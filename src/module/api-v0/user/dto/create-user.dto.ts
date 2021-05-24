@@ -1,16 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  ArrayNotEmpty,
-  IsArray,
   IsEmail,
-  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNotEmptyObject,
   ValidateNested,
 } from 'class-validator';
-import { Role } from 'src/schema/user/enum/role.enum';
 import { IsUniqueInDb } from 'src/validation/is-unique-in-db.validation';
 
 class CreateUserPersonalDto {
@@ -39,9 +35,4 @@ export class CreateUserDto {
   @ValidateNested()
   @Type(() => CreateUserPersonalDto) // <= Mandatory to validate subobject
   personal: CreateUserPersonalDto;
-
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsEnum(Role, { each: true })
-  roles: Role[];
 }

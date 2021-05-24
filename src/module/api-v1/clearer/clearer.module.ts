@@ -9,6 +9,7 @@ import {
   OrganizationSchema,
 } from 'src/schema/organization/organization.schema';
 import { User, UserSchema } from 'src/schema/user/user.schema';
+import { RoleModule } from '../role/role.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { User, UserSchema } from 'src/schema/user/user.schema';
       { name: Organization.name, schema: OrganizationSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    RoleModule,
   ],
   controllers: [ClearerController],
   providers: [ClearerService, IsUniqueInDbConstraint],

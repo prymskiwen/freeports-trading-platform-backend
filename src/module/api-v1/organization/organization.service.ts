@@ -11,11 +11,21 @@ import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
 import { CreateDeskResponseDto } from './dto/create-desk-response.dto';
 import { CreatePermissionManagerRequestDto } from './dto/create-permission-manager-request.dto';
 import { CreatePermissionManagerResponseDto } from './dto/create-permission-manager-response.dto';
-import { Role } from 'src/schema/user/enum/role.enum';
+import * as bcrypt from 'bcrypt';
+import {
+  RoleOrganization,
+  RoleOrganizationDocument,
+} from 'src/schema/role/role-organization.schema';
+import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
+import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
 
 @Injectable()
 export class OrganizationService {
   constructor(
+    @InjectModel(RoleOrganization.name)
+    private roleOrganizationModel: Model<RoleOrganizationDocument>,
+    @InjectModel(RoleDesk.name)
+    private roleDeskModel: Model<RoleDeskDocument>,
     @InjectModel(Desk.name)
     private deskModel: Model<DeskDocument>,
     @InjectModel(Organization.name)
@@ -23,13 +33,6 @@ export class OrganizationService {
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
   ) {}
-
-  // dummy
-  private encrypt(st: string): string {
-    st = '#@$#%';
-
-    return st;
-  }
 
   async createDesk(
     organizationId: string,
@@ -67,12 +70,38 @@ export class OrganizationService {
     manager.organization = desk.organization;
     manager.personal.email = createRequest.email;
     manager.personal.nickname = createRequest.nickname;
-    manager.personal.password = this.encrypt(createRequest.password);
-    manager.roles.push(Role.DeskManager);
+    manager.personal.password = await bcrypt.hash(createRequest.password, 13);
+
+    const roleDefault = await this.roleDeskModel
+      .findOne({ desk: desk, name: '_default' })
+      .exec();
+    manager.roles.push(roleDefault);
     await manager.save();
 
     return {
       id: manager._id,
+    };
+  }
+
+  async createRole(
+    id: string,
+    request: CreateRoleOrganizationRequestDto,
+    user: UserDocument,
+  ): Promise<CreatePermissionManagerResponseDto> {
+    const role = new this.roleOrganizationModel();
+    const organization = await this.organizationModel.findById(id).exec();
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    role.organization = organization;
+    role.owner = user;
+    role.permissions = request.permissions;
+    await role.save();
+
+    return {
+      id: role._id,
     };
   }
 }

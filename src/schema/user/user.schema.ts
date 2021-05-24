@@ -2,11 +2,11 @@ import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document, SchemaTypes } from 'mongoose';
 import { Organization } from 'src/schema/organization/organization.schema';
+import { Role } from '../role/role.schema';
 import {
   UserPublicKey,
   UserPublicKeySchema,
 } from './embedded/user-public-key.embedded';
-import { Role } from './enum/role.enum';
 
 export type UserDocument = User & Document;
 
@@ -47,11 +47,8 @@ export class User {
   @Prop({ type: [UserPublicKeySchema] })
   publicKeys?: UserPublicKey[];
 
-  @Prop({ type: [String], enum: Role })
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'Role' }] })
   roles?: Role[];
-
-  @Prop({ type: [String] })
-  permissions?: string[];
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   relationhipManager?: User;
@@ -61,3 +58,11 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.virtual('permissions').get(async function () {
+  await this.populate('roles').execPopulate();
+
+  return this.roles.reduce((prev, role) => {
+    return prev.concat(role.get('permissionsParsed'));
+  }, []);
+});

@@ -5,7 +5,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
-import { Permission } from 'src/schema/user/enum/permission.enum';
+import { Permission } from 'src/schema/role/enum/permission.enum';
 
 export const PERMISSIONS_KEY = 'permissions';
 

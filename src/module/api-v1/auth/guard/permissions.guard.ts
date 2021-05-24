@@ -2,8 +2,8 @@ import { Reflector } from '@nestjs/core';
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { PERMISSIONS_KEY } from '../decorator/permissions.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
-import { Permission } from 'src/schema/user/enum/permission.enum';
 import { MissedParameterException } from 'src/exeption/missed-parameter.exception';
+import { Permission } from 'src/schema/role/enum/permission.enum';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -61,8 +61,10 @@ export class PermissionsGuard implements CanActivate {
     permissions: string[],
     user: UserDocument,
   ): Promise<boolean> {
+    const userPermissions = await user.get('permissions');
+
     return permissions.some((permission) =>
-      user.permissions?.includes(permission),
+      userPermissions.includes(permission),
     );
   }
 }

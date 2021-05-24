@@ -1,9 +1,6 @@
-export type Permission =
-  | PermissionClearer
-  | PermissionOrganization
-  | PermissionDesk;
-
 export enum PermissionClearer {
+  Default = 'clearer',
+
   CoworkerRead = 'clearer.coworker',
   CoworkerCreate = 'clearer.coworker.create',
   CoworkerUpdate = 'clearer.coworker.update',
@@ -31,21 +28,31 @@ export enum PermissionClearer {
 }
 
 export enum PermissionOrganization {
+  Default = 'organization.#id#',
+
   OrganizationRead = 'organization.#id#',
   OrganizationUpdate = 'organization.#id#.update',
 
+  RoleRead = 'organization.#id#.role',
+  RoleCreate = 'organization.#id#.role.create',
+  RoleUpdate = 'organization.#id#.role.update',
+  RoleDelete = 'organization.#id#.role.delete',
+  RoleAssign = 'organization.#id#.role.assign',
+
   DeskRead = 'organization.#id#.desk',
   DeskCreate = 'organization.#id#.desk.create',
-  DeskUpdate = 'organization.desk.#id#.update',
-  DeskDelete = 'organization.desk.#id#.disable',
+  DeskUpdate = 'organization.#id#.desk.update',
+  DeskDelete = 'organization.#id#.desk.disable',
 
-  DeskManagerRead = 'organization.desk.#id#.manager',
-  DeskManagerCreate = 'organization.desk.#id#.manager.create',
-  DeskManagerUpdate = 'organization.desk.#id#.manager.update',
-  DeskManagerDisable = 'organization.desk.#id#.manager.disable',
+  DeskManagerRead = 'organization.#id#.desk-manager',
+  DeskManagerCreate = 'organization.#id#.desk-manager.create',
+  DeskManagerUpdate = 'organization.#id#.desk-manager.update',
+  DeskManagerDisable = 'organization.#id#.desk-manager.disable',
 }
 
 export enum PermissionDesk {
+  Default = 'desk.#id#',
+
   CoworkerRead = 'desk.#id#.coworker',
   CoworkerCreate = 'desk.#id#.coworker.create',
   CoworkerUpdate = 'desk.#id#.coworker.update',
@@ -57,3 +64,16 @@ export enum PermissionDesk {
   RoleDelete = 'desk.#id#.role.delete',
   RoleAssign = 'desk.#id#.role.assign',
 }
+
+export const Permission = {
+  ...PermissionClearer,
+  ...PermissionOrganization,
+  ...PermissionDesk,
+};
+
+export type Permission =
+  | PermissionClearer
+  | PermissionOrganization
+  | PermissionDesk;
+
+// export type Permission = typeof Permission;

@@ -9,6 +9,7 @@ import {
   Organization,
   OrganizationSchema,
 } from 'src/schema/organization/organization.schema';
+import { RoleModule } from '../role/role.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import {
       { name: Organization.name, schema: OrganizationSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    RoleModule,
   ],
   controllers: [OrganizationController],
   providers: [OrganizationService, IsUniqueInDbConstraint],

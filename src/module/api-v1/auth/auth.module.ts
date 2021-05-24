@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import authenticationConfig from 'src/config/auth.config';
 import { ConfigType } from '@nestjs/config';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { RoleModule } from '../role/role.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       }),
       inject: [authenticationConfig.KEY],
     }),
+    RoleModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy, IsUniqueInDbConstraint],
