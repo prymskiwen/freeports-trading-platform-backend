@@ -9,8 +9,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { RegisterRequestDto } from './dto/register-request.dto';
-import { RegisterResponseDto } from './dto/register-response.dto';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
@@ -27,26 +25,6 @@ import { CurrentUser } from './decorator/current-user.decorator';
 @ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @Post('register')
-  @ApiOperation({ summary: 'Sign up' })
-  @ApiCreatedResponse({
-    description: 'Successfully registered user id',
-    type: RegisterResponseDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
-  register(
-    @Body() registerRequest: RegisterRequestDto,
-  ): Promise<RegisterResponseDto> {
-    return this.authService.register(registerRequest);
-  }
 
   @UseGuards(LocalAuthGuard)
   @Post('login')

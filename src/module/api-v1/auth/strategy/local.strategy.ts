@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { PassportStrategy } from '@nestjs/passport';
-import { Model } from 'mongoose';
 import { Strategy } from 'passport-local';
 import { InvalidCredentialsException } from 'src/exeption/invalid-credentials.exception';
-import { User, UserDocument } from 'src/schema/user/user.schema';
+import { UserDocument } from 'src/schema/user/user.schema';
 import * as bcrypt from 'bcrypt';
+import { UserService } from '../../user/user.service';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
+  constructor(private userService: UserService) {
     super({
       usernameField: 'email',
       passwordField: 'password',
@@ -17,9 +16,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(email: string, password: string): Promise<UserDocument> {
-    const user = await this.userModel
-      .findOne({ 'personal.email': email })
-      .exec();
+    const user = await this.userService.findByEmail(email);
 
     if (!user || !(await bcrypt.compare(password, user.personal.password))) {
       throw new InvalidCredentialsException();

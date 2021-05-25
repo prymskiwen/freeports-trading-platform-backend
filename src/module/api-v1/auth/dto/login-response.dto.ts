@@ -1,7 +1,7 @@
+import { GetUserResponseDto } from '../../user/dto/get-user-response.dto';
 import { TokenDto } from './token.dto';
-import { UserDto } from './user.dto';
 
 export class LoginResponseDto {
-  user: UserDto;
+  user: GetUserResponseDto;
   token: TokenDto;
 }

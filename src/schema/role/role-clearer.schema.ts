@@ -3,13 +3,12 @@ import { Document, SchemaTypes } from 'mongoose';
 import { Organization } from '../organization/organization.schema';
 import { User } from '../user/user.schema';
 import { PermissionClearer } from './enum/permission.enum';
-import { RoleKind } from './role.schema';
 
 export type RoleClearerDocument = RoleClearer & Document;
 
 @Schema({ versionKey: false })
 export class RoleClearer {
-  kind: RoleKind.Clearer;
+  kind: string;
   name: string;
   owner: User;
   disabled?: boolean;

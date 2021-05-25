@@ -14,14 +14,14 @@ import { OrganizationService } from './organization.service';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { CreateDeskResponseDto } from './dto/create-desk-response.dto';
 import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
-import { CreatePermissionManagerResponseDto } from './dto/create-permission-manager-response.dto';
-import { CreatePermissionManagerRequestDto } from './dto/create-permission-manager-request.dto';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { CreateRoleOrganizationResponseDto } from './dto/create-role-organization-response.dto';
 import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
+import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
+import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 
 @Controller('api/v1/organization')
 @ApiTags('organization')
@@ -57,11 +57,11 @@ export class OrganizationController {
     return this.organizationService.createDesk(id, createRequest);
   }
 
-  @Post('desk/:id/permission-manager')
-  @ApiOperation({ summary: 'Create permission manager' })
+  @Post('desk/:id/manager')
+  @ApiOperation({ summary: 'Create desk manager' })
   @ApiCreatedResponse({
-    description: 'Successfully registered permission manager id',
-    type: CreatePermissionManagerResponseDto,
+    description: 'Successfully registered desk manager id',
+    type: CreateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -81,12 +81,9 @@ export class OrganizationController {
   })
   createDeskPermissionManager(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Body() createRequest: CreatePermissionManagerRequestDto,
-  ): Promise<CreatePermissionManagerResponseDto> {
-    return this.organizationService.createDeskPermissionManager(
-      id,
-      createRequest,
-    );
+    @Body() request: CreateUserRequestDto,
+  ): Promise<CreateUserResponseDto> {
+    return this.organizationService.createDeskManager(id, request);
   }
 
   @Post(':id/role')

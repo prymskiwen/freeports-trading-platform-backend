@@ -1,19 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from 'src/schema/user/user.schema';
-import { IsUniqueInDbConstraint } from 'src/validation/is-unique-in-db.validation';
 import { LocalStrategy } from './strategy/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import authenticationConfig from 'src/config/auth.config';
 import { ConfigType } from '@nestjs/config';
 import { JwtStrategy } from './strategy/jwt.strategy';
-import { RoleModule } from '../role/role.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    UserModule,
     JwtModule.registerAsync({
       useFactory: (authConfig: ConfigType<typeof authenticationConfig>) => ({
         secret: authConfig.secret,
@@ -23,9 +20,8 @@ import { RoleModule } from '../role/role.module';
       }),
       inject: [authenticationConfig.KEY],
     }),
-    RoleModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, IsUniqueInDbConstraint],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
 })
 export class AuthModule {}

@@ -2,20 +2,20 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
 import { Permission } from './enum/permission.enum';
 import { User } from '../user/user.schema';
-
-export enum RoleKind {
-  Clearer = 'clearer',
-  Organization = 'organization',
-  Desk = 'desk',
-  Investor = 'investor',
-}
+import { RoleClearer } from './role-clearer.schema';
+import { RoleOrganization } from './role-organization.schema';
+import { RoleDesk } from './role-desk.schema';
 
 export type RoleDocument = Role & Document;
 
 @Schema({ versionKey: false, discriminatorKey: 'kind' })
 export class Role {
-  @Prop({ type: String, required: true, enum: RoleKind })
-  kind: RoleKind;
+  @Prop({
+    type: String,
+    required: true,
+    enum: [RoleClearer.name, RoleOrganization.name, RoleDesk.name],
+  })
+  kind: string;
 
   @Prop()
   name: string;

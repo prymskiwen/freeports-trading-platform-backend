@@ -20,18 +20,13 @@ import {
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
-import { CreateOrganizationManagerResponseDto } from './dto/create-organization-manager-response.dto';
 import { CreateOrganizationRequestDto } from './dto/create-organization-request.dto';
 import { CreateOrganizationResponseDto } from './dto/create-organization-response.dto';
 import { ClearerService } from './clearer.service';
-import { CreateOrganizationManagerRequestDto } from './dto/create-organization-manager-request.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
 import { GetOrganizationResponseDto } from './dto/get-organization-response.dto';
-import { GetOrganizationManagerResponseDto } from './dto/get-organization-manager-response.dto';
-import { UpdateOrganizationManagerRequestDto } from './dto/update-organization-manager-request.dto';
 import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
-import { UpdateOrganizationManagerResponseDto } from './dto/update-organization-manager-response.dto';
 import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
@@ -45,6 +40,11 @@ import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { PermissionClearer } from 'src/schema/role/enum/permission.enum';
+import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
+import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
+import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
+import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
+import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/clearer')
@@ -112,7 +112,7 @@ export class ClearerController {
   @ApiOperation({ summary: 'Create organization manager' })
   @ApiCreatedResponse({
     description: 'Successfully registered organization manager id',
-    type: CreateOrganizationManagerResponseDto,
+    type: CreateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -128,9 +128,9 @@ export class ClearerController {
   })
   createOrganizationManager(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Body() createRequest: CreateOrganizationManagerRequestDto,
-  ): Promise<CreateOrganizationManagerResponseDto> {
-    return this.clearerService.createOrganizationManager(id, createRequest);
+    @Body() request: CreateUserRequestDto,
+  ): Promise<CreateUserResponseDto> {
+    return this.clearerService.createOrganizationManager(id, request);
   }
 
   @Patch('organization/manager/:id')
@@ -138,7 +138,7 @@ export class ClearerController {
   @ApiOperation({ summary: 'Update organization manager' })
   @ApiOkResponse({
     description: 'Successfully updated organization manager id',
-    type: UpdateOrganizationManagerResponseDto,
+    type: UpdateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -154,15 +154,15 @@ export class ClearerController {
   })
   updateOrganizationManager(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Body() request: UpdateOrganizationManagerRequestDto,
-  ): Promise<UpdateOrganizationManagerResponseDto> {
+    @Body() request: UpdateUserRequestDto,
+  ): Promise<UpdateUserResponseDto> {
     return this.clearerService.updateOrganizationManager(id, request);
   }
 
   @Get('organization/:id/manager')
   @Permissions(PermissionClearer.OrganizationManagerRead)
   @ApiOperation({ summary: 'Get organization manager list' })
-  @ApiPaginationResponse(GetOrganizationManagerResponseDto)
+  @ApiPaginationResponse(GetUserResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -174,7 +174,7 @@ export class ClearerController {
   getOrganizationManagers(
     @Param('id', ParseObjectIdPipe) id: string,
     @PaginationParams() pagination: PaginationRequest,
-  ): Promise<PaginationResponseDto<GetOrganizationManagerResponseDto>> {
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
     return this.clearerService.getOrganizationManagers(id, pagination);
   }
 

@@ -3,13 +3,12 @@ import { Document, SchemaTypes } from 'mongoose';
 import { Organization } from '../organization/organization.schema';
 import { PermissionOrganization } from './enum/permission.enum';
 import { User } from '../user/user.schema';
-import { RoleKind } from './role.schema';
 
 export type RoleOrganizationDocument = RoleOrganization & Document;
 
 @Schema({ versionKey: false })
 export class RoleOrganization {
-  kind: RoleKind.Organization;
+  kind: string;
   name: string;
   owner: User;
   disabled?: boolean;

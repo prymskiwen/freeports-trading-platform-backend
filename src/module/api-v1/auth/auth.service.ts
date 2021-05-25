@@ -1,11 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Connection, Model } from 'mongoose';
-import { User, UserDocument } from 'src/schema/user/user.schema';
-import { RegisterRequestDto } from './dto/register-request.dto';
-import { RegisterResponseDto } from './dto/register-response.dto';
+import { UserDocument } from 'src/schema/user/user.schema';
 import { LoginResponseDto } from './dto/login-response.dto';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './dto/jwt-payload';
 import authenticationConfig from 'src/config/auth.config';
@@ -14,39 +9,21 @@ import { TokenDto } from './dto/token.dto';
 import { ValidateTokenResponseDto } from './dto/validate-token-response.dto';
 import { InvalidTokenException } from 'src/exeption/invalid-token.exception';
 import { ExpiredTokenException } from 'src/exeption/expired-token.exception';
-import { UserMapper } from './mapper/user.mapper';
+import { UserService } from '../user/user.service';
+import { UserMapper } from '../user/mapper/user.mapper';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @InjectConnection() private connection: Connection, // to make native API calls
     @Inject(authenticationConfig.KEY)
     private authConfig: ConfigType<typeof authenticationConfig>,
     private jwtService: JwtService,
+    private userService: UserService,
   ) {}
-
-  async register(
-    registerRequest: RegisterRequestDto,
-  ): Promise<RegisterResponseDto> {
-    const createdUser = new this.userModel();
-
-    createdUser.personal.email = registerRequest.email;
-    createdUser.personal.nickname = registerRequest.nickname;
-    createdUser.personal.password = await bcrypt.hash(
-      registerRequest.password,
-      13,
-    );
-    await createdUser.save();
-
-    return {
-      id: createdUser._id,
-    };
-  }
 
   async login(user: UserDocument): Promise<LoginResponseDto> {
     return {
-      user: UserMapper.toDto(user),
+      user: UserMapper.toGetDto(user),
       token: this.generateAuthToken({
         sub: user._id,
         name: user.personal.nickname,
@@ -93,7 +70,7 @@ export class AuthService {
   public async validateToken(token: string): Promise<ValidateTokenResponseDto> {
     try {
       const { sub } = this.jwtService.verify(token);
-      const user = await this.userModel.findById(sub).exec();
+      const user = await this.userService.findById(sub);
 
       if (!user) {
         return { valid: false };

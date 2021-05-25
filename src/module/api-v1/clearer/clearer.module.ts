@@ -8,16 +8,16 @@ import {
   Organization,
   OrganizationSchema,
 } from 'src/schema/organization/organization.schema';
-import { User, UserSchema } from 'src/schema/user/user.schema';
 import { RoleModule } from '../role/role.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Account.name, schema: AccountSchema },
       { name: Organization.name, schema: OrganizationSchema },
-      { name: User.name, schema: UserSchema },
     ]),
+    UserModule,
     RoleModule,
   ],
   controllers: [ClearerController],

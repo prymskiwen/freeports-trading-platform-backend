@@ -3,13 +3,12 @@ import { Document, SchemaTypes } from 'mongoose';
 import { Desk } from '../desk/desk.schema';
 import { PermissionDesk } from './enum/permission.enum';
 import { User } from '../user/user.schema';
-import { RoleKind } from './role.schema';
 
 export type RoleDeskDocument = RoleDesk & Document;
 
 @Schema({ versionKey: false })
 export class RoleDesk {
-  kind: RoleKind.Desk;
+  kind: string;
   name: string;
   owner: User;
   disabled?: boolean;

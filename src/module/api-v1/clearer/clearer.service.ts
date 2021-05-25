@@ -1,22 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { User, UserDocument } from 'src/schema/user/user.schema';
+import { UserDocument } from 'src/schema/user/user.schema';
 import {
   Organization,
   OrganizationDocument,
 } from 'src/schema/organization/organization.schema';
 import { CreateOrganizationRequestDto } from './dto/create-organization-request.dto';
 import { CreateOrganizationResponseDto } from './dto/create-organization-response.dto';
-import { CreateOrganizationManagerRequestDto } from './dto/create-organization-manager-request.dto';
-import { CreateOrganizationManagerResponseDto } from './dto/create-organization-manager-response.dto';
 import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
 import { OrganizationMapper } from './mapper/organization.mapper';
 import { GetOrganizationResponseDto } from './dto/get-organization-response.dto';
-import { UpdateOrganizationManagerRequestDto } from './dto/update-organization-manager-request.dto';
 import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
-import { ManagerMapper } from './mapper/manager.mapper';
-import { GetOrganizationManagerResponseDto } from './dto/get-organization-manager-response.dto';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
@@ -25,12 +20,18 @@ import { CreateOrganizationAccountResponseDto } from './dto/create-organization-
 import { Account, AccountDocument } from 'src/schema/account/account.schema';
 import { AccountMapper } from './mapper/account.mapper';
 import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
-import * as bcrypt from 'bcrypt';
 import {
   RoleOrganization,
   RoleOrganizationDocument,
 } from 'src/schema/role/role-organization.schema';
 import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
+import { UserService } from '../user/user.service';
+import { UserMapper } from '../user/mapper/user.mapper';
+import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
+import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
+import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
+import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
+import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
 
 @Injectable()
 export class ClearerService {
@@ -43,8 +44,7 @@ export class ClearerService {
     private accountModel: Model<AccountDocument>,
     @InjectModel(Organization.name)
     private organizationModel: Model<OrganizationDocument>,
-    @InjectModel(User.name)
-    private userModel: Model<UserDocument>,
+    private userService: UserService,
   ) {}
 
   async createOrganization(
@@ -133,109 +133,52 @@ export class ClearerService {
 
   async createOrganizationManager(
     id: string,
-    request: CreateOrganizationManagerRequestDto,
-  ): Promise<CreateOrganizationManagerResponseDto> {
-    let manager = new this.userModel();
+    request: CreateUserRequestDto,
+  ): Promise<CreateUserResponseDto> {
     const organization = await this.organizationModel.findById(id).exec();
 
     if (!organization) {
       throw new NotFoundException();
     }
 
-    manager = ManagerMapper.toCreateDocument(manager, request);
-    manager.organization = organization;
-    manager.personal.password = await bcrypt.hash(
-      manager.personal.password,
-      13,
-    );
+    const user = await this.userService.create(request, false);
+    user.organization = organization;
 
     const roleDefault = await this.roleOrganizationModel
       .findOne({ organization: organization, name: '_default' })
       .exec();
-    manager.roles.push(roleDefault);
-    await manager.save();
+    user.roles.push(roleDefault);
+    await user.save();
 
-    return ManagerMapper.toCreateDto(manager);
+    return UserMapper.toCreateDto(user);
   }
 
   async updateOrganizationManager(
     id: string,
-    request: UpdateOrganizationManagerRequestDto,
-  ): Promise<CreateOrganizationManagerResponseDto> {
-    const manager = await this.userModel.findById(id).exec();
+    request: UpdateUserRequestDto,
+  ): Promise<UpdateUserResponseDto> {
+    const user = await this.userService.findById(id);
 
-    if (!manager) {
+    if (!user) {
       throw new NotFoundException();
     }
 
-    await ManagerMapper.toUpdateDocument(manager, request).save();
+    await UserMapper.toUpdateDocument(user, request).save();
 
-    return ManagerMapper.toUpdateDto(manager);
+    return UserMapper.toUpdateDto(user);
   }
 
   async getOrganizationManagers(
     id: string,
     pagination: PaginationRequest,
-  ): Promise<PaginationResponseDto<GetOrganizationManagerResponseDto>> {
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
     const organization = await this.organizationModel.findById(id).exec();
 
     if (!organization) {
       throw new NotFoundException();
     }
 
-    const {
-      skip,
-      limit,
-      order,
-      params: { search },
-    } = pagination;
-
-    const query: any[] = [
-      {
-        $match: { organization: Types.ObjectId(organization.id) },
-      },
-    ];
-
-    if (search) {
-      query.push({
-        $match: {
-          $or: [
-            {
-              'personal.nickname': {
-                $regex: '.*' + search + '.*',
-                $options: 'i',
-              },
-            },
-            {
-              'personal.email': { $regex: '.*' + search + '.*', $options: 'i' },
-            },
-          ],
-        },
-      });
-    }
-    if (Object.keys(order).length) {
-      query.push({ $sort: order });
-    }
-
-    const [{ paginatedResult, totalResult }] = await this.userModel.aggregate([
-      ...query,
-      {
-        $facet: {
-          paginatedResult: [{ $skip: skip }, { $limit: limit }],
-          totalResult: [{ $count: 'total' }],
-        },
-      },
-    ]);
-
-    const managerDtos = paginatedResult.map((manager) =>
-      ManagerMapper.toGetDto(manager),
-    );
-
-    return PaginationHelper.of(
-      pagination,
-      totalResult[0]?.total || 0,
-      managerDtos,
-    );
+    return this.userService.getOrganizationManagers(organization, pagination);
   }
 
   async createAccount(

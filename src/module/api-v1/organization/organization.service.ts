@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from 'src/schema/user/user.schema';
+import { UserDocument } from 'src/schema/user/user.schema';
 import {
   Organization,
   OrganizationDocument,
@@ -9,15 +9,17 @@ import {
 import { Desk, DeskDocument } from 'src/schema/desk/desk.schema';
 import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
 import { CreateDeskResponseDto } from './dto/create-desk-response.dto';
-import { CreatePermissionManagerRequestDto } from './dto/create-permission-manager-request.dto';
-import { CreatePermissionManagerResponseDto } from './dto/create-permission-manager-response.dto';
-import * as bcrypt from 'bcrypt';
 import {
   RoleOrganization,
   RoleOrganizationDocument,
 } from 'src/schema/role/role-organization.schema';
 import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
 import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
+import { UserService } from '../user/user.service';
+import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
+import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
+import { UserMapper } from '../user/mapper/user.mapper';
+import { CreateRoleOrganizationResponseDto } from './dto/create-role-organization-response.dto';
 
 @Injectable()
 export class OrganizationService {
@@ -30,8 +32,7 @@ export class OrganizationService {
     private deskModel: Model<DeskDocument>,
     @InjectModel(Organization.name)
     private organizationModel: Model<OrganizationDocument>,
-    @InjectModel(User.name)
-    private userModel: Model<UserDocument>,
+    private userService: UserService,
   ) {}
 
   async createDesk(
@@ -56,38 +57,33 @@ export class OrganizationService {
     };
   }
 
-  async createDeskPermissionManager(
-    deskId: string,
-    createRequest: CreatePermissionManagerRequestDto,
-  ): Promise<CreatePermissionManagerResponseDto> {
-    const manager = new this.userModel();
-    const desk = await this.deskModel.findById(deskId).exec();
+  async createDeskManager(
+    id: string,
+    request: CreateUserRequestDto,
+  ): Promise<CreateUserResponseDto> {
+    const desk = await this.deskModel.findById(id).exec();
 
     if (!desk) {
       throw new NotFoundException();
     }
 
-    manager.organization = desk.organization;
-    manager.personal.email = createRequest.email;
-    manager.personal.nickname = createRequest.nickname;
-    manager.personal.password = await bcrypt.hash(createRequest.password, 13);
+    const user = await this.userService.create(request, false);
+    user.organization = desk.organization;
 
     const roleDefault = await this.roleDeskModel
       .findOne({ desk: desk, name: '_default' })
       .exec();
-    manager.roles.push(roleDefault);
-    await manager.save();
+    user.roles.push(roleDefault);
+    await user.save();
 
-    return {
-      id: manager._id,
-    };
+    return UserMapper.toCreateDto(user);
   }
 
   async createRole(
     id: string,
     request: CreateRoleOrganizationRequestDto,
     user: UserDocument,
-  ): Promise<CreatePermissionManagerResponseDto> {
+  ): Promise<CreateRoleOrganizationResponseDto> {
     const role = new this.roleOrganizationModel();
     const organization = await this.organizationModel.findById(id).exec();
 
