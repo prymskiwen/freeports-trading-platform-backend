@@ -1,8 +1,12 @@
-import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document, SchemaTypes } from 'mongoose';
 import { Organization } from 'src/schema/organization/organization.schema';
 import { Role } from '../role/role.schema';
+import {
+  UserPersonal,
+  UserPersonalSchema,
+} from './embedded/user-personal.embedded';
 import {
   UserPublicKey,
   UserPublicKeySchema,
@@ -26,23 +30,8 @@ export class User {
   @Prop()
   vault_user_id?: string;
 
-  @Prop(
-    raw({
-      nickname: { type: String },
-      password: { type: String },
-      email: { type: String, unique: true },
-    }),
-  )
-  @ApiProperty({
-    required: false,
-    type: 'object',
-    properties: {
-      nickname: { type: 'string', example: 'John Doe' },
-      password: { type: 'string' },
-      email: { type: 'string', example: 'john@doe.com' },
-    },
-  })
-  personal?: Record<string, any>;
+  @Prop({ type: UserPersonalSchema })
+  personal?: UserPersonal;
 
   @Prop({ type: [UserPublicKeySchema] })
   publicKeys?: UserPublicKey[];
