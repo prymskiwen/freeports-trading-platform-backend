@@ -65,10 +65,10 @@ export class ClearerController {
     type: InvalidFormExceptionDto,
   })
   createOrganization(
-    @Body() createRequest: CreateOrganizationRequestDto,
+    @Body() request: CreateOrganizationRequestDto,
     @CurrentUser() user: UserDocument,
   ): Promise<CreateOrganizationResponseDto> {
-    return this.clearerService.createOrganization(createRequest, user);
+    return this.clearerService.createOrganization(request, user);
   }
 
   @Patch('organization/:id')
@@ -129,8 +129,9 @@ export class ClearerController {
   createOrganizationManager(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() request: CreateUserRequestDto,
+    @CurrentUser() user: UserDocument,
   ): Promise<CreateUserResponseDto> {
-    return this.clearerService.createOrganizationManager(id, request);
+    return this.clearerService.createOrganizationManager(id, request, user);
   }
 
   @Patch('organization/manager/:id')

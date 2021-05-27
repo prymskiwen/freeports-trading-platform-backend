@@ -20,11 +20,6 @@ import { CreateOrganizationAccountResponseDto } from './dto/create-organization-
 import { Account, AccountDocument } from 'src/schema/account/account.schema';
 import { AccountMapper } from './mapper/account.mapper';
 import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
-import {
-  RoleOrganization,
-  RoleOrganizationDocument,
-} from 'src/schema/role/role-organization.schema';
-import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
 import { UserService } from '../user/user.service';
 import { UserMapper } from '../user/mapper/user.mapper';
 import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
@@ -32,19 +27,17 @@ import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
 import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
 import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
+import { RoleService } from '../role/role.service';
 
 @Injectable()
 export class ClearerService {
   constructor(
-    @InjectModel(RoleOrganization.name)
-    private roleClearerModel: Model<RoleOrganizationDocument>,
-    @InjectModel(RoleOrganization.name)
-    private roleOrganizationModel: Model<RoleOrganizationDocument>,
     @InjectModel(Account.name)
     private accountModel: Model<AccountDocument>,
     @InjectModel(Organization.name)
     private organizationModel: Model<OrganizationDocument>,
     private userService: UserService,
+    private roleService: RoleService,
   ) {}
 
   async createOrganization(
@@ -54,18 +47,7 @@ export class ClearerService {
     const organization = new this.organizationModel();
 
     await OrganizationMapper.toCreateDocument(organization, request).save();
-
-    const role = new this.roleOrganizationModel();
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    role.name = '_default';
-    role.organization = organization;
-    role.owner = user;
-    role.permissions.push(PermissionOrganization.Default);
-    await role.save();
+    await this.roleService.createRoleOrganizationDefault(organization, user);
 
     return OrganizationMapper.toCreateDto(organization);
   }
@@ -134,6 +116,7 @@ export class ClearerService {
   async createOrganizationManager(
     id: string,
     request: CreateUserRequestDto,
+    userCurrent: UserDocument,
   ): Promise<CreateUserResponseDto> {
     const organization = await this.organizationModel.findById(id).exec();
 
@@ -141,13 +124,18 @@ export class ClearerService {
       throw new NotFoundException();
     }
 
+    const roleDefault = await this.roleService.getRoleOrganizationDefault(
+      organization,
+    );
     const user = await this.userService.create(request, false);
-    user.organization = organization;
 
-    const roleDefault = await this.roleOrganizationModel
-      .findOne({ organization: organization, name: '_default' })
-      .exec();
-    user.roles.push(roleDefault);
+    user.organization = organization;
+    user.roles.push({
+      role: roleDefault,
+      assignedAt: new Date(),
+      assignedBy: userCurrent,
+    });
+
     await user.save();
 
     return UserMapper.toCreateDto(user);

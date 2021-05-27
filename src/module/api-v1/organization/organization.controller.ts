@@ -82,8 +82,9 @@ export class OrganizationController {
   createDeskPermissionManager(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() request: CreateUserRequestDto,
+    @CurrentUser() user: UserDocument,
   ): Promise<CreateUserResponseDto> {
-    return this.organizationService.createDeskManager(id, request);
+    return this.organizationService.createDeskManager(id, request, user);
   }
 
   @Post(':id/role')

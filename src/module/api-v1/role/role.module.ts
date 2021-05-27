@@ -10,6 +10,11 @@ import {
   RoleOrganizationSchema,
 } from 'src/schema/role/role-organization.schema';
 import { RoleDesk, RoleDeskSchema } from 'src/schema/role/role-desk.schema';
+import {
+  RoleDeskMulti,
+  RoleDeskMultiSchema,
+} from 'src/schema/role/role-desk-multi.schema';
+import { RoleService } from './role.service';
 
 @Module({
   imports: [
@@ -23,11 +28,16 @@ import { RoleDesk, RoleDeskSchema } from 'src/schema/role/role-desk.schema';
             name: RoleOrganization.name,
             schema: RoleOrganizationSchema,
           },
+          {
+            name: RoleDeskMulti.name,
+            schema: RoleDeskMultiSchema,
+          },
           { name: RoleDesk.name, schema: RoleDeskSchema },
         ],
       },
     ]),
   ],
-  exports: [MongooseModule],
+  providers: [RoleService],
+  exports: [MongooseModule, RoleService],
 })
 export class RoleModule {}

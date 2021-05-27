@@ -5,6 +5,9 @@ import { User } from '../user/user.schema';
 import { RoleClearer } from './role-clearer.schema';
 import { RoleOrganization } from './role-organization.schema';
 import { RoleDesk } from './role-desk.schema';
+import { RoleDeskMulti } from './role-desk-multi.schema';
+
+export const ROLE_DEFAULT = '_default';
 
 export type RoleDocument = Role & Document;
 
@@ -13,7 +16,12 @@ export class Role {
   @Prop({
     type: String,
     required: true,
-    enum: [RoleClearer.name, RoleOrganization.name, RoleDesk.name],
+    enum: [
+      RoleClearer.name,
+      RoleOrganization.name,
+      RoleDeskMulti.name,
+      RoleDesk.name,
+    ],
   })
   kind: string;
 
@@ -37,7 +45,5 @@ RoleSchema.pre('save', function () {
 });
 
 RoleSchema.virtual('permissionsParsed').get(function () {
-  return this.permissions.map((permission) => {
-    return permission;
-  });
+  return this.permissions;
 });

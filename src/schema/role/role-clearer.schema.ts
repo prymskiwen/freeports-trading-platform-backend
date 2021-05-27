@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, SchemaTypes } from 'mongoose';
-import { Organization } from '../organization/organization.schema';
+import { Document } from 'mongoose';
 import { User } from '../user/user.schema';
 import { PermissionClearer } from './enum/permission.enum';
 
@@ -15,9 +14,6 @@ export class RoleClearer {
 
   @Prop({ type: [String], enum: PermissionClearer })
   permissions?: PermissionClearer[];
-
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'Organization' })
-  organization: Organization;
 }
 
 export const RoleClearerSchema = SchemaFactory.createForClass(RoleClearer);
@@ -27,7 +23,5 @@ RoleClearerSchema.pre('save', function () {
 });
 
 RoleClearerSchema.virtual('permissionsParsed').get(function () {
-  return this.permissions.map((permission) => {
-    return permission.replace('#id#', this.organization);
-  });
+  return this.permissions;
 });

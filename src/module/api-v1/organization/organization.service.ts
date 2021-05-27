@@ -20,6 +20,7 @@ import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
 import { UserMapper } from '../user/mapper/user.mapper';
 import { CreateRoleOrganizationResponseDto } from './dto/create-role-organization-response.dto';
+import { RoleService } from '../role/role.service';
 
 @Injectable()
 export class OrganizationService {
@@ -33,6 +34,7 @@ export class OrganizationService {
     @InjectModel(Organization.name)
     private organizationModel: Model<OrganizationDocument>,
     private userService: UserService,
+    private roleService: RoleService,
   ) {}
 
   async createDesk(
@@ -60,6 +62,7 @@ export class OrganizationService {
   async createDeskManager(
     id: string,
     request: CreateUserRequestDto,
+    userCurrent: UserDocument,
   ): Promise<CreateUserResponseDto> {
     const desk = await this.deskModel.findById(id).exec();
 
@@ -67,13 +70,15 @@ export class OrganizationService {
       throw new NotFoundException();
     }
 
+    const roleDefault = await this.roleService.getRoleDeskDefault(desk);
     const user = await this.userService.create(request, false);
     user.organization = desk.organization;
+    user.roles.push({
+      role: roleDefault,
+      assignedAt: new Date(),
+      assignedBy: userCurrent,
+    });
 
-    const roleDefault = await this.roleDeskModel
-      .findOne({ desk: desk, name: '_default' })
-      .exec();
-    user.roles.push(roleDefault);
     await user.save();
 
     return UserMapper.toCreateDto(user);
