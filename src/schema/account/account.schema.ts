@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
 import { Document, SchemaTypes } from 'mongoose';
 import { User } from 'src/schema/user/user.schema';
 import {
@@ -19,11 +18,6 @@ export type AccountDocument = Account & Document;
 
 @Schema({ versionKey: false })
 export class Account {
-  @ApiProperty({
-    format: 'ObjectId',
-  })
-  _id?: string;
-
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   owner?: User;
 

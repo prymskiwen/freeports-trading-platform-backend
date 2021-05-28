@@ -9,7 +9,7 @@ export class UserMapper {
   public static toCreateDto(document: UserDocument): CreateUserResponseDto {
     const dto = new CreateUserResponseDto();
 
-    dto.id = document._id;
+    dto.id = document.id;
 
     return dto;
   }
@@ -17,7 +17,7 @@ export class UserMapper {
   public static toUpdateDto(document: UserDocument): UpdateUserResponseDto {
     const dto = new UpdateUserResponseDto();
 
-    dto.id = document._id;
+    dto.id = document.id;
 
     return dto;
   }
@@ -25,7 +25,7 @@ export class UserMapper {
   public static toGetDto(document: UserDocument): GetUserResponseDto {
     const dto = new GetUserResponseDto();
 
-    dto.id = document._id;
+    dto.id = document.id;
     dto.nickname = document.personal.nickname;
     dto.email = document.personal.email;
 

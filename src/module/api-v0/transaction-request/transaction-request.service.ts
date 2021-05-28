@@ -48,7 +48,7 @@ export class TransactionRequestService {
       .exec();
   }
 
-  remove(id: string): Promise<ReadTransactionRequestDto> {
+  remove(id: string): Promise<TransactionRequestDocument> {
     return this.transactionRequestModel.findByIdAndRemove(id).exec();
   }
 }

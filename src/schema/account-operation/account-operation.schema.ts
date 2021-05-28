@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 import {
   AccountOperationDetails,
@@ -18,11 +17,6 @@ export type AccountOperationDocument = AccountOperation & Document;
 
 @Schema({ versionKey: false })
 export class AccountOperation {
-  @ApiProperty({
-    format: 'ObjectId',
-  })
-  _id?: string;
-
   @Prop({ type: AccountOperationDetailsSchema })
   details?: AccountOperationDetails;
 

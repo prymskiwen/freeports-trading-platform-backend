@@ -25,7 +25,7 @@ export class AuthService {
     return {
       user: UserMapper.toGetDto(user),
       token: this.generateAuthToken({
-        sub: user._id,
+        sub: user.id,
         name: user.personal.nickname,
         email: user.personal.email,
         refresh: false,

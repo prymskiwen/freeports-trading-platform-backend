@@ -93,7 +93,7 @@ export class TransactionRequestController {
     return {
       success: true,
       message: 'TransactionRequest has been deleted',
-      id: tr._id,
+      id: tr.id,
     };
   }
 }

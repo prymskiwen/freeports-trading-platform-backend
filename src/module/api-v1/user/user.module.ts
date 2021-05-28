@@ -9,7 +9,6 @@ import { IsUniqueInDbConstraint } from 'src/validation/is-unique-in-db.validatio
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   providers: [UserService, IsUniqueInDbConstraint],
-  // exports: [MongooseModule],
   exports: [UserService],
 })
 export class UserModule {}

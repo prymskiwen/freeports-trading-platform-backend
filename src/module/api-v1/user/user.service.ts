@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { User, UserDocument } from 'src/schema/user/user.schema';
 import * as bcrypt from 'bcrypt';
 import { CreateUserRequestDto } from './dto/create-user-request.dto';
@@ -58,7 +58,7 @@ export class UserService {
       {
         $lookup: {
           from: 'roles',
-          localField: 'roles',
+          localField: 'roles.role',
           foreignField: '_id',
           as: 'user_roles',
         },
@@ -66,9 +66,9 @@ export class UserService {
       {
         $match: {
           $and: [
-            { organization: Types.ObjectId(organization._id) },
+            { organization: organization._id },
             { 'user_roles.kind': RoleOrganization.name },
-            { 'user_roles.organization': Types.ObjectId(organization._id) },
+            { 'user_roles.organization': organization._id },
           ],
         },
       },
@@ -129,7 +129,7 @@ export class UserService {
       {
         $lookup: {
           from: 'roles',
-          localField: 'roles',
+          localField: 'roles.role',
           foreignField: '_id',
           as: 'user_roles',
         },
@@ -137,9 +137,9 @@ export class UserService {
       {
         $match: {
           $and: [
-            { organization: desk.organization._id },
+            { organization: desk.organization },
             { 'user_roles.kind': RoleDesk.name },
-            { 'user_roles.desk': Types.ObjectId(desk._id) },
+            { 'user_roles.desk': desk._id },
           ],
         },
       },

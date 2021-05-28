@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
 import { Document, SchemaTypes } from 'mongoose';
 import { Organization } from 'src/schema/organization/organization.schema';
 import {
@@ -16,11 +15,6 @@ export type UserDocument = User & Document;
 
 @Schema({ versionKey: false })
 export class User {
-  @ApiProperty({
-    format: 'ObjectId',
-  })
-  _id?: string;
-
   /**
    * This field will be set when registering an user, then it will be read only. Nobody will be transfered to another organization
    */

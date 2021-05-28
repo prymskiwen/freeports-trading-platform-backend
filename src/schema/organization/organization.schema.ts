@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 import {
   OrganizationDetails,
@@ -18,11 +17,6 @@ export type OrganizationDocument = Organization & Document;
 
 @Schema({ versionKey: false })
 export class Organization {
-  @ApiProperty({
-    format: 'ObjectId',
-  })
-  _id?: string;
-
   @Prop({ type: OrganizationDetailsSchema })
   details: OrganizationDetails;
 

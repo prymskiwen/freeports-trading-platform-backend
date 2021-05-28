@@ -34,7 +34,7 @@ export class AccountMapper {
   ): CreateOrganizationAccountResponseDto {
     const dto = new CreateOrganizationAccountResponseDto();
 
-    dto.id = document._id;
+    dto.id = document.id;
 
     return dto;
   }
@@ -44,7 +44,7 @@ export class AccountMapper {
   ): DeleteOrganizationAccountResponseDto {
     const dto = new DeleteOrganizationAccountResponseDto();
 
-    dto.id = document._id;
+    dto.id = document.id;
 
     return dto;
   }

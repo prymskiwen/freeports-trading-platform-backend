@@ -11,7 +11,7 @@ export class OrganizationMapper {
   ): CreateOrganizationResponseDto {
     const dto = new CreateOrganizationResponseDto();
 
-    dto.id = document._id;
+    dto.id = document.id;
 
     return dto;
   }
@@ -21,7 +21,7 @@ export class OrganizationMapper {
   ): UpdateOrganizationResponseDto {
     const dto = new UpdateOrganizationResponseDto();
 
-    dto.id = document._id;
+    dto.id = document.id;
 
     return dto;
   }
@@ -31,7 +31,7 @@ export class OrganizationMapper {
   ): GetOrganizationResponseDto {
     const dto = new GetOrganizationResponseDto();
 
-    dto.id = document._id;
+    dto.id = document.id;
     dto.name = document.details.name;
     dto.commission = document.commissionRatio.organization;
 

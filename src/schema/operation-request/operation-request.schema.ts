@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 import {
   OperationRequestAuditLog,
@@ -14,11 +13,6 @@ export type OperationRequestDocument = OperationRequest & Document;
 
 @Schema({ versionKey: false })
 export class OperationRequest {
-  @ApiProperty({
-    format: 'ObjectId',
-  })
-  _id?: string;
-
   @Prop({ type: OperationRequestDetailsSchema })
   details?: OperationRequestDetails;
 

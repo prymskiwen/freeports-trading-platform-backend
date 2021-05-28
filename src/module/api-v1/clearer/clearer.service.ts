@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { UserDocument } from 'src/schema/user/user.schema';
 import {
   Organization,
@@ -209,8 +209,8 @@ export class ClearerService {
 
     await account.remove();
     await this.organizationModel.updateOne(
-      { _id: Types.ObjectId(organization.id) },
-      { $pull: { clearing: { account: Types.ObjectId(account.id) } } },
+      { _id: organization._id },
+      { $pull: { clearing: { account: account._id } } },
     );
 
     return AccountMapper.toDeleteDto(account);
