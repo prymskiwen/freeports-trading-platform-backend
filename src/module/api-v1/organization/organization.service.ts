@@ -7,8 +7,6 @@ import {
   OrganizationDocument,
 } from 'src/schema/organization/organization.schema';
 import { Desk, DeskDocument } from 'src/schema/desk/desk.schema';
-import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
-import { CreateDeskResponseDto } from './dto/create-desk-response.dto';
 import {
   RoleOrganization,
   RoleOrganizationDocument,
@@ -21,6 +19,9 @@ import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
 import { UserMapper } from '../user/mapper/user.mapper';
 import { CreateRoleOrganizationResponseDto } from './dto/create-role-organization-response.dto';
 import { RoleService } from '../role/role.service';
+import { CreateOrganizationRequestDto } from './dto/create-organization-request.dto';
+import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 
 @Injectable()
 export class OrganizationService {
@@ -37,26 +38,93 @@ export class OrganizationService {
     private roleService: RoleService,
   ) {}
 
-  async createDesk(
-    organizationId: string,
-    createRequest: CreateDeskRequestDto,
-  ): Promise<CreateDeskResponseDto> {
-    const desk = new this.deskModel();
-    const organization = await this.organizationModel
-      .findById(organizationId)
-      .exec();
+  async getById(id: string): Promise<OrganizationDocument> {
+    return await this.organizationModel.findById(id).exec();
+  }
 
-    if (!organization) {
-      throw new NotFoundException();
+  async create(
+    request: CreateOrganizationRequestDto,
+    persist = true,
+  ): Promise<OrganizationDocument> {
+    const organization = new this.organizationModel();
+
+    organization.details = {
+      name: request.name,
+      street: request.street,
+      street2: request.street2,
+      zip: request.zip,
+      city: request.city,
+      country: request.country,
+    };
+
+    organization.commissionRatio = {
+      organization: request.сommission,
+    };
+
+    if (persist) {
+      await organization.save();
     }
 
-    desk.name = createRequest.name;
-    desk.organization = organization;
-    await desk.save();
+    return organization;
+  }
 
-    return {
-      id: desk._id,
+  async update(
+    organization: OrganizationDocument,
+    request: UpdateOrganizationRequestDto,
+    persist = true,
+  ): Promise<OrganizationDocument> {
+    organization.details = {
+      name: request.name,
+      street: request.street,
+      street2: request.street2,
+      zip: request.zip,
+      city: request.city,
+      country: request.country,
     };
+
+    organization.commissionRatio = {
+      organization: request.сommission,
+    };
+
+    if (persist) {
+      await organization.save();
+    }
+
+    return organization;
+  }
+
+  async getOrganizationsPaginated(
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [];
+
+    if (search) {
+      query.push({
+        $match: {
+          'details.name': { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.organizationModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 
   async createDeskManager(

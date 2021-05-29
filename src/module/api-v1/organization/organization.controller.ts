@@ -1,9 +1,20 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Get,
+  UseGuards,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnprocessableEntityResponse,
@@ -12,27 +23,78 @@ import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
 import { OrganizationService } from './organization.service';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
-import { CreateDeskResponseDto } from './dto/create-desk-response.dto';
-import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { CreateRoleOrganizationResponseDto } from './dto/create-role-organization-response.dto';
 import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
-import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
+import {
+  PermissionClearer,
+  PermissionOrganization,
+} from 'src/schema/role/enum/permission.enum';
 import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
 import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
+import { CreateOrganizationResponseDto } from './dto/create-organization-response.dto';
+import { CreateOrganizationRequestDto } from './dto/create-organization-request.dto';
+import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
+import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
+import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
+import { GetOrganizationResponseDto } from './dto/get-organization-response.dto';
+import { PaginationParams } from 'src/pagination/pagination-params.decorator';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/guard/permissions.guard';
+import { RoleService } from '../role/role.service';
+import { OrganizationMapper } from './mapper/organization.mapper';
+import { OrganizationDocument } from 'src/schema/organization/organization.schema';
+import { PaginationHelper } from 'src/pagination/pagination.helper';
 
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/organization')
-@ApiTags('organization')
+@ApiBearerAuth()
 export class OrganizationController {
-  constructor(private readonly organizationService: OrganizationService) {}
+  constructor(
+    private readonly organizationService: OrganizationService,
+    private readonly roleService: RoleService,
+  ) {}
 
-  @Post(':id/desk')
-  @ApiOperation({ summary: 'Create desk' })
+  @Post()
+  @Permissions(PermissionClearer.OrganizationCreate)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Create organization' })
   @ApiCreatedResponse({
-    description: 'Successfully registered desk id',
-    type: CreateDeskResponseDto,
+    description: 'Successfully registered organization id',
+    type: CreateOrganizationResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  async createOrganization(
+    @Body() request: CreateOrganizationRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateOrganizationResponseDto> {
+    const organization = await this.organizationService.create(request);
+
+    await this.roleService.createRoleOrganizationDefault(
+      organization,
+      userCurrent,
+    );
+
+    return OrganizationMapper.toCreateDto(organization);
+  }
+
+  @Patch(':organizationId')
+  @Permissions(
+    PermissionClearer.OrganizationUpdate,
+    PermissionOrganization.OrganizationUpdate,
+  )
+  @ApiTags('clearer', 'organization')
+  @ApiOperation({ summary: 'Update organization' })
+  @ApiOkResponse({
+    description: 'Successfully updated organization id',
+    type: CreateOrganizationResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -46,17 +108,74 @@ export class OrganizationController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
-  createDesk(
-    @Param('id', ParseObjectIdPipe) id: string,
-    @Body() createRequest: CreateDeskRequestDto,
-  ): Promise<CreateDeskResponseDto> {
-    return this.organizationService.createDesk(id, createRequest);
+  async updateOrganization(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Body() request: UpdateOrganizationRequestDto,
+  ): Promise<UpdateOrganizationResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    await this.organizationService.update(organization, request);
+
+    return OrganizationMapper.toUpdateDto(organization);
   }
 
+  @Get(':organizationId')
+  @Permissions(
+    PermissionClearer.OrganizationRead,
+    PermissionOrganization.OrganizationRead,
+  )
+  @ApiTags('clearer', 'organization')
+  @ApiOperation({ summary: 'Get organization details' })
+  @ApiOkResponse({ type: GetOrganizationResponseDto })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  async getOrganization(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+  ): Promise<GetOrganizationResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    return OrganizationMapper.toGetDto(organization);
+  }
+
+  @Get()
+  @Permissions(PermissionClearer.OrganizationList)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Get organization list' })
+  @ApiPaginationResponse(GetOrganizationResponseDto)
+  async getOrganizations(
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetOrganizationResponseDto>> {
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.organizationService.getOrganizationsPaginated(pagination);
+
+    const organizationDtos = paginatedResult.map(
+      (organization: OrganizationDocument) =>
+        OrganizationMapper.toGetDto(organization),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      organizationDtos,
+    );
+  }
+
+  // TODO: move to User
   @Post('desk/:id/manager')
   @ApiOperation({ summary: 'Create desk manager' })
   @ApiCreatedResponse({
@@ -87,6 +206,7 @@ export class OrganizationController {
     return this.organizationService.createDeskManager(id, request, user);
   }
 
+  // TODO: move to role
   @Post(':id/role')
   @Permissions(PermissionOrganization.RoleCreate)
   @ApiOperation({ summary: 'Create organization role' })

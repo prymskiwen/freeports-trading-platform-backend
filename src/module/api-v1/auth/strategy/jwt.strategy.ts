@@ -28,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new WrongTokenException();
     }
 
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userService.getByEmail(email);
 
     if (!user) {
       throw new InvalidCredentialsException();

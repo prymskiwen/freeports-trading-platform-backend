@@ -7,23 +7,35 @@ import { CreateUserRequestDto } from './dto/create-user-request.dto';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { RoleOrganization } from 'src/schema/role/role-organization.schema';
-import { UserMapper } from './mapper/user.mapper';
-import { PaginationHelper } from 'src/pagination/pagination.helper';
-import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
-import { GetUserResponseDto } from './dto/get-user-response.dto';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
+import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
+import { ROLE_DEFAULT } from 'src/schema/role/role.schema';
+import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async findById(id: string): Promise<UserDocument> {
+  async getById(id: string): Promise<UserDocument> {
     return await this.userModel.findById(id).exec();
   }
 
-  async findByEmail(email: string): Promise<UserDocument> {
+  async getByEmail(email: string): Promise<UserDocument> {
     return await this.userModel.findOne({ 'personal.email': email }).exec();
+  }
+
+  async ensureOrganization(
+    user: UserDocument,
+    organization: OrganizationDocument,
+  ): Promise<boolean> {
+    const userPermissions: string[] = await user.get('permissions');
+    const permissionDefault = PermissionOrganization.Default.replace(
+      '#organizationId#',
+      organization.id,
+    );
+
+    return userPermissions.includes(permissionDefault);
   }
 
   async create(
@@ -43,10 +55,27 @@ export class UserService {
     return user;
   }
 
-  async getOrganizationManagers(
+  async update(
+    user: UserDocument,
+    request: UpdateUserRequestDto,
+    persist = true,
+  ): Promise<UserDocument> {
+    user.personal.nickname = request.nickname;
+    user.personal.email = request.email;
+
+    await user.save();
+
+    if (persist) {
+      await user.save();
+    }
+
+    return user;
+  }
+
+  async getOrganizationManagersPaginated(
     organization: OrganizationDocument,
     pagination: PaginationRequest,
-  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+  ): Promise<any[]> {
     const {
       skip,
       limit,
@@ -68,6 +97,7 @@ export class UserService {
           $and: [
             { organization: organization._id },
             { 'user_roles.kind': RoleOrganization.name },
+            { 'user_roles.name': ROLE_DEFAULT },
             { 'user_roles.organization': organization._id },
           ],
         },
@@ -95,7 +125,7 @@ export class UserService {
       query.push({ $sort: order });
     }
 
-    const [{ paginatedResult, totalResult }] = await this.userModel.aggregate([
+    return await this.userModel.aggregate([
       ...query,
       {
         $facet: {
@@ -104,20 +134,12 @@ export class UserService {
         },
       },
     ]);
-
-    const userDtos = paginatedResult.map((user) => UserMapper.toGetDto(user));
-
-    return PaginationHelper.of(
-      pagination,
-      totalResult[0]?.total || 0,
-      userDtos,
-    );
   }
 
-  async getDeskManagers(
+  async getDeskManagersPaginated(
     desk: DeskDocument,
     pagination: PaginationRequest,
-  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+  ): Promise<any[]> {
     const {
       skip,
       limit,
@@ -137,8 +159,8 @@ export class UserService {
       {
         $match: {
           $and: [
-            { organization: desk.organization },
             { 'user_roles.kind': RoleDesk.name },
+            { 'user_roles.name': ROLE_DEFAULT },
             { 'user_roles.desk': desk._id },
           ],
         },
@@ -166,7 +188,7 @@ export class UserService {
       query.push({ $sort: order });
     }
 
-    const [{ paginatedResult, totalResult }] = await this.userModel.aggregate([
+    return await this.userModel.aggregate([
       ...query,
       {
         $facet: {
@@ -175,13 +197,5 @@ export class UserService {
         },
       },
     ]);
-
-    const userDtos = paginatedResult.map((user) => UserMapper.toGetDto(user));
-
-    return PaginationHelper.of(
-      pagination,
-      totalResult[0]?.total || 0,
-      userDtos,
-    );
   }
 }

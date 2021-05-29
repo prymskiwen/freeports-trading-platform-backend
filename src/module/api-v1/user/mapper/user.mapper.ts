@@ -1,8 +1,6 @@
 import { UserDocument } from 'src/schema/user/user.schema';
-import { CreateUserRequestDto } from '../dto/create-user-request.dto';
 import { CreateUserResponseDto } from '../dto/create-user-response.dto';
 import { GetUserResponseDto } from '../dto/get-user-response.dto';
-import { UpdateUserRequestDto } from '../dto/update-user-request.dto';
 import { UpdateUserResponseDto } from '../dto/update-user-response.dto';
 
 export class UserMapper {
@@ -30,28 +28,5 @@ export class UserMapper {
     dto.email = document.personal.email;
 
     return dto;
-  }
-
-  public static toCreateDocument(
-    document: UserDocument,
-    dto: CreateUserRequestDto,
-  ): UserDocument {
-    document.personal = {
-      nickname: dto.nickname,
-      email: dto.email,
-      password: dto.password,
-    };
-
-    return document;
-  }
-
-  public static toUpdateDocument(
-    document: UserDocument,
-    dto: UpdateUserRequestDto,
-  ): UserDocument {
-    document.personal.nickname = dto.nickname;
-    document.personal.email = dto.email;
-
-    return document;
   }
 }

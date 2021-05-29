@@ -70,7 +70,7 @@ export class AuthService {
   public async validateToken(token: string): Promise<ValidateTokenResponseDto> {
     try {
       const { sub } = this.jwtService.verify(token);
-      const user = await this.userService.findById(sub);
+      const user = await this.userService.getById(sub);
 
       if (!user) {
         return { valid: false };

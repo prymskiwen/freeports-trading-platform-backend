@@ -13,6 +13,7 @@ export enum PermissionClearer {
   RoleAssign = 'clearer.role.assign',
 
   OrganizationRead = 'clearer.organization.read',
+  OrganizationList = 'clearer.organization.list',
   OrganizationCreate = 'clearer.organization.create',
   OrganizationUpdate = 'clearer.organization.update',
   OrganizationDisable = 'clearer.organization.disable',
@@ -28,41 +29,46 @@ export enum PermissionClearer {
 }
 
 export enum PermissionOrganization {
-  Default = 'organization.#id#',
+  Default = 'organization.#organizationId#',
 
-  OrganizationRead = 'organization.#id#.read',
-  OrganizationUpdate = 'organization.#id#.update',
+  CoworkerRead = 'organization.#organizationId#.coworker.read',
+  CoworkerCreate = 'organization.#organizationId#.coworker.create',
+  CoworkerUpdate = 'organization.#organizationId#.coworker.update',
+  CoworkerDisable = 'organization.#organizationId#.coworker.disable',
 
-  RoleRead = 'organization.#id#.role.read',
-  RoleCreate = 'organization.#id#.role.create',
-  RoleUpdate = 'organization.#id#.role.update',
-  RoleDelete = 'organization.#id#.role.delete',
-  RoleAssign = 'organization.#id#.role.assign',
+  OrganizationRead = 'organization.#organizationId#.read',
+  OrganizationUpdate = 'organization.#organizationId#.update',
 
-  DeskRead = 'organization.#id#.desk.read',
-  DeskCreate = 'organization.#id#.desk.create',
-  DeskUpdate = 'organization.#id#.desk.update',
-  DeskDelete = 'organization.#id#.desk.disable',
+  RoleRead = 'organization.#organizationId#.role.read',
+  RoleCreate = 'organization.#organizationId#.role.create',
+  RoleUpdate = 'organization.#organizationId#.role.update',
+  RoleDelete = 'organization.#organizationId#.role.delete',
+  RoleAssign = 'organization.#organizationId#.role.assign',
 
-  DeskManagerRead = 'organization.#id#.desk-manager.read',
-  DeskManagerCreate = 'organization.#id#.desk-manager.create',
-  DeskManagerUpdate = 'organization.#id#.desk-manager.update',
-  DeskManagerDisable = 'organization.#id#.desk-manager.disable',
+  DeskRead = 'organization.#organizationId#.desk.read',
+  DeskCreate = 'organization.#organizationId#.desk.create',
+  DeskUpdate = 'organization.#organizationId#.desk.update',
+  DeskDelete = 'organization.#organizationId#.desk.disable',
+
+  DeskManagerRead = 'organization.#organizationId#.desk.manager.read',
+  DeskManagerCreate = 'organization.#organizationId#.desk.manager.create',
+  DeskManagerUpdate = 'organization.#organizationId#.desk.manager.update',
+  DeskManagerDisable = 'organization.#organizationId#.desk.manager.disable',
 }
 
 export enum PermissionDesk {
-  Default = 'desk.#id#',
+  Default = 'desk.#deskId#',
 
-  CoworkerRead = 'desk.#id#.coworker.read',
-  CoworkerCreate = 'desk.#id#.coworker.create',
-  CoworkerUpdate = 'desk.#id#.coworker.update',
-  CoworkerDisable = 'desk.#id#.coworker.disable',
+  CoworkerRead = 'desk.#deskId#.coworker.read',
+  CoworkerCreate = 'desk.#deskId#.coworker.create',
+  CoworkerUpdate = 'desk.#deskId#.coworker.update',
+  CoworkerDisable = 'desk.#deskId#.coworker.disable',
 
-  RoleRead = 'desk.#id#.role.read',
-  RoleCreate = 'desk.#id#.role.create',
-  RoleUpdate = 'desk.#id#.role.update',
-  RoleDelete = 'desk.#id#.role.delete',
-  RoleAssign = 'desk.#id#.role.assign',
+  RoleRead = 'desk.#deskId#.role.read',
+  RoleCreate = 'desk.#deskId#.role.create',
+  RoleUpdate = 'desk.#deskId#.role.update',
+  RoleDelete = 'desk.#deskId#.role.delete',
+  RoleAssign = 'desk.#deskId#.role.assign',
 }
 
 export const Permission = {
