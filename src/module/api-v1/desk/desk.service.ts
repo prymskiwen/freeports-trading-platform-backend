@@ -12,15 +12,23 @@ export class DeskService {
     private deskModel: Model<DeskDocument>,
   ) {}
 
+  async getById(id: string): Promise<DeskDocument> {
+    return await this.deskModel.findById(id).exec();
+  }
+
   async create(
     organization: OrganizationDocument,
     request: CreateDeskRequestDto,
+    persist = true,
   ): Promise<DeskDocument> {
     const desk = new this.deskModel();
 
     desk.name = request.name;
     desk.organization = organization;
-    await desk.save();
+
+    if (persist) {
+      await desk.save();
+    }
 
     return desk;
   }

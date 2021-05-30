@@ -5,6 +5,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -18,31 +19,36 @@ import {
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
-import { ClearerService } from './clearer.service';
+import { AccountService } from './account.service';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
-import { CreateOrganizationAccountRequestDto } from './dto/create-organization-account-request.dto';
-import { CreateOrganizationAccountResponseDto } from './dto/create-organization-account-response.dto';
-import { DeleteOrganizationAccountResponseDto } from './dto/delete-organization-account-response.dto';
+import { CreateAccountRequestDto } from './dto/create-account-request.dto';
+import { CreateAccountResponseDto } from './dto/create-account-response.dto';
+import { DeleteAccountResponseDto } from './dto/delete-account-response.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { PermissionClearer } from 'src/schema/role/enum/permission.enum';
+import { OrganizationService } from '../organization/organization.service';
+import { AccountMapper } from './mapper/account.mapper';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
-@Controller('api/v1/clearer')
-@ApiTags('clearer')
+@Controller('api/v1/organization')
 @ApiBearerAuth()
-export class ClearerController {
-  constructor(private readonly clearerService: ClearerService) {}
+export class AccountController {
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly organizationService: OrganizationService,
+  ) {}
 
-  @Post('organization/:id/account')
+  @Post(':organizationId/account')
   @Permissions(PermissionClearer.OrganizationAccountCreate)
+  @ApiTags('clearer')
   @ApiOperation({ summary: 'Create organization account' })
   @ApiCreatedResponse({
     description: 'Successfully registered organization account id',
-    type: CreateOrganizationAccountResponseDto,
+    type: CreateAccountResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -56,20 +62,35 @@ export class ClearerController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  createAccount(
-    @Param('id', ParseObjectIdPipe) id: string,
-    @Body() request: CreateOrganizationAccountRequestDto,
-    @CurrentUser() user: UserDocument,
-  ): Promise<CreateOrganizationAccountResponseDto> {
-    return this.clearerService.createAccount(id, request, user);
+  async createAccount(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Body() request: CreateAccountRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateAccountResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const account = await this.accountService.create(request, userCurrent);
+
+    organization.clearing.push({
+      currency: request.currency,
+      account: account,
+    });
+    await organization.save();
+
+    return AccountMapper.toCreateDto(account);
   }
 
-  @Delete('organization/:organizationId/account/:accountId')
+  @Delete(':organizationId/account/:accountId')
   @Permissions(PermissionClearer.OrganizationAccountDelete)
+  @ApiTags('clearer')
   @ApiOperation({ summary: 'Delete organization account' })
   @ApiOkResponse({
     description: 'Successfully deleted organization account id',
-    type: DeleteOrganizationAccountResponseDto,
+    type: DeleteAccountResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -79,10 +100,20 @@ export class ClearerController {
     description: 'Organization or account has not been found',
     type: ExceptionDto,
   })
-  deleteAccount(
+  async deleteAccount(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,
-  ): Promise<DeleteOrganizationAccountResponseDto> {
-    return this.clearerService.deleteAccount(organizationId, accountId);
+  ): Promise<DeleteAccountResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const account = await this.accountService.getById(accountId);
+
+    if (!account || !organization) {
+      throw new NotFoundException();
+    }
+
+    await account.remove();
+    await this.organizationService.deleteAccount(organization, account);
+
+    return AccountMapper.toDeleteDto(account);
   }
 }

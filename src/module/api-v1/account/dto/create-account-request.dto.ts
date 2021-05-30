@@ -1,7 +1,7 @@
 import { IsEnum, IsIBAN, IsNotEmpty, ValidateIf } from 'class-validator';
 import { AccountDetailsType } from 'src/schema/account/embedded/account-details.embedded';
 
-export class CreateOrganizationAccountRequestDto {
+export class CreateAccountRequestDto {
   @IsNotEmpty()
   name: string;
 

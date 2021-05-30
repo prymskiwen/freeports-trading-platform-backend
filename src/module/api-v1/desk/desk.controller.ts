@@ -10,7 +10,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
@@ -27,6 +26,10 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { DeskService } from './desk.service';
 import { OrganizationService } from '../organization/organization.service';
+import { DeskMapper } from './mapper/desk.mapper';
+import { UserDocument } from 'src/schema/user/user.schema';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { RoleService } from '../role/role.service';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -35,6 +38,7 @@ export class DeskController {
   constructor(
     private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
+    private readonly roleService: RoleService,
   ) {}
 
   @Post(':organizationId/desk')
@@ -57,13 +61,10 @@ export class DeskController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   async createDesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Body() request: CreateDeskRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateDeskResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
@@ -73,8 +74,8 @@ export class DeskController {
 
     const desk = await this.deskService.create(organization, request);
 
-    return {
-      id: desk.id,
-    };
+    await this.roleService.createRoleDeskDefault(desk, userCurrent);
+
+    return DeskMapper.toCreateDto(desk);
   }
 }

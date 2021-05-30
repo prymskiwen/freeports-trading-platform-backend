@@ -1,41 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserDocument } from 'src/schema/user/user.schema';
 import {
   Organization,
   OrganizationDocument,
 } from 'src/schema/organization/organization.schema';
-import { Desk, DeskDocument } from 'src/schema/desk/desk.schema';
-import {
-  RoleOrganization,
-  RoleOrganizationDocument,
-} from 'src/schema/role/role-organization.schema';
-import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
-import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
-import { UserService } from '../user/user.service';
-import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
-import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
-import { UserMapper } from '../user/mapper/user.mapper';
-import { CreateRoleOrganizationResponseDto } from './dto/create-role-organization-response.dto';
-import { RoleService } from '../role/role.service';
 import { CreateOrganizationRequestDto } from './dto/create-organization-request.dto';
 import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { AccountDocument } from 'src/schema/account/account.schema';
 
 @Injectable()
 export class OrganizationService {
   constructor(
-    @InjectModel(RoleOrganization.name)
-    private roleOrganizationModel: Model<RoleOrganizationDocument>,
-    @InjectModel(RoleDesk.name)
-    private roleDeskModel: Model<RoleDeskDocument>,
-    @InjectModel(Desk.name)
-    private deskModel: Model<DeskDocument>,
     @InjectModel(Organization.name)
     private organizationModel: Model<OrganizationDocument>,
-    private userService: UserService,
-    private roleService: RoleService,
   ) {}
 
   async getById(id: string): Promise<OrganizationDocument> {
@@ -127,50 +106,13 @@ export class OrganizationService {
     ]);
   }
 
-  async createDeskManager(
-    id: string,
-    request: CreateUserRequestDto,
-    userCurrent: UserDocument,
-  ): Promise<CreateUserResponseDto> {
-    const desk = await this.deskModel.findById(id).exec();
-
-    if (!desk) {
-      throw new NotFoundException();
-    }
-
-    const roleDefault = await this.roleService.getRoleDeskDefault(desk);
-    const user = await this.userService.create(request, false);
-    user.organization = desk.organization;
-    user.roles.push({
-      role: roleDefault,
-      assignedAt: new Date(),
-      assignedBy: userCurrent,
-    });
-
-    await user.save();
-
-    return UserMapper.toCreateDto(user);
-  }
-
-  async createRole(
-    id: string,
-    request: CreateRoleOrganizationRequestDto,
-    user: UserDocument,
-  ): Promise<CreateRoleOrganizationResponseDto> {
-    const role = new this.roleOrganizationModel();
-    const organization = await this.organizationModel.findById(id).exec();
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    role.organization = organization;
-    role.owner = user;
-    role.permissions = request.permissions;
-    await role.save();
-
-    return {
-      id: role._id,
-    };
+  async deleteAccount(
+    organization: OrganizationDocument,
+    account: AccountDocument,
+  ) {
+    await this.organizationModel.updateOne(
+      { _id: organization._id },
+      { $pull: { clearing: { account: account._id } } },
+    );
   }
 }

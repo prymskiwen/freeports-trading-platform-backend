@@ -11,10 +11,15 @@ import {
   RoleClearer,
   RoleClearerDocument,
 } from 'src/schema/role/role-clearer.schema';
-import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
+import {
+  PermissionDesk,
+  PermissionOrganization,
+} from 'src/schema/role/enum/permission.enum';
 import { Role, RoleDocument, ROLE_DEFAULT } from 'src/schema/role/role.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
+import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
+import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
 
 @Injectable()
 export class RoleService {
@@ -29,7 +34,7 @@ export class RoleService {
     private roleDeskModel: Model<RoleDeskDocument>,
   ) {}
 
-  async findById(id: string): Promise<RoleDocument> {
+  async getById(id: string): Promise<RoleDocument> {
     return await this.roleModel.findById(id).exec();
   }
 
@@ -60,9 +65,58 @@ export class RoleService {
       .exec();
   }
 
+  async createRoleOrganization(
+    organization: OrganizationDocument,
+    request: CreateRoleOrganizationRequestDto,
+    user: UserDocument,
+  ): Promise<RoleOrganizationDocument> {
+    const role = new this.roleOrganizationModel();
+
+    role.organization = organization;
+    role.owner = user;
+    role.permissions = request.permissions;
+    await role.save();
+
+    return role;
+  }
+
+  async createRoleDeskDefault(
+    desk: DeskDocument,
+    user: UserDocument,
+    persist = true,
+  ): Promise<RoleDeskDocument> {
+    const role = new this.roleDeskModel();
+
+    role.name = ROLE_DEFAULT;
+    role.desk = desk;
+    role.owner = user;
+    role.permissions.push(PermissionDesk.Default);
+
+    if (persist) {
+      await role.save();
+    }
+
+    return role;
+  }
+
   async getRoleDeskDefault(desk: DeskDocument): Promise<RoleDeskDocument> {
     return await this.roleDeskModel
       .findOne({ desk: desk, name: ROLE_DEFAULT })
       .exec();
+  }
+
+  async createRoleDesk(
+    desk: DeskDocument,
+    request: CreateRoleDeskRequestDto,
+    user: UserDocument,
+  ): Promise<RoleDeskDocument> {
+    const role = new this.roleDeskModel();
+
+    role.desk = desk;
+    role.owner = user;
+    role.permissions = request.permissions;
+    await role.save();
+
+    return role;
   }
 }

@@ -12,7 +12,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -24,16 +23,12 @@ import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception
 import { OrganizationService } from './organization.service';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { Permissions } from '../auth/decorator/permissions.decorator';
-import { CreateRoleOrganizationResponseDto } from './dto/create-role-organization-response.dto';
-import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
 import {
   PermissionClearer,
   PermissionOrganization,
 } from 'src/schema/role/enum/permission.enum';
-import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
-import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 import { CreateOrganizationResponseDto } from './dto/create-organization-response.dto';
 import { CreateOrganizationRequestDto } from './dto/create-organization-request.dto';
 import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
@@ -173,64 +168,5 @@ export class OrganizationController {
       totalResult[0]?.total || 0,
       organizationDtos,
     );
-  }
-
-  // TODO: move to User
-  @Post('desk/:id/manager')
-  @ApiOperation({ summary: 'Create desk manager' })
-  @ApiCreatedResponse({
-    description: 'Successfully registered desk manager id',
-    type: CreateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Desk has not been found',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
-  createDeskPermissionManager(
-    @Param('id', ParseObjectIdPipe) id: string,
-    @Body() request: CreateUserRequestDto,
-    @CurrentUser() user: UserDocument,
-  ): Promise<CreateUserResponseDto> {
-    return this.organizationService.createDeskManager(id, request, user);
-  }
-
-  // TODO: move to role
-  @Post(':id/role')
-  @Permissions(PermissionOrganization.RoleCreate)
-  @ApiOperation({ summary: 'Create organization role' })
-  @ApiCreatedResponse({
-    description: 'Successfully created organization role id',
-    type: CreateRoleOrganizationResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization has not been found',
-    type: ExceptionDto,
-  })
-  createRole(
-    @Param('id', ParseObjectIdPipe) id: string,
-    @Body() request: CreateRoleOrganizationRequestDto,
-    @CurrentUser() user: UserDocument,
-  ): Promise<CreateRoleOrganizationResponseDto> {
-    return this.organizationService.createRole(id, request, user);
   }
 }

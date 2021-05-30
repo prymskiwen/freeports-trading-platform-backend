@@ -33,6 +33,7 @@ import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import {
   PermissionClearer,
+  PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/enum/permission.enum';
 import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
@@ -45,15 +46,17 @@ import { OrganizationService } from '../organization/organization.service';
 import { RoleService } from '../role/role.service';
 import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
+import { DeskService } from '../desk/desk.service';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/organization')
 @ApiBearerAuth()
 export class UserController {
   constructor(
-    private readonly userService: UserService,
+    private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
+    private readonly userService: UserService,
   ) {}
 
   @Post(':organizationId/manager')
@@ -95,7 +98,6 @@ export class UserController {
     );
     const user = await this.userService.create(request, false);
 
-    user.organization = organization;
     user.roles.push({
       role: roleDefault,
       assignedAt: new Date(),
@@ -199,5 +201,55 @@ export class UserController {
       totalResult[0]?.total || 0,
       userDtos,
     );
+  }
+
+  @Post(':organizationId/desk/:deskId/manager')
+  @Permissions(
+    PermissionOrganization.DeskManagerCreate,
+    PermissionDesk.CoworkerCreate,
+  )
+  @ApiTags('organization', 'desk')
+  @ApiOperation({ summary: 'Create desk manager' })
+  @ApiCreatedResponse({
+    description: 'Successfully registered desk manager id',
+    type: CreateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Desk has not been found',
+    type: ExceptionDto,
+  })
+  async createDeskPermissionManager(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Body() request: CreateUserRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (!organization || !desk || desk.organization !== organization) {
+      throw new NotFoundException();
+    }
+
+    const roleDefault = await this.roleService.getRoleDeskDefault(desk);
+    const user = await this.userService.create(request, false);
+
+    user.roles.push({
+      role: roleDefault,
+      assignedAt: new Date(),
+      assignedBy: userCurrent,
+    });
+
+    await user.save();
+
+    return UserMapper.toCreateDto(user);
   }
 }
