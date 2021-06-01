@@ -13,7 +13,6 @@ export enum PermissionClearer {
   RoleAssign = 'clearer.role.assign',
 
   OrganizationRead = 'clearer.organization.read',
-  OrganizationList = 'clearer.organization.list',
   OrganizationCreate = 'clearer.organization.create',
   OrganizationUpdate = 'clearer.organization.update',
   OrganizationDisable = 'clearer.organization.disable',

@@ -147,7 +147,7 @@ export class OrganizationController {
   }
 
   @Get()
-  @Permissions(PermissionClearer.OrganizationList)
+  @Permissions(PermissionClearer.OrganizationRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get organization list' })
   @ApiPaginationResponse(GetOrganizationResponseDto)
