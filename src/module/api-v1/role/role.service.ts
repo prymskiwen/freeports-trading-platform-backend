@@ -12,6 +12,7 @@ import {
   RoleClearerDocument,
 } from 'src/schema/role/role-clearer.schema';
 import {
+  PermissionClearer,
   PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/enum/permission.enum';
@@ -20,6 +21,12 @@ import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
 import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
 import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
+import { CreateRoleClearerRequestDto } from './dto/create-role-clearer-request.dto';
+import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
+import {
+  RoleDeskMulti,
+  RoleDeskMultiDocument,
+} from 'src/schema/role/role-desk-multi.schema';
 
 @Injectable()
 export class RoleService {
@@ -32,10 +39,47 @@ export class RoleService {
     private roleOrganizationModel: Model<RoleOrganizationDocument>,
     @InjectModel(RoleDesk.name)
     private roleDeskModel: Model<RoleDeskDocument>,
+    @InjectModel(RoleDeskMulti.name)
+    private roleDeskMultiModel: Model<RoleDeskMultiDocument>,
   ) {}
 
   async getById(id: string): Promise<RoleDocument> {
     return await this.roleModel.findById(id).exec();
+  }
+
+  async createRoleClearerDefault(
+    user: UserDocument,
+    persist = true,
+  ): Promise<RoleClearerDocument> {
+    const role = new this.roleClearerModel();
+
+    role.name = ROLE_DEFAULT;
+    role.permissions.push(PermissionClearer.Default);
+    role.owner = user;
+
+    if (persist) {
+      await role.save();
+    }
+
+    return role;
+  }
+
+  async getRoleClearerDefault(): Promise<RoleClearerDocument> {
+    return await this.roleClearerModel.findOne({ name: ROLE_DEFAULT }).exec();
+  }
+
+  async createRoleClearer(
+    request: CreateRoleClearerRequestDto,
+    user: UserDocument,
+  ): Promise<RoleClearerDocument> {
+    const role = new this.roleClearerModel();
+
+    role.name = request.name;
+    role.permissions = request.permissions;
+    role.owner = user;
+    await role.save();
+
+    return role;
   }
 
   async createRoleOrganizationDefault(
@@ -46,9 +90,9 @@ export class RoleService {
     const role = new this.roleOrganizationModel();
 
     role.name = ROLE_DEFAULT;
+    role.permissions.push(PermissionOrganization.Default);
     role.organization = organization;
     role.owner = user;
-    role.permissions.push(PermissionOrganization.Default);
 
     if (persist) {
       await role.save();
@@ -72,9 +116,10 @@ export class RoleService {
   ): Promise<RoleOrganizationDocument> {
     const role = new this.roleOrganizationModel();
 
+    role.name = request.name;
+    role.permissions = request.permissions;
     role.organization = organization;
     role.owner = user;
-    role.permissions = request.permissions;
     await role.save();
 
     return role;
@@ -88,9 +133,9 @@ export class RoleService {
     const role = new this.roleDeskModel();
 
     role.name = ROLE_DEFAULT;
+    role.permissions.push(PermissionDesk.Default);
     role.desk = desk;
     role.owner = user;
-    role.permissions.push(PermissionDesk.Default);
 
     if (persist) {
       await role.save();
@@ -112,9 +157,26 @@ export class RoleService {
   ): Promise<RoleDeskDocument> {
     const role = new this.roleDeskModel();
 
+    role.name = request.name;
+    role.permissions = request.permissions;
     role.desk = desk;
     role.owner = user;
+    await role.save();
+
+    return role;
+  }
+
+  async createRoleDeskMulti(
+    organization: OrganizationDocument,
+    request: CreateRoleDeskMultiRequestDto,
+    user: UserDocument,
+  ): Promise<RoleDeskMultiDocument> {
+    const role = new this.roleDeskMultiModel();
+
+    role.name = request.name;
     role.permissions = request.permissions;
+    role.organization = organization;
+    role.owner = user;
     await role.save();
 
     return role;

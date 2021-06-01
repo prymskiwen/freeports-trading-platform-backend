@@ -50,6 +50,7 @@ import { DeskService } from '../desk/desk.service';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/organization')
+@ApiTags('user')
 @ApiBearerAuth()
 export class UserController {
   constructor(
@@ -58,6 +59,103 @@ export class UserController {
     private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
+
+  @Post('clearer/manager')
+  @Permissions(PermissionClearer.CoworkerCreate)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Create clearer manager' })
+  @ApiCreatedResponse({
+    description: 'Successfully registered clearer manager id',
+    type: CreateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  async createClearerManager(
+    @Body() request: CreateUserRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateUserResponseDto> {
+    const roleDefault = await this.roleService.getRoleClearerDefault();
+    const user = await this.userService.create(request, false);
+
+    user.roles.push({
+      role: roleDefault,
+      assignedAt: new Date(),
+      assignedBy: userCurrent,
+    });
+
+    await user.save();
+
+    return UserMapper.toCreateDto(user);
+  }
+
+  @Patch('clearer/manager/:managerId')
+  @Permissions(PermissionClearer.CoworkerUpdate)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Update clearer manager' })
+  @ApiOkResponse({
+    description: 'Successfully updated clearer manager id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Clearer manager has not been found',
+    type: ExceptionDto,
+  })
+  async updateClearerManager(
+    @Param('managerId', ParseObjectIdPipe) managerId: string,
+    @Body() request: UpdateUserRequestDto,
+  ): Promise<UpdateUserResponseDto> {
+    const manager = await this.userService.getById(managerId);
+
+    if (!manager) {
+      throw new NotFoundException();
+    }
+
+    // TODO: if possible combine with retrieve step to get managers of clearer only
+    if (!(await this.userService.ensureClearer(manager))) {
+      throw new ForbiddenException();
+    }
+
+    await this.userService.update(manager, request);
+
+    return UserMapper.toUpdateDto(manager);
+  }
+
+  @Get('clearer/manager')
+  @Permissions(PermissionClearer.CoworkerRead)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Get clearer manager list' })
+  @ApiPaginationResponse(GetUserResponseDto)
+  async getClearerManagers(
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.userService.getClearerManagersPaginated(pagination);
+
+    const userDtos = paginatedResult.map((user: UserDocument) =>
+      UserMapper.toGetDto(user),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      userDtos,
+    );
+  }
 
   @Post(':organizationId/manager')
   @Permissions(
@@ -226,7 +324,7 @@ export class UserController {
     description: 'Desk has not been found',
     type: ExceptionDto,
   })
-  async createDeskPermissionManager(
+  async createDeskManager(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Body() request: CreateUserRequestDto,
@@ -251,5 +349,100 @@ export class UserController {
     await user.save();
 
     return UserMapper.toCreateDto(user);
+  }
+
+  @Patch(':organizationId/desk/:deskId/manager/:managerId')
+  @Permissions(
+    PermissionOrganization.DeskManagerUpdate,
+    PermissionDesk.CoworkerUpdate,
+  )
+  @ApiTags('organization', 'desk')
+  @ApiOperation({ summary: 'Update desk manager' })
+  @ApiOkResponse({
+    description: 'Successfully updated desk manager id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Desk manager has not been found',
+    type: ExceptionDto,
+  })
+  async updateDeskManager(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('managerId', ParseObjectIdPipe) managerId: string,
+    @Body() request: UpdateUserRequestDto,
+  ): Promise<UpdateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (!organization || !desk || desk.organization !== organization) {
+      throw new NotFoundException();
+    }
+
+    const manager = await this.userService.getById(managerId);
+
+    if (!manager) {
+      throw new NotFoundException();
+    }
+
+    // TODO: if possible combine with retrieve step to get managers of deskId only
+    if (!(await this.userService.ensureDesk(manager, desk))) {
+      throw new ForbiddenException();
+    }
+
+    await this.userService.update(manager, request);
+
+    return UserMapper.toUpdateDto(manager);
+  }
+
+  @Get(':organizationId/desk/:deskId/manager')
+  @Permissions(
+    PermissionOrganization.DeskManagerRead,
+    PermissionDesk.CoworkerRead,
+  )
+  @ApiTags('organization', 'desk')
+  @ApiOperation({ summary: 'Get desk manager list' })
+  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Desk has not been found',
+    type: ExceptionDto,
+  })
+  async getDeskManagers(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (!organization || !desk || desk.organization !== organization) {
+      throw new NotFoundException();
+    }
+
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.userService.getDeskManagersPaginated(desk, pagination);
+
+    const userDtos = paginatedResult.map((user: UserDocument) =>
+      UserMapper.toGetDto(user),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      userDtos,
+    );
   }
 }

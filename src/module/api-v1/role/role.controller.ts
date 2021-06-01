@@ -24,6 +24,7 @@ import { CreateRoleResponseDto } from './dto/create-role-response.dto';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
 import {
+  PermissionClearer,
   PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/enum/permission.enum';
@@ -34,9 +35,12 @@ import { RoleMapper } from './mapper/role.mapper';
 import { OrganizationService } from '../organization/organization.service';
 import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
 import { DeskService } from '../desk/desk.service';
+import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
+import { CreateRoleClearerRequestDto } from './dto/create-role-clearer-request.dto';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/organization')
+@ApiTags('role')
 @ApiBearerAuth()
 export class RoleController {
   constructor(
@@ -44,6 +48,35 @@ export class RoleController {
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
   ) {}
+
+  @Post('clearer/role')
+  @Permissions(PermissionClearer.RoleCreate)
+  @ApiTags('organization')
+  @ApiOperation({ summary: 'Create clearer role' })
+  @ApiCreatedResponse({
+    description: 'Successfully created clearer role id',
+    type: CreateRoleResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  async createRoleClearer(
+    @Body() request: CreateRoleClearerRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateRoleResponseDto> {
+    const role = await this.roleService.createRoleClearer(request, userCurrent);
+
+    return RoleMapper.toCreateDto(role);
+  }
 
   @Post(':organizationId/role')
   @Permissions(PermissionOrganization.RoleCreate)
@@ -77,6 +110,46 @@ export class RoleController {
     }
 
     const role = await this.roleService.createRoleOrganization(
+      organization,
+      request,
+      userCurrent,
+    );
+
+    return RoleMapper.toCreateDto(role);
+  }
+
+  @Post(':organizationId/role-multi')
+  @Permissions(PermissionOrganization.RoleCreate)
+  @ApiTags('organization')
+  @ApiOperation({ summary: 'Create multi-desk role' })
+  @ApiCreatedResponse({
+    description: 'Successfully created multi-desk role id',
+    type: CreateRoleResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  async createRoleDeskMulti(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Body() request: CreateRoleDeskMultiRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateRoleResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.createRoleDeskMulti(
       organization,
       request,
       userCurrent,

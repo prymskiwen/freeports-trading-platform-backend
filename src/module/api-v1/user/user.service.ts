@@ -9,9 +9,14 @@ import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { RoleOrganization } from 'src/schema/role/role-organization.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
-import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
+import {
+  PermissionClearer,
+  PermissionDesk,
+  PermissionOrganization,
+} from 'src/schema/role/enum/permission.enum';
 import { ROLE_DEFAULT } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
+import { RoleClearer } from 'src/schema/role/role-clearer.schema';
 
 @Injectable()
 export class UserService {
@@ -25,6 +30,12 @@ export class UserService {
     return await this.userModel.findOne({ 'personal.email': email }).exec();
   }
 
+  async ensureClearer(user: UserDocument): Promise<boolean> {
+    const userPermissions: string[] = await user.get('permissions');
+
+    return userPermissions.includes(PermissionClearer.Default);
+  }
+
   async ensureOrganization(
     user: UserDocument,
     organization: OrganizationDocument,
@@ -33,6 +44,16 @@ export class UserService {
     const permissionDefault = PermissionOrganization.Default.replace(
       '#organizationId#',
       organization.id,
+    );
+
+    return userPermissions.includes(permissionDefault);
+  }
+
+  async ensureDesk(user: UserDocument, desk: DeskDocument): Promise<boolean> {
+    const userPermissions: string[] = await user.get('permissions');
+    const permissionDefault = PermissionDesk.Default.replace(
+      '#deskId#',
+      desk.id,
     );
 
     return userPermissions.includes(permissionDefault);
@@ -72,6 +93,67 @@ export class UserService {
     return user;
   }
 
+  async getClearerManagersPaginated(
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'roles.role',
+          foreignField: '_id',
+          as: 'user_roles',
+        },
+      },
+      {
+        $match: {
+          $and: [
+            { 'user_roles.kind': RoleClearer.name },
+            { 'user_roles.name': ROLE_DEFAULT },
+          ],
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          $or: [
+            {
+              'personal.nickname': {
+                $regex: '.*' + search + '.*',
+                $options: 'i',
+              },
+            },
+            {
+              'personal.email': { $regex: '.*' + search + '.*', $options: 'i' },
+            },
+          ],
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.userModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+  }
+
   async getOrganizationManagersPaginated(
     organization: OrganizationDocument,
     pagination: PaginationRequest,
@@ -95,7 +177,6 @@ export class UserService {
       {
         $match: {
           $and: [
-            { organization: organization._id },
             { 'user_roles.kind': RoleOrganization.name },
             { 'user_roles.name': ROLE_DEFAULT },
             { 'user_roles.organization': organization._id },
