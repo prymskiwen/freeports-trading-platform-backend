@@ -51,7 +51,7 @@ export class RoleController {
 
   @Post('clearer/role')
   @Permissions(PermissionClearer.RoleCreate)
-  @ApiTags('organization')
+  @ApiTags('clearer')
   @ApiOperation({ summary: 'Create clearer role' })
   @ApiCreatedResponse({
     description: 'Successfully created clearer role id',
