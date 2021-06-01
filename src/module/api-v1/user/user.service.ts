@@ -65,9 +65,11 @@ export class UserService {
   ): Promise<UserDocument> {
     const user = new this.userModel();
 
-    user.personal.email = request.email;
-    user.personal.nickname = request.nickname;
-    user.personal.password = await bcrypt.hash(request.password, 13);
+    user.personal = {
+      email: request.email,
+      nickname: request.nickname,
+      password: await bcrypt.hash(request.password, 13),
+    };
 
     if (persist) {
       await user.save();
