@@ -11,6 +11,6 @@ Rules-Requires-Root: no
 
 Package: freeports-trading-platform-backend
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},nodejs (>= 14)
 Description: <insert up to 60 chars description>
  <insert long description, indented with spaces>

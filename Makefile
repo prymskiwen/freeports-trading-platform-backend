@@ -13,7 +13,7 @@ build:
 install: node_modules
 	## Copy static files
 	mkdir -p $(DESTDIR)$(STATIC)/$(PROJECT)/
-	cp -R dist/* $(DESTDIR)$(STATIC)/$(PROJECT)/
+	cp -R dist/* node_modules $(DESTDIR)$(STATIC)/$(PROJECT)/
 	## Copy config template
 	mkdir -p $(DESTDIR)/etc/$(PROJECT)
 	cp .env $(DESTDIR)/etc/$(PROJECT).conf

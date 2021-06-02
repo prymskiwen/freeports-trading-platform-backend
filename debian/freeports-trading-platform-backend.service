@@ -6,8 +6,8 @@ After=network.target mongod@scan.service
 EnvironmentFile=/etc/freeports-trading-platform/backend.conf
 Type=simple
 User=freeports
-ExecStart=/usr/bin/node /usr/share/hug-home-backend/app.js
-WorkingDirectory=/usr/share/hug-home-backend
+ExecStart=/usr/bin/node /usr/share/freeports-trading-platform/backend/main.js
+WorkingDirectory=/usr/share/freeports-trading-platform/backend
 Restart=on-failure
 
 [Install]
