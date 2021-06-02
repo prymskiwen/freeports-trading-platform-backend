@@ -16,7 +16,12 @@ import {
   PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/enum/permission.enum';
-import { Role, RoleDocument, ROLE_DEFAULT } from 'src/schema/role/role.schema';
+import {
+  Role,
+  RoleDocument,
+  ROLE_ADMIN_INITIAL,
+  ROLE_DEFAULT,
+} from 'src/schema/role/role.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
 import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
@@ -66,6 +71,39 @@ export class RoleService {
 
   async getRoleClearerDefault(): Promise<RoleClearerDocument> {
     return await this.roleClearerModel.findOne({ name: ROLE_DEFAULT }).exec();
+  }
+
+  async createRoleClearerInitial(
+    user: UserDocument,
+    persist = true,
+  ): Promise<RoleClearerDocument> {
+    const role = new this.roleClearerModel();
+
+    role.name = ROLE_ADMIN_INITIAL;
+    role.permissions = [
+      PermissionClearer.CoworkerRead,
+      PermissionClearer.CoworkerCreate,
+      PermissionClearer.CoworkerUpdate,
+      PermissionClearer.CoworkerDisable,
+
+      PermissionClearer.RoleRead,
+      PermissionClearer.RoleCreate,
+      PermissionClearer.RoleUpdate,
+      PermissionClearer.RoleDelete,
+      PermissionClearer.RoleAssign,
+
+      PermissionClearer.OrganizationRead,
+      PermissionClearer.OrganizationCreate,
+      PermissionClearer.OrganizationUpdate,
+      PermissionClearer.OrganizationDisable,
+    ];
+    role.owner = user;
+
+    if (persist) {
+      await role.save();
+    }
+
+    return role;
   }
 
   async createRoleClearer(
