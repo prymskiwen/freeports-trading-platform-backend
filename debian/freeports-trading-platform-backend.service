@@ -1,0 +1,14 @@
+[Unit]
+Description=@Freeports Trading Platform Backend
+After=network.target mongod@scan.service
+
+[Service]
+EnvironmentFile=/etc/freeports-trading-platform/backend.conf
+Type=simple
+User=freeports
+ExecStart=/usr/bin/node /usr/share/hug-home-backend/app.js
+WorkingDirectory=/usr/share/hug-home-backend
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
