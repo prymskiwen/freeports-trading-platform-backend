@@ -36,3 +36,6 @@ lerna-debug.log*
 # Config
 /.env.local
 /.env.dev
+
+# Package manager (we use yarn)
+/.package-lock.json
