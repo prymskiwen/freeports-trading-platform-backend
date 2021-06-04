@@ -6,4 +6,5 @@ export enum ErrorType {
   TokenExpired = 'TOKEN_EXPIRED',
   TokenWrong = 'TOKEN_WRONG',
   ParameterMissed = 'PARAMETER_MISSED',
+  ValueExists = 'VALUE_EXISTS',
 }

@@ -1,3 +1,4 @@
+import { OTPSecretAlreadySet } from './../../../exeption/otp-secret-already-set.exception';
 import { TwoFactorAuthenticationCodeDto } from './dto/twoFactorAuthenticationCode.dto';
 import { Invalid2faCodeException } from '../../../exeption/invalid-2fa-code.exception';
 import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
@@ -65,9 +66,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async register(@Res() response: Response, @Req() request: RequestWithUser) {
-    const { otpauthUrl } = await this.authService.generateTwoFactorAuthenticationSecret(request.user);
-    response.set({'Content-Type': 'image/png'})
-    return this.authService.pipeQrCodeStream(response, otpauthUrl);
+    if (request.user.twoFactorAuthenticationSecret) {
+      throw new OTPSecretAlreadySet()
+    }
+      const { otpauthUrl } = await this.authService.generateTwoFactorAuthenticationSecret(request.user);
+      response.set({'Content-Type': 'image/png'})
+      return this.authService.pipeQrCodeStream(response, otpauthUrl);
+    
   }
 
   @Post('/2fa/authenticate')
