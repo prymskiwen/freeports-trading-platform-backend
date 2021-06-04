@@ -17,6 +17,8 @@ install: node_modules
 	## Copy config template
 	mkdir -p $(DESTDIR)/etc/$(PROJECT)
 	cp .env $(DESTDIR)/etc/$(PROJECT).conf
+	## Copy nginx sample
+	cp debian/nginx-proxy debian/nginx-common $(DESTDIR)/etc/$(PROJECT)
 
 clean:
 	rm -rf dist/ node_modules/
