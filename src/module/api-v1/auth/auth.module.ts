@@ -1,3 +1,4 @@
+import { JwtTwoFactorStrategy } from './strategy/jwt-two-factor.strategy';
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -22,7 +23,7 @@ import { UserModule } from '../user/user.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, JwtTwoFactorStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

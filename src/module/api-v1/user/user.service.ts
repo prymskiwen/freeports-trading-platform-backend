@@ -281,4 +281,9 @@ export class UserService {
       },
     ]);
   }
+
+  async setTwoFactorAuthenticationSecret(user: UserDocument, secret: string) {
+    user.twoFactorAuthenticationSecret = secret;
+    await user.save()
+  }
 }

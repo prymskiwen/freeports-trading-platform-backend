@@ -38,6 +38,9 @@ export class User {
 
   @Prop()
   commission?: number;
+
+  @Prop()
+  twoFactorAuthenticationSecret?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

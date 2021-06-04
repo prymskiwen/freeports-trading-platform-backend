@@ -11,6 +11,9 @@ import { InvalidTokenException } from 'src/exeption/invalid-token.exception';
 import { ExpiredTokenException } from 'src/exeption/expired-token.exception';
 import { UserService } from '../user/user.service';
 import { UserMapper } from '../user/mapper/user.mapper';
+import { authenticator } from 'otplib';
+import { toFileStream } from 'qrcode';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -29,9 +32,24 @@ export class AuthService {
         name: user.personal.nickname,
         email: user.personal.email,
         refresh: false,
+        isSecondFactorAuthenticated: false
       }),
     };
   }
+
+  async login2FA(user: UserDocument): Promise<LoginResponseDto> {
+    return {
+      user: UserMapper.toGetDto(user),
+      token: this.generateAuthToken({
+        sub: user.id,
+        name: user.personal.nickname,
+        email: user.personal.email,
+        refresh: false,
+        isSecondFactorAuthenticated: true
+      }),
+    };
+  }
+
 
   public generateAuthToken(payload: JwtPayload): TokenDto {
     const tokenType = this.authConfig.type;
@@ -80,5 +98,29 @@ export class AuthService {
     } catch (error) {
       return { valid: false };
     }
+  }
+
+  public async generateTwoFactorAuthenticationSecret(user: UserDocument) {
+    const secret = authenticator.generateSecret();
+ 
+    const otpauthUrl = authenticator.keyuri(user.personal.email, this.authConfig['TWO_FACTOR_AUTHENTICATION_APP_NAME'], secret);
+ 
+    await this.userService.setTwoFactorAuthenticationSecret(user, secret);
+ 
+    return {
+      secret,
+      otpauthUrl
+    }
+  }
+
+  public isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode: string, user: UserDocument) {
+    return authenticator.verify({
+      token: twoFactorAuthenticationCode,
+      secret: user.twoFactorAuthenticationSecret
+    })
+  }
+
+  public async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
+    return toFileStream(stream, otpauthUrl);
   }
 }
