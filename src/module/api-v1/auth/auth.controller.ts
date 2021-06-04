@@ -4,6 +4,7 @@ import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiOkResponse,
@@ -62,14 +63,16 @@ export class AuthController {
 
   @Post('/2fa/generate')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async register(@Res() response: Response, @Req() request: RequestWithUser) {
     const { otpauthUrl } = await this.authService.generateTwoFactorAuthenticationSecret(request.user);
- 
+    response.set({'Content-Type': 'image/png'})
     return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
 
   @Post('/2fa/authenticate')
   @ApiOperation({ summary: 'Sign in 2fa', description: 'Validate 2fa code' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async authenticate(
     @Req() request: RequestWithUser,
