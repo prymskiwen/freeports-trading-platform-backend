@@ -1,4 +1,6 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { TwoFactorAuthenticationCodeDto } from './dto/twoFactorAuthenticationCode.dto';
+import { Invalid2faCodeException } from '../../../exeption/invalid-2fa-code.exception';
+import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
@@ -20,6 +22,9 @@ import { ValidateTokenRequestDto } from './dto/validate-token-request.dto';
 import { ValidateTokenResponseDto } from './dto/validate-token-response.dto';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from './decorator/current-user.decorator';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
+import RequestWithUser from './requestWithUser.interface';
+import { Response } from 'express';
 
 @Controller('api/v1/auth')
 @ApiTags('auth')
@@ -52,6 +57,33 @@ export class AuthController {
     @CurrentUser() user: UserDocument,
   ): Promise<LoginResponseDto> {
     return this.authService.login(user);
+  }
+
+
+  @Post('/2fa/generate')
+  @UseGuards(JwtAuthGuard)
+  async register(@Res() response: Response, @Req() request: RequestWithUser) {
+    const { otpauthUrl } = await this.authService.generateTwoFactorAuthenticationSecret(request.user);
+ 
+    return this.authService.pipeQrCodeStream(response, otpauthUrl);
+  }
+
+  @Post('/2fa/authenticate')
+  @ApiOperation({ summary: 'Sign in 2fa', description: 'Validate 2fa code' })
+  @UseGuards(JwtAuthGuard)
+  async authenticate(
+    @Req() request: RequestWithUser,
+    @Body() { twoFactorAuthenticationCode } : TwoFactorAuthenticationCodeDto
+  ) {
+    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+      twoFactorAuthenticationCode, request.user
+    );
+    if (!isCodeValid) {
+      throw new Invalid2faCodeException();
+    }
+ 
+    return this.authService.login2FA(request.user);
+ 
   }
 
   @Post('/token/refresh')
