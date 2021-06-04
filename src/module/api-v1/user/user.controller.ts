@@ -26,7 +26,6 @@ import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.de
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
@@ -47,8 +46,9 @@ import { RoleService } from '../role/role.service';
 import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import { DeskService } from '../desk/desk.service';
+import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
 @ApiTags('user')
 @ApiBearerAuth()

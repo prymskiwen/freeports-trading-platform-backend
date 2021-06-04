@@ -22,7 +22,6 @@ import { CreateDeskResponseDto } from './dto/create-desk-response.dto';
 import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { DeskService } from './desk.service';
 import { OrganizationService } from '../organization/organization.service';
@@ -30,8 +29,9 @@ import { DeskMapper } from './mapper/desk.mapper';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { RoleService } from '../role/role.service';
+import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
 @ApiBearerAuth()
 export class DeskController {

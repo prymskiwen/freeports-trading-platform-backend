@@ -44,8 +44,9 @@ import { RoleService } from '../role/role.service';
 import { OrganizationMapper } from './mapper/organization.mapper';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
+import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
 @ApiBearerAuth()
 export class OrganizationController {

@@ -28,7 +28,6 @@ import {
   PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/enum/permission.enum';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from './role.service';
 import { RoleMapper } from './mapper/role.mapper';
@@ -37,8 +36,9 @@ import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
 import { DeskService } from '../desk/desk.service';
 import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
 import { CreateRoleClearerRequestDto } from './dto/create-role-clearer-request.dto';
+import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
 @ApiTags('role')
 @ApiBearerAuth()
