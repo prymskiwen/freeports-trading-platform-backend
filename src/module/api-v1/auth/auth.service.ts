@@ -34,6 +34,7 @@ export class AuthService {
         refresh: false,
         isSecondFactorAuthenticated: false
       }),
+      isOTPDefined: user.twoFactorAuthenticationSecret? true: false
     };
   }
 
@@ -47,6 +48,7 @@ export class AuthService {
         refresh: false,
         isSecondFactorAuthenticated: true
       }),
+      isOTPDefined: user.twoFactorAuthenticationSecret? true: false
     };
   }
 

@@ -4,4 +4,5 @@ import { TokenDto } from './token.dto';
 export class LoginResponseDto {
   user: GetUserResponseDto;
   token: TokenDto;
+  isOTPDefined: boolean;
 }
