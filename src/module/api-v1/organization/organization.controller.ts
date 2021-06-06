@@ -38,7 +38,6 @@ import { GetOrganizationResponseDto } from './dto/get-organization-response.dto'
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from '../role/role.service';
 import { OrganizationMapper } from './mapper/organization.mapper';

@@ -53,16 +53,17 @@ export class AuthService {
   }
 
   public generateAuthToken(payload: JwtPayload): TokenDto {
+    const payloadNoExp = this.stripExpiresIn(payload);
     const tokenType = this.authConfig.type;
     const accessTokenExpires = this.authConfig.access_expires_in;
     const refreshTokenExpires = this.authConfig.refresh_expires_in;
     const accessToken = this.jwtService.sign(
-      { ...payload, refresh: false },
-      { expiresIn: accessTokenExpires },
+      { ...payloadNoExp, refresh: false },
+      { expiresIn: accessTokenExpires, mutatePayload: true },
     );
     const refreshToken = this.jwtService.sign(
-      { ...payload, refresh: true },
-      { expiresIn: refreshTokenExpires },
+      { ...payloadNoExp, refresh: true },
+      { expiresIn: refreshTokenExpires, mutatePayload: true },
     );
 
     return {
@@ -129,5 +130,12 @@ export class AuthService {
 
   public async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
     return toFileStream(stream, otpauthUrl);
+  }
+
+  private stripExpiresIn(payload: JwtPayload) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { exp, ...rest } = payload;
+
+    return rest;
   }
 }

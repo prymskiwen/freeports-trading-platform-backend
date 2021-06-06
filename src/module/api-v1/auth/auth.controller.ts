@@ -91,6 +91,7 @@ export class AuthController {
       twoFactorAuthenticationCode,
       request.user,
     );
+
     if (!isCodeValid) {
       throw new Invalid2faCodeException();
     }

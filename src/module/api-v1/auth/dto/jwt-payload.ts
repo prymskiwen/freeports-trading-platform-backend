@@ -4,4 +4,6 @@ export interface JwtPayload {
   email: string;
   refresh: boolean;
   isSecondFactorAuthenticated?: boolean;
+  exp?: string;
+  iat?: string;
 }
