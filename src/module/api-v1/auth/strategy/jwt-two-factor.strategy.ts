@@ -6,6 +6,7 @@ import { ConfigType } from '@nestjs/config';
 import { JwtPayload } from '../dto/jwt-payload';
 import authenticationConfig from 'src/config/auth.config';
 import { UserService } from '../../user/user.service';
+import { WrongTokenException } from 'src/exeption/wrong-token.exception';
 
 @Injectable()
 export class JwtTwoFactorStrategy extends PassportStrategy(
@@ -25,15 +26,20 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
   }
 
   async validate(payload: JwtPayload) {
+    if (!payload.isSecondFactorAuthenticated) {
+      throw new InvalidCredentialsException();
+    }
+
+    if (payload.refresh) {
+      throw new WrongTokenException();
+    }
+
     const user = await this.userService.getByEmail(payload.email);
 
     if (!user) {
       throw new InvalidCredentialsException();
     }
 
-    if (!payload.isSecondFactorAuthenticated) {
-      throw new InvalidCredentialsException();
-    }
     return user;
   }
 }
