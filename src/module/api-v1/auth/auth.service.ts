@@ -105,7 +105,7 @@ export class AuthService {
     const secret = authenticator.generateSecret();
     const otpauthUrl = authenticator.keyuri(
       user.personal.email,
-      this.authConfig['TWO_FACTOR_AUTHENTICATION_APP_NAME'],
+      this.authConfig.authentication_two_factor_app_name,
       secret,
     );
 
