@@ -63,6 +63,24 @@ export class AuthController {
   @Post('/2fa/generate')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiCreatedResponse({
+    description: 'Returns qr code image',
+    content: {
+      'image/png': {
+        schema: {
+          type: 'file',
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
+    type: ExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
   async register(
     @CurrentUser() userCurrent: UserDocument,
     @Res() response: Response,
@@ -86,12 +104,24 @@ export class AuthController {
   @ApiOperation({ summary: 'Sign in 2fa', description: 'Validate 2fa code' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
   async authenticate(
-    @Body() { twoFactorAuthenticationCode }: TwoFactorAuthenticationCodeDto,
+    @Body() { code }: TwoFactorAuthenticationCodeDto,
     @CurrentUser() userCurrent: UserDocument,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode,
+      code,
       userCurrent,
     );
 
