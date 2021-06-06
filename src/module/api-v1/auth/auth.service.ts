@@ -32,9 +32,9 @@ export class AuthService {
         name: user.personal.nickname,
         email: user.personal.email,
         refresh: false,
-        isSecondFactorAuthenticated: false
+        isSecondFactorAuthenticated: false,
       }),
-      isOTPDefined: user.twoFactorAuthenticationSecret? true: false
+      isOTPDefined: user.twoFactorAuthenticationSecret ? true : false,
     };
   }
 
@@ -46,12 +46,11 @@ export class AuthService {
         name: user.personal.nickname,
         email: user.personal.email,
         refresh: false,
-        isSecondFactorAuthenticated: true
+        isSecondFactorAuthenticated: true,
       }),
-      isOTPDefined: user.twoFactorAuthenticationSecret? true: false
+      isOTPDefined: user.twoFactorAuthenticationSecret ? true : false,
     };
   }
-
 
   public generateAuthToken(payload: JwtPayload): TokenDto {
     const tokenType = this.authConfig.type;
@@ -104,22 +103,28 @@ export class AuthService {
 
   public async generateTwoFactorAuthenticationSecret(user: UserDocument) {
     const secret = authenticator.generateSecret();
- 
-    const otpauthUrl = authenticator.keyuri(user.personal.email, this.authConfig['TWO_FACTOR_AUTHENTICATION_APP_NAME'], secret);
- 
+    const otpauthUrl = authenticator.keyuri(
+      user.personal.email,
+      this.authConfig['TWO_FACTOR_AUTHENTICATION_APP_NAME'],
+      secret,
+    );
+
     await this.userService.setTwoFactorAuthenticationSecret(user, secret);
- 
+
     return {
       secret,
-      otpauthUrl
-    }
+      otpauthUrl,
+    };
   }
 
-  public isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode: string, user: UserDocument) {
+  public isTwoFactorAuthenticationCodeValid(
+    twoFactorAuthenticationCode: string,
+    user: UserDocument,
+  ) {
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
-      secret: user.twoFactorAuthenticationSecret
-    })
+      secret: user.twoFactorAuthenticationSecret,
+    });
   }
 
   public async pipeQrCodeStream(stream: Response, otpauthUrl: string) {

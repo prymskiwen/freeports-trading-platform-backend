@@ -61,18 +61,22 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-
   @Post('/2fa/generate')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async register(@Res() response: Response, @Req() request: RequestWithUser) {
     if (request.user.twoFactorAuthenticationSecret) {
-      throw new OTPSecretAlreadySet()
+      throw new OTPSecretAlreadySet();
     }
-      const { otpauthUrl } = await this.authService.generateTwoFactorAuthenticationSecret(request.user);
-      response.set({'Content-Type': 'image/png'})
-      return this.authService.pipeQrCodeStream(response, otpauthUrl);
-    
+    const {
+      otpauthUrl,
+    } = await this.authService.generateTwoFactorAuthenticationSecret(
+      request.user,
+    );
+
+    response.set({ 'Content-Type': 'image/png' });
+
+    return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
 
   @Post('/2fa/authenticate')
@@ -81,17 +85,17 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async authenticate(
     @Req() request: RequestWithUser,
-    @Body() { twoFactorAuthenticationCode } : TwoFactorAuthenticationCodeDto
+    @Body() { twoFactorAuthenticationCode }: TwoFactorAuthenticationCodeDto,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode, request.user
+      twoFactorAuthenticationCode,
+      request.user,
     );
     if (!isCodeValid) {
       throw new Invalid2faCodeException();
     }
- 
+
     return this.authService.login2FA(request.user);
- 
   }
 
   @Post('/token/refresh')
