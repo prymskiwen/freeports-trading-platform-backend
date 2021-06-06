@@ -28,7 +28,7 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
     credentials: true,
     allowedHeaders:
-      'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe',
+      'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe, Authorization, X-Authorization',
   });
 
   apiConfs.forEach((apiConf) => {
