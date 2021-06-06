@@ -1,7 +1,7 @@
 import { OTPSecretAlreadySet } from './../../../exeption/otp-secret-already-set.exception';
 import { TwoFactorAuthenticationCodeDto } from './dto/twoFactorAuthenticationCode.dto';
 import { Invalid2faCodeException } from '../../../exeption/invalid-2fa-code.exception';
-import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
@@ -25,7 +25,6 @@ import { ValidateTokenResponseDto } from './dto/validate-token-response.dto';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
-import RequestWithUser from './requestWithUser.interface';
 import { Response } from 'express';
 
 @Controller('api/v1/auth')
@@ -64,14 +63,18 @@ export class AuthController {
   @Post('/2fa/generate')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async register(@Res() response: Response, @Req() request: RequestWithUser) {
-    if (request.user.twoFactorAuthenticationSecret) {
+  async register(
+    @CurrentUser() userCurrent: UserDocument,
+    @Res() response: Response,
+  ) {
+    if (userCurrent.twoFactorAuthenticationSecret) {
       throw new OTPSecretAlreadySet();
     }
+
     const {
       otpauthUrl,
     } = await this.authService.generateTwoFactorAuthenticationSecret(
-      request.user,
+      userCurrent,
     );
 
     response.set({ 'Content-Type': 'image/png' });
@@ -84,19 +87,19 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async authenticate(
-    @Req() request: RequestWithUser,
     @Body() { twoFactorAuthenticationCode }: TwoFactorAuthenticationCodeDto,
+    @CurrentUser() userCurrent: UserDocument,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       twoFactorAuthenticationCode,
-      request.user,
+      userCurrent,
     );
 
     if (!isCodeValid) {
       throw new Invalid2faCodeException();
     }
 
-    return this.authService.login2FA(request.user);
+    return this.authService.login2FA(userCurrent);
   }
 
   @Post('/token/refresh')
