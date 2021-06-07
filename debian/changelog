@@ -1,3 +1,9 @@
+freeports-trading-platform-backend (0.9.6) unstable; urgency=medium
+
+  * New dev rebuild.
+
+ -- Olivier Bitsch <olivier.b@iabsis.com>  Wed, 02 Jun 2021 10:32:11 +0200
+
 freeports-trading-platform-backend (0.9.5) unstable; urgency=medium
 
   * New dev rebuild.
