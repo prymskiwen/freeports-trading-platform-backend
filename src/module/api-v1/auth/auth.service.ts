@@ -134,7 +134,7 @@ export class AuthService {
 
   private stripExpiresIn(payload: JwtPayload) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { exp, ...rest } = payload;
+    const { exp, iat, ...rest } = payload;
 
     return rest;
   }
