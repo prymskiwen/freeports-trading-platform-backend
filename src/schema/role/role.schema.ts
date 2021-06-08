@@ -8,7 +8,7 @@ import { RoleDesk } from './role-desk.schema';
 import { RoleDeskMulti } from './role-desk-multi.schema';
 
 export const ROLE_DEFAULT = '_default';
-export const ROLE_ADMIN_INITIAL = 'Clearer initial administrator';
+export const ROLE_ADMIN = 'Administrator';
 
 export type RoleDocument = Role & Document;
 

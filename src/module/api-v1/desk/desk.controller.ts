@@ -75,6 +75,7 @@ export class DeskController {
     const desk = await this.deskService.create(organization, request);
 
     await this.roleService.createRoleDeskDefault(desk, userCurrent);
+    await this.roleService.createRoleDeskAdmin(desk, userCurrent);
 
     return DeskMapper.toCreateDto(desk);
   }

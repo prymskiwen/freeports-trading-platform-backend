@@ -76,6 +76,10 @@ export class OrganizationController {
       organization,
       userCurrent,
     );
+    await this.roleService.createRoleOrganizationAdmin(
+      organization,
+      userCurrent,
+    );
 
     return OrganizationMapper.toCreateDto(organization);
   }

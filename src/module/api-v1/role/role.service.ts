@@ -19,7 +19,7 @@ import {
 import {
   Role,
   RoleDocument,
-  ROLE_ADMIN_INITIAL,
+  ROLE_ADMIN,
   ROLE_DEFAULT,
 } from 'src/schema/role/role.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
@@ -32,6 +32,10 @@ import {
   RoleDeskMulti,
   RoleDeskMultiDocument,
 } from 'src/schema/role/role-desk-multi.schema';
+import { UpdateRoleClearerRequestDto } from './dto/update-role-clearer-request.dto';
+import { UpdateRoleOrganizationRequestDto } from './dto/update-role-organization-request.dto';
+import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto';
+import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
 
 @Injectable()
 export class RoleService {
@@ -48,9 +52,9 @@ export class RoleService {
     private roleDeskMultiModel: Model<RoleDeskMultiDocument>,
   ) {}
 
-  async getById(id: string): Promise<RoleDocument> {
-    return await this.roleModel.findById(id).exec();
-  }
+  // async getById(id: string): Promise<RoleDocument> {
+  //   return await this.roleModel.findById(id).exec();
+  // }
 
   async createRoleClearerDefault(
     user: UserDocument,
@@ -73,13 +77,14 @@ export class RoleService {
     return await this.roleClearerModel.findOne({ name: ROLE_DEFAULT }).exec();
   }
 
-  async createRoleClearerInitial(
+  async createRoleClearerAdmin(
     user: UserDocument,
     persist = true,
   ): Promise<RoleClearerDocument> {
     const role = new this.roleClearerModel();
 
-    role.name = ROLE_ADMIN_INITIAL;
+    role.name = ROLE_ADMIN;
+    // TODO: PermissionClearer iteration should be there
     role.permissions = [
       PermissionClearer.CoworkerRead,
       PermissionClearer.CoworkerCreate,
@@ -96,6 +101,15 @@ export class RoleService {
       PermissionClearer.OrganizationCreate,
       PermissionClearer.OrganizationUpdate,
       PermissionClearer.OrganizationDisable,
+
+      PermissionClearer.OrganizationAccountRead,
+      PermissionClearer.OrganizationAccountCreate,
+      PermissionClearer.OrganizationAccountDelete,
+
+      PermissionClearer.OrganizationManagerRead,
+      PermissionClearer.OrganizationManagerCreate,
+      PermissionClearer.OrganizationManagerUpdate,
+      PermissionClearer.OrganizationManagerDisable,
     ];
     role.owner = user;
 
@@ -116,6 +130,29 @@ export class RoleService {
     role.permissions = request.permissions;
     role.owner = user;
     await role.save();
+
+    return role;
+  }
+
+  async getRoleClearerList(): Promise<RoleClearerDocument[]> {
+    return await this.roleClearerModel.find().exec();
+  }
+
+  async getRoleClearerById(id: string): Promise<RoleClearerDocument> {
+    return await this.roleClearerModel.findById(id).exec();
+  }
+
+  async updateRoleClearer(
+    role: RoleClearerDocument,
+    request: UpdateRoleClearerRequestDto,
+    persist = true,
+  ): Promise<RoleClearerDocument> {
+    role.name = request.name;
+    role.permissions = request.permissions;
+
+    if (persist) {
+      await role.save();
+    }
 
     return role;
   }
@@ -147,6 +184,58 @@ export class RoleService {
       .exec();
   }
 
+  async createRoleOrganizationAdmin(
+    organization: OrganizationDocument,
+    user: UserDocument,
+    persist = true,
+  ): Promise<RoleOrganizationDocument> {
+    const role = new this.roleOrganizationModel();
+
+    role.name = ROLE_ADMIN;
+    // TODO: PermissionOrganization iteration should be there
+    role.permissions = [
+      PermissionOrganization.CoworkerRead,
+      PermissionOrganization.CoworkerCreate,
+      PermissionOrganization.CoworkerUpdate,
+      PermissionOrganization.CoworkerDisable,
+
+      PermissionOrganization.OrganizationRead,
+      PermissionOrganization.OrganizationUpdate,
+
+      PermissionOrganization.RoleRead,
+      PermissionOrganization.RoleCreate,
+      PermissionOrganization.RoleUpdate,
+      PermissionOrganization.RoleDelete,
+      PermissionOrganization.RoleAssign,
+
+      PermissionOrganization.DeskRead,
+      PermissionOrganization.DeskCreate,
+      PermissionOrganization.DeskUpdate,
+      PermissionOrganization.DeskDelete,
+
+      PermissionOrganization.DeskManagerRead,
+      PermissionOrganization.DeskManagerCreate,
+      PermissionOrganization.DeskManagerUpdate,
+      PermissionOrganization.DeskManagerDisable,
+    ];
+    role.organization = organization;
+    role.owner = user;
+
+    if (persist) {
+      await role.save();
+    }
+
+    return role;
+  }
+
+  async getRoleOrganizationAdmin(
+    organization: OrganizationDocument,
+  ): Promise<RoleOrganizationDocument> {
+    return await this.roleOrganizationModel
+      .findOne({ organization: organization, name: ROLE_ADMIN })
+      .exec();
+  }
+
   async createRoleOrganization(
     organization: OrganizationDocument,
     request: CreateRoleOrganizationRequestDto,
@@ -159,6 +248,43 @@ export class RoleService {
     role.organization = organization;
     role.owner = user;
     await role.save();
+
+    return role;
+  }
+
+  async getRoleOrganizationList(
+    organization: OrganizationDocument,
+  ): Promise<RoleOrganizationDocument[]> {
+    return await this.roleOrganizationModel
+      .find({
+        organization: organization,
+      })
+      .exec();
+  }
+
+  async getRoleOrganizationById(
+    roleId: string,
+    organization: OrganizationDocument,
+  ): Promise<RoleOrganizationDocument> {
+    return await this.roleOrganizationModel
+      .findOne({
+        _id: roleId,
+        organization: organization,
+      })
+      .exec();
+  }
+
+  async updateRoleOrganization(
+    role: RoleOrganizationDocument,
+    request: UpdateRoleOrganizationRequestDto,
+    persist = true,
+  ): Promise<RoleOrganizationDocument> {
+    role.name = request.name;
+    role.permissions = request.permissions;
+
+    if (persist) {
+      await role.save();
+    }
 
     return role;
   }
@@ -188,6 +314,43 @@ export class RoleService {
       .exec();
   }
 
+  async createRoleDeskAdmin(
+    desk: DeskDocument,
+    user: UserDocument,
+    persist = true,
+  ): Promise<RoleDeskDocument> {
+    const role = new this.roleDeskModel();
+
+    role.name = ROLE_ADMIN;
+    // TODO: PermissionDesk iteration should be there
+    role.permissions = [
+      PermissionDesk.CoworkerRead,
+      PermissionDesk.CoworkerCreate,
+      PermissionDesk.CoworkerUpdate,
+      PermissionDesk.CoworkerDisable,
+
+      PermissionDesk.RoleRead,
+      PermissionDesk.RoleCreate,
+      PermissionDesk.RoleUpdate,
+      PermissionDesk.RoleDelete,
+      PermissionDesk.RoleAssign,
+    ];
+    role.desk = desk;
+    role.owner = user;
+
+    if (persist) {
+      await role.save();
+    }
+
+    return role;
+  }
+
+  async getRoleDeskAdmin(desk: DeskDocument): Promise<RoleDeskDocument> {
+    return await this.roleDeskModel
+      .findOne({ desk: desk, name: ROLE_ADMIN })
+      .exec();
+  }
+
   async createRoleDesk(
     desk: DeskDocument,
     request: CreateRoleDeskRequestDto,
@@ -204,6 +367,41 @@ export class RoleService {
     return role;
   }
 
+  async getRoleDeskList(desk: DeskDocument): Promise<RoleDeskDocument[]> {
+    return await this.roleDeskModel
+      .find({
+        desk: desk,
+      })
+      .exec();
+  }
+
+  async getRoleDeskById(
+    roleId: string,
+    desk: DeskDocument,
+  ): Promise<RoleDeskDocument> {
+    return await this.roleDeskModel
+      .findOne({
+        _id: roleId,
+        desk: desk,
+      })
+      .exec();
+  }
+
+  async updateRoleDesk(
+    role: RoleDeskDocument,
+    request: UpdateRoleDeskRequestDto,
+    persist = true,
+  ): Promise<RoleDeskDocument> {
+    role.name = request.name;
+    role.permissions = request.permissions;
+
+    if (persist) {
+      await role.save();
+    }
+
+    return role;
+  }
+
   async createRoleDeskMulti(
     organization: OrganizationDocument,
     request: CreateRoleDeskMultiRequestDto,
@@ -216,6 +414,43 @@ export class RoleService {
     role.organization = organization;
     role.owner = user;
     await role.save();
+
+    return role;
+  }
+
+  async getRoleDeskMultiList(
+    organization: OrganizationDocument,
+  ): Promise<RoleDeskMultiDocument[]> {
+    return await this.roleDeskMultiModel
+      .find({
+        organization: organization,
+      })
+      .exec();
+  }
+
+  async getRoleDeskMultiById(
+    roleId: string,
+    organization: OrganizationDocument,
+  ): Promise<RoleDeskMultiDocument> {
+    return await this.roleDeskMultiModel
+      .findOne({
+        _id: roleId,
+        organization: organization,
+      })
+      .exec();
+  }
+
+  async updateRoleDeskMulti(
+    role: RoleDeskMultiDocument,
+    request: UpdateRoleDeskMultiRequestDto,
+    persist = true,
+  ): Promise<RoleDeskMultiDocument> {
+    role.name = request.name;
+    role.permissions = request.permissions;
+
+    if (persist) {
+      await role.save();
+    }
 
     return role;
   }

@@ -63,7 +63,7 @@ export class InitController {
     );
     const user = await this.userService.create(request.user, false);
     const roleDefault = await this.roleService.createRoleClearerDefault(user);
-    const roleAll = await this.roleService.createRoleClearerInitial(user);
+    const roleAll = await this.roleService.createRoleClearerAdmin(user);
 
     user.roles.push({
       role: roleDefault,

@@ -202,6 +202,28 @@ export class UserController {
       assignedBy: userCurrent,
     });
 
+    const [
+      { totalResult },
+    ] = await this.userService.getOrganizationManagersPaginated(organization, {
+      skip: 0,
+      limit: 1,
+      order: {},
+      params: {},
+    });
+
+    // set as admin if first manager of the organization
+    if (!(totalResult[0]?.total || 0)) {
+      const roleAdmin = await this.roleService.getRoleOrganizationAdmin(
+        organization,
+      );
+
+      user.roles.push({
+        role: roleAdmin,
+        assignedAt: new Date(),
+        assignedBy: userCurrent,
+      });
+    }
+
     await user.save();
 
     return UserMapper.toCreateDto(user);
@@ -345,6 +367,27 @@ export class UserController {
       assignedAt: new Date(),
       assignedBy: userCurrent,
     });
+
+    const [{ totalResult }] = await this.userService.getDeskManagersPaginated(
+      desk,
+      {
+        skip: 0,
+        limit: 1,
+        order: {},
+        params: {},
+      },
+    );
+
+    // set as admin if first manager of the desk
+    if (!(totalResult[0]?.total || 0)) {
+      const roleAdmin = await this.roleService.getRoleDeskAdmin(desk);
+
+      user.roles.push({
+        role: roleAdmin,
+        assignedAt: new Date(),
+        assignedBy: userCurrent,
+      });
+    }
 
     await user.save();
 
