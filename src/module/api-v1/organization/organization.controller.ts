@@ -25,10 +25,6 @@ import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
-import {
-  PermissionClearer,
-  PermissionOrganization,
-} from 'src/schema/role/enum/permission.enum';
 import { CreateOrganizationResponseDto } from './dto/create-organization-response.dto';
 import { CreateOrganizationRequestDto } from './dto/create-organization-request.dto';
 import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
@@ -44,6 +40,10 @@ import { OrganizationMapper } from './mapper/organization.mapper';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
+import {
+  PermissionClearer,
+  PermissionOrganization,
+} from 'src/schema/role/permission.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -55,7 +55,7 @@ export class OrganizationController {
   ) {}
 
   @Post()
-  @Permissions(PermissionClearer.OrganizationCreate)
+  @Permissions(PermissionClearer.organizationCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create organization' })
   @ApiCreatedResponse({
@@ -86,8 +86,8 @@ export class OrganizationController {
 
   @Patch(':organizationId')
   @Permissions(
-    PermissionClearer.OrganizationUpdate,
-    PermissionOrganization.OrganizationUpdate,
+    PermissionClearer.organizationUpdate,
+    PermissionOrganization.organizationUpdate,
   )
   @ApiTags('clearer', 'organization')
   @ApiOperation({ summary: 'Update organization' })
@@ -124,8 +124,8 @@ export class OrganizationController {
 
   @Get(':organizationId')
   @Permissions(
-    PermissionClearer.OrganizationRead,
-    PermissionOrganization.OrganizationRead,
+    PermissionClearer.organizationRead,
+    PermissionOrganization.organizationRead,
   )
   @ApiTags('clearer', 'organization')
   @ApiOperation({ summary: 'Get organization details' })
@@ -151,7 +151,7 @@ export class OrganizationController {
   }
 
   @Get()
-  @Permissions(PermissionClearer.OrganizationRead)
+  @Permissions(PermissionClearer.organizationRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get organization list' })
   @ApiPaginationResponse(GetOrganizationResponseDto)

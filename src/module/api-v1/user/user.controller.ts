@@ -30,11 +30,6 @@ import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
-import {
-  PermissionClearer,
-  PermissionDesk,
-  PermissionOrganization,
-} from 'src/schema/role/enum/permission.enum';
 import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
 import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
@@ -47,6 +42,11 @@ import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import { DeskService } from '../desk/desk.service';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
+import {
+  PermissionClearer,
+  PermissionDesk,
+  PermissionOrganization,
+} from 'src/schema/role/permission.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -61,7 +61,7 @@ export class UserController {
   ) {}
 
   @Post('clearer/manager')
-  @Permissions(PermissionClearer.CoworkerCreate)
+  @Permissions(PermissionClearer.coworkerCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create clearer manager' })
   @ApiCreatedResponse({
@@ -95,7 +95,7 @@ export class UserController {
   }
 
   @Patch('clearer/manager/:managerId')
-  @Permissions(PermissionClearer.CoworkerUpdate)
+  @Permissions(PermissionClearer.coworkerUpdate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Update clearer manager' })
   @ApiOkResponse({
@@ -135,7 +135,7 @@ export class UserController {
   }
 
   @Get('clearer/manager')
-  @Permissions(PermissionClearer.CoworkerRead)
+  @Permissions(PermissionClearer.coworkerRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer manager list' })
   @ApiPaginationResponse(GetUserResponseDto)
@@ -159,8 +159,8 @@ export class UserController {
 
   @Post(':organizationId/manager')
   @Permissions(
-    PermissionClearer.OrganizationManagerCreate,
-    PermissionOrganization.CoworkerCreate,
+    PermissionClearer.organizationManagerCreate,
+    PermissionOrganization.coworkerCreate,
   )
   @ApiTags('clearer', 'organization')
   @ApiOperation({ summary: 'Create organization manager' })
@@ -231,8 +231,8 @@ export class UserController {
 
   @Patch(':organizationId/manager/:managerId')
   @Permissions(
-    PermissionClearer.OrganizationManagerUpdate,
-    PermissionOrganization.CoworkerUpdate,
+    PermissionClearer.organizationManagerUpdate,
+    PermissionOrganization.coworkerUpdate,
   )
   @ApiTags('clearer', 'organization')
   @ApiOperation({ summary: 'Update organization manager' })
@@ -281,8 +281,8 @@ export class UserController {
 
   @Get(':organizationId/manager')
   @Permissions(
-    PermissionClearer.OrganizationManagerRead,
-    PermissionOrganization.CoworkerRead,
+    PermissionClearer.organizationManagerRead,
+    PermissionOrganization.coworkerRead,
   )
   @ApiTags('clearer', 'organization')
   @ApiOperation({ summary: 'Get organization manager list' })
@@ -325,8 +325,8 @@ export class UserController {
 
   @Post(':organizationId/desk/:deskId/manager')
   @Permissions(
-    PermissionOrganization.DeskManagerCreate,
-    PermissionDesk.CoworkerCreate,
+    PermissionOrganization.deskManagerCreate,
+    PermissionDesk.coworkerCreate,
   )
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Create desk manager' })
@@ -396,8 +396,8 @@ export class UserController {
 
   @Patch(':organizationId/desk/:deskId/manager/:managerId')
   @Permissions(
-    PermissionOrganization.DeskManagerUpdate,
-    PermissionDesk.CoworkerUpdate,
+    PermissionOrganization.deskManagerUpdate,
+    PermissionDesk.coworkerUpdate,
   )
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Update desk manager' })
@@ -448,8 +448,8 @@ export class UserController {
 
   @Get(':organizationId/desk/:deskId/manager')
   @Permissions(
-    PermissionOrganization.DeskManagerRead,
-    PermissionDesk.CoworkerRead,
+    PermissionOrganization.deskManagerRead,
+    PermissionDesk.coworkerRead,
   )
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Get desk manager list' })

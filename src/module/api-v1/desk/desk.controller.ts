@@ -21,7 +21,6 @@ import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { CreateDeskResponseDto } from './dto/create-desk-response.dto';
 import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
 import { Permissions } from '../auth/decorator/permissions.decorator';
-import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { DeskService } from './desk.service';
 import { OrganizationService } from '../organization/organization.service';
@@ -30,6 +29,7 @@ import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { RoleService } from '../role/role.service';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
+import { PermissionOrganization } from 'src/schema/role/permission.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -42,7 +42,7 @@ export class DeskController {
   ) {}
 
   @Post(':organizationId/desk')
-  @Permissions(PermissionOrganization.DeskCreate)
+  @Permissions(PermissionOrganization.deskCreate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Create desk' })
   @ApiCreatedResponse({

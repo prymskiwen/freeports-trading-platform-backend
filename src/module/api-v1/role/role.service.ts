@@ -12,11 +12,6 @@ import {
   RoleClearerDocument,
 } from 'src/schema/role/role-clearer.schema';
 import {
-  PermissionClearer,
-  PermissionDesk,
-  PermissionOrganization,
-} from 'src/schema/role/enum/permission.enum';
-import {
   Role,
   RoleDocument,
   ROLE_ADMIN,
@@ -36,6 +31,11 @@ import { UpdateRoleClearerRequestDto } from './dto/update-role-clearer-request.d
 import { UpdateRoleOrganizationRequestDto } from './dto/update-role-organization-request.dto';
 import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto';
 import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
+import {
+  PermissionClearer,
+  PermissionDesk,
+  PermissionOrganization,
+} from 'src/schema/role/permission.helper';
 
 @Injectable()
 export class RoleService {
@@ -63,7 +63,7 @@ export class RoleService {
     const role = new this.roleClearerModel();
 
     role.name = ROLE_DEFAULT;
-    role.permissions.push(PermissionClearer.Default);
+    role.permissions.push(PermissionClearer.default);
     role.owner = user;
 
     if (persist) {
@@ -84,33 +84,10 @@ export class RoleService {
     const role = new this.roleClearerModel();
 
     role.name = ROLE_ADMIN;
-    // TODO: PermissionClearer iteration should be there
-    role.permissions = [
-      PermissionClearer.CoworkerRead,
-      PermissionClearer.CoworkerCreate,
-      PermissionClearer.CoworkerUpdate,
-      PermissionClearer.CoworkerDisable,
-
-      PermissionClearer.RoleRead,
-      PermissionClearer.RoleCreate,
-      PermissionClearer.RoleUpdate,
-      PermissionClearer.RoleDelete,
-      PermissionClearer.RoleAssign,
-
-      PermissionClearer.OrganizationRead,
-      PermissionClearer.OrganizationCreate,
-      PermissionClearer.OrganizationUpdate,
-      PermissionClearer.OrganizationDisable,
-
-      PermissionClearer.OrganizationAccountRead,
-      PermissionClearer.OrganizationAccountCreate,
-      PermissionClearer.OrganizationAccountDelete,
-
-      PermissionClearer.OrganizationManagerRead,
-      PermissionClearer.OrganizationManagerCreate,
-      PermissionClearer.OrganizationManagerUpdate,
-      PermissionClearer.OrganizationManagerDisable,
-    ];
+    // all except default
+    role.permissions = Object.values(PermissionClearer).filter(
+      (v) => v !== PermissionClearer.default,
+    );
     role.owner = user;
 
     if (persist) {
@@ -165,7 +142,7 @@ export class RoleService {
     const role = new this.roleOrganizationModel();
 
     role.name = ROLE_DEFAULT;
-    role.permissions.push(PermissionOrganization.Default);
+    role.permissions.push(PermissionOrganization.default);
     role.organization = organization;
     role.owner = user;
 
@@ -192,32 +169,10 @@ export class RoleService {
     const role = new this.roleOrganizationModel();
 
     role.name = ROLE_ADMIN;
-    // TODO: PermissionOrganization iteration should be there
-    role.permissions = [
-      PermissionOrganization.CoworkerRead,
-      PermissionOrganization.CoworkerCreate,
-      PermissionOrganization.CoworkerUpdate,
-      PermissionOrganization.CoworkerDisable,
-
-      PermissionOrganization.OrganizationRead,
-      PermissionOrganization.OrganizationUpdate,
-
-      PermissionOrganization.RoleRead,
-      PermissionOrganization.RoleCreate,
-      PermissionOrganization.RoleUpdate,
-      PermissionOrganization.RoleDelete,
-      PermissionOrganization.RoleAssign,
-
-      PermissionOrganization.DeskRead,
-      PermissionOrganization.DeskCreate,
-      PermissionOrganization.DeskUpdate,
-      PermissionOrganization.DeskDelete,
-
-      PermissionOrganization.DeskManagerRead,
-      PermissionOrganization.DeskManagerCreate,
-      PermissionOrganization.DeskManagerUpdate,
-      PermissionOrganization.DeskManagerDisable,
-    ];
+    // all except default
+    role.permissions = Object.values(PermissionOrganization).filter(
+      (v) => v !== PermissionOrganization.default,
+    );
     role.organization = organization;
     role.owner = user;
 
@@ -297,7 +252,7 @@ export class RoleService {
     const role = new this.roleDeskModel();
 
     role.name = ROLE_DEFAULT;
-    role.permissions.push(PermissionDesk.Default);
+    role.permissions.push(PermissionDesk.default);
     role.desk = desk;
     role.owner = user;
 
@@ -322,19 +277,10 @@ export class RoleService {
     const role = new this.roleDeskModel();
 
     role.name = ROLE_ADMIN;
-    // TODO: PermissionDesk iteration should be there
-    role.permissions = [
-      PermissionDesk.CoworkerRead,
-      PermissionDesk.CoworkerCreate,
-      PermissionDesk.CoworkerUpdate,
-      PermissionDesk.CoworkerDisable,
-
-      PermissionDesk.RoleRead,
-      PermissionDesk.RoleCreate,
-      PermissionDesk.RoleUpdate,
-      PermissionDesk.RoleDelete,
-      PermissionDesk.RoleAssign,
-    ];
+    // all except default
+    role.permissions = Object.values(PermissionDesk).filter(
+      (v) => v !== PermissionDesk.default,
+    );
     role.desk = desk;
     role.owner = user;
 

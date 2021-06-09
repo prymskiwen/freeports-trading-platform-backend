@@ -9,14 +9,14 @@ import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { RoleOrganization } from 'src/schema/role/role-organization.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
+import { ROLE_DEFAULT } from 'src/schema/role/role.schema';
+import { UpdateUserRequestDto } from './dto/update-user-request.dto';
+import { RoleClearer } from 'src/schema/role/role-clearer.schema';
 import {
   PermissionClearer,
   PermissionDesk,
   PermissionOrganization,
-} from 'src/schema/role/enum/permission.enum';
-import { ROLE_DEFAULT } from 'src/schema/role/role.schema';
-import { UpdateUserRequestDto } from './dto/update-user-request.dto';
-import { RoleClearer } from 'src/schema/role/role-clearer.schema';
+} from 'src/schema/role/permission.helper';
 
 @Injectable()
 export class UserService {
@@ -33,7 +33,7 @@ export class UserService {
   async ensureClearer(user: UserDocument): Promise<boolean> {
     const userPermissions: string[] = await user.get('permissions');
 
-    return userPermissions.includes(PermissionClearer.Default);
+    return userPermissions.includes(PermissionClearer.default);
   }
 
   async ensureOrganization(
@@ -41,7 +41,7 @@ export class UserService {
     organization: OrganizationDocument,
   ): Promise<boolean> {
     const userPermissions: string[] = await user.get('permissions');
-    const permissionDefault = PermissionOrganization.Default.replace(
+    const permissionDefault = PermissionOrganization.default.replace(
       '#organizationId#',
       organization.id,
     );
@@ -51,7 +51,7 @@ export class UserService {
 
   async ensureDesk(user: UserDocument, desk: DeskDocument): Promise<boolean> {
     const userPermissions: string[] = await user.get('permissions');
-    const permissionDefault = PermissionDesk.Default.replace(
+    const permissionDefault = PermissionDesk.default.replace(
       '#deskId#',
       desk.id,
     );

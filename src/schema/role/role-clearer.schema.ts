@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { User } from '../user/user.schema';
-import { PermissionClearer } from './enum/permission.enum';
+import { PermissionClearer } from './permission.helper';
 
 export type RoleClearerDocument = RoleClearer & Document;
 

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PermissionClearer } from 'src/schema/role/enum/permission.enum';
+import { PermissionClearer } from 'src/schema/role/permission.helper';
 
 export class GetRoleClearerResponseDto {
   name: string;

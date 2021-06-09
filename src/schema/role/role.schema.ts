@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
-import { Permission } from './enum/permission.enum';
 import { User } from '../user/user.schema';
 import { RoleClearer } from './role-clearer.schema';
 import { RoleOrganization } from './role-organization.schema';
@@ -35,8 +34,9 @@ export class Role {
   @Prop()
   disabled?: boolean;
 
-  @Prop({ type: [String], enum: Permission })
-  permissions?: Permission[];
+  // TODO: get all permission list if possible
+  @Prop({ type: [String] })
+  permissions?: string[];
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);

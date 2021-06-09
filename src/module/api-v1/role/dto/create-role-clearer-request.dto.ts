@@ -1,5 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty } from 'class-validator';
-import { PermissionClearer } from 'src/schema/role/enum/permission.enum';
+import { PermissionClearer } from 'src/schema/role/permission.helper';
 
 export class CreateRoleClearerRequestDto {
   @IsNotEmpty()
@@ -8,5 +9,6 @@ export class CreateRoleClearerRequestDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsEnum(PermissionClearer, { each: true })
+  @ApiProperty({ type: [String], enum: PermissionClearer })
   permissions: PermissionClearer[];
 }

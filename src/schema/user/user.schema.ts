@@ -48,6 +48,7 @@ export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.virtual('permissions').get(async function () {
   await this.populate('roles.role').execPopulate();
 
+  // TODO: implement multi desk roles parsing
   return this.roles.reduce((prev, role) => {
     return prev.concat(role.get('permissions'));
   }, []);

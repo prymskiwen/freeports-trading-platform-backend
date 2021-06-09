@@ -1,7 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PermissionOrganization } from 'src/schema/role/enum/permission.enum';
+import { PermissionOrganization } from 'src/schema/role/permission.helper';
+
+class GetPermissionOrganizationGroupDto {
+  name: string;
+
+  @ApiProperty({ type: String, enum: PermissionOrganization })
+  code: PermissionOrganization;
+}
 
 export class GetPermissionOrganizationResponseDto {
-  @ApiProperty({ type: [String], enum: PermissionOrganization })
-  permissions?: PermissionOrganization[];
+  name: string;
+
+  @ApiProperty({ type: [GetPermissionOrganizationGroupDto] })
+  permissions: GetPermissionOrganizationGroupDto[];
 }

@@ -27,11 +27,6 @@ import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization
 import { CreateRoleResponseDto } from './dto/create-role-response.dto';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
-import {
-  PermissionClearer,
-  PermissionDesk,
-  PermissionOrganization,
-} from 'src/schema/role/enum/permission.enum';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from './role.service';
 import { RoleMapper } from './mapper/role.mapper';
@@ -50,6 +45,11 @@ import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto'
 import { GetRoleDeskMultiResponseDto } from './dto/get-role-desk-multi-response.dto';
 import { GetRoleDeskResponseDto } from './dto/get-role-desk-response.dto';
 import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
+import {
+  PermissionClearer,
+  PermissionDesk,
+  PermissionOrganization,
+} from 'src/schema/role/permission.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -63,7 +63,7 @@ export class RoleController {
   ) {}
 
   @Get('clearer/role')
-  @Permissions(PermissionClearer.RoleRead)
+  @Permissions(PermissionClearer.roleRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer role list' })
   @ApiOkResponse({ type: [GetRoleClearerResponseDto] })
@@ -83,7 +83,7 @@ export class RoleController {
   }
 
   @Post('clearer/role')
-  @Permissions(PermissionClearer.RoleCreate)
+  @Permissions(PermissionClearer.roleCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create clearer role' })
   @ApiCreatedResponse({
@@ -112,7 +112,7 @@ export class RoleController {
   }
 
   @Patch('clearer/role/:roleId')
-  @Permissions(PermissionClearer.RoleUpdate)
+  @Permissions(PermissionClearer.roleUpdate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Update clearer role' })
   @ApiOkResponse({
@@ -147,7 +147,7 @@ export class RoleController {
   }
 
   @Get(':organizationId/role')
-  @Permissions(PermissionOrganization.RoleRead)
+  @Permissions(PermissionOrganization.roleRead)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get organization role list' })
   @ApiOkResponse({ type: [GetRoleOrganizationResponseDto] })
@@ -183,7 +183,7 @@ export class RoleController {
   }
 
   @Post(':organizationId/role')
-  @Permissions(PermissionOrganization.RoleCreate)
+  @Permissions(PermissionOrganization.roleCreate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Create organization role' })
   @ApiCreatedResponse({
@@ -223,7 +223,7 @@ export class RoleController {
   }
 
   @Patch(':organizationId/role/:roleId')
-  @Permissions(PermissionOrganization.RoleUpdate)
+  @Permissions(PermissionOrganization.roleUpdate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Update organization role' })
   @ApiOkResponse({
@@ -268,7 +268,7 @@ export class RoleController {
   }
 
   @Get(':organizationId/role-multi')
-  @Permissions(PermissionOrganization.RoleRead)
+  @Permissions(PermissionOrganization.roleRead)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get multi-desk role list' })
   @ApiOkResponse({ type: [GetRoleDeskMultiResponseDto] })
@@ -304,7 +304,7 @@ export class RoleController {
   }
 
   @Post(':organizationId/role-multi')
-  @Permissions(PermissionOrganization.RoleCreate)
+  @Permissions(PermissionOrganization.roleCreate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Create multi-desk role' })
   @ApiCreatedResponse({
@@ -344,7 +344,7 @@ export class RoleController {
   }
 
   @Patch(':organizationId/role-multi/:roleId')
-  @Permissions(PermissionOrganization.RoleUpdate)
+  @Permissions(PermissionOrganization.roleUpdate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Update multi-desk role' })
   @ApiOkResponse({
@@ -389,7 +389,7 @@ export class RoleController {
   }
 
   @Get(':organizationId/desk/:deskId/role')
-  @Permissions(PermissionOrganization.RoleRead, PermissionDesk.RoleRead)
+  @Permissions(PermissionOrganization.roleRead, PermissionDesk.roleRead)
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Get desk role list' })
   @ApiOkResponse({ type: [GetRoleDeskResponseDto] })
@@ -427,7 +427,7 @@ export class RoleController {
   }
 
   @Post(':organizationId/desk/:deskId/role')
-  @Permissions(PermissionOrganization.RoleCreate, PermissionDesk.RoleCreate)
+  @Permissions(PermissionOrganization.roleCreate, PermissionDesk.roleCreate)
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Create desk role' })
   @ApiCreatedResponse({
@@ -469,7 +469,7 @@ export class RoleController {
   }
 
   @Patch(':organizationId/desk/:deskId/role/:roleId')
-  @Permissions(PermissionOrganization.RoleUpdate, PermissionDesk.RoleUpdate)
+  @Permissions(PermissionOrganization.roleUpdate, PermissionDesk.roleUpdate)
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Update desk role' })
   @ApiOkResponse({

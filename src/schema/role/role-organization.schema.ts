@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
 import { Organization } from '../organization/organization.schema';
-import { PermissionOrganization } from './enum/permission.enum';
 import { User } from '../user/user.schema';
+import { PermissionOrganization } from './permission.helper';
 
 export type RoleOrganizationDocument = RoleOrganization & Document;
 

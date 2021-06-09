@@ -1,5 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty } from 'class-validator';
-import { PermissionDesk } from 'src/schema/role/enum/permission.enum';
+import { PermissionDesk } from 'src/schema/role/permission.helper';
 
 export class CreateRoleDeskMultiRequestDto {
   @IsNotEmpty()
@@ -8,5 +9,6 @@ export class CreateRoleDeskMultiRequestDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsEnum(PermissionDesk, { each: true })
+  @ApiProperty({ type: [String], enum: PermissionDesk })
   permissions: PermissionDesk[];
 }

@@ -9,10 +9,10 @@ import {
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import {
-  PermissionClearer,
-  PermissionDesk,
-  PermissionOrganization,
-} from 'src/schema/role/enum/permission.enum';
+  PermissionClearerGroup,
+  PermissionDeskGroup,
+  PermissionOrganizationGroup,
+} from 'src/schema/role/permission.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { GetPermissionClearerResponseDto } from './dto/permission/get-permission-clearer-response.dto';
 import { GetPermissionDeskResponseDto } from './dto/permission/get-permission-desk-response.dto';
@@ -26,7 +26,7 @@ export class PermissionController {
   @Get('clearer')
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer permission list' })
-  @ApiOkResponse({ type: GetPermissionClearerResponseDto })
+  @ApiOkResponse({ type: [GetPermissionClearerResponseDto] })
   @ApiUnauthorizedResponse({
     description: 'Not authenticated',
     type: ExceptionDto,
@@ -35,16 +35,14 @@ export class PermissionController {
     description: 'Server error',
     type: ExceptionDto,
   })
-  getPermissionClearer(): GetPermissionClearerResponseDto {
-    return {
-      permissions: Object.values(PermissionClearer),
-    };
+  getPermissionClearer(): GetPermissionClearerResponseDto[] {
+    return PermissionClearerGroup;
   }
 
   @Get('organization')
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get organization permission list' })
-  @ApiOkResponse({ type: GetPermissionOrganizationResponseDto })
+  @ApiOkResponse({ type: [GetPermissionOrganizationResponseDto] })
   @ApiUnauthorizedResponse({
     description: 'Not authenticated',
     type: ExceptionDto,
@@ -53,16 +51,14 @@ export class PermissionController {
     description: 'Server error',
     type: ExceptionDto,
   })
-  getPermissionOrganization(): GetPermissionOrganizationResponseDto {
-    return {
-      permissions: Object.values(PermissionOrganization),
-    };
+  getPermissionOrganization(): GetPermissionOrganizationResponseDto[] {
+    return PermissionOrganizationGroup;
   }
 
   @Get('desk')
   @ApiTags('desk')
   @ApiOperation({ summary: 'Get desk permission list' })
-  @ApiOkResponse({ type: GetPermissionDeskResponseDto })
+  @ApiOkResponse({ type: [GetPermissionDeskResponseDto] })
   @ApiUnauthorizedResponse({
     description: 'Not authenticated',
     type: ExceptionDto,
@@ -71,9 +67,7 @@ export class PermissionController {
     description: 'Server error',
     type: ExceptionDto,
   })
-  getPermissionDesk(): GetPermissionDeskResponseDto {
-    return {
-      permissions: Object.values(PermissionDesk),
-    };
+  getPermissionDesk(): GetPermissionDeskResponseDto[] {
+    return PermissionDeskGroup;
   }
 }

@@ -29,9 +29,9 @@ import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
-import { PermissionClearer } from 'src/schema/role/enum/permission.enum';
 import { OrganizationService } from '../organization/organization.service';
 import { AccountMapper } from './mapper/account.mapper';
+import { PermissionClearer } from 'src/schema/role/permission.helper';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -43,7 +43,7 @@ export class AccountController {
   ) {}
 
   @Post(':organizationId/account')
-  @Permissions(PermissionClearer.OrganizationAccountCreate)
+  @Permissions(PermissionClearer.organizationAccountCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create organization account' })
   @ApiCreatedResponse({
@@ -85,7 +85,7 @@ export class AccountController {
   }
 
   @Delete(':organizationId/account/:accountId')
-  @Permissions(PermissionClearer.OrganizationAccountDelete)
+  @Permissions(PermissionClearer.organizationAccountDelete)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Delete organization account' })
   @ApiOkResponse({

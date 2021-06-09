@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
 import { Organization } from '../organization/organization.schema';
-import { PermissionDesk } from './enum/permission.enum';
 import { User } from '../user/user.schema';
+import { PermissionDesk } from './permission.helper';
 
 export type RoleDeskMultiDocument = RoleDeskMulti & Document;
 
@@ -27,6 +27,7 @@ RoleDeskMultiSchema.pre('save', function () {
 });
 
 RoleDeskMultiSchema.virtual('permissionsParsed').get(function () {
+  // TODO: implement multi desk roles parsing
   return this.permissions.map((permission) => {
     return permission.replace('#id#', this.organization);
   });

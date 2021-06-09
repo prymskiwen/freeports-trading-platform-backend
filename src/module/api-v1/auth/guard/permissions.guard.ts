@@ -3,14 +3,14 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { PERMISSIONS_KEY } from '../decorator/permissions.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { MissedParameterException } from 'src/exeption/missed-parameter.exception';
-import { Permission } from 'src/schema/role/enum/permission.enum';
+import { PermissionAny } from 'src/schema/role/permission.helper';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const permissions = this.reflector.getAllAndOverride<Permission[]>(
+    const permissions = this.reflector.getAllAndOverride<PermissionAny[]>(
       PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
     );
