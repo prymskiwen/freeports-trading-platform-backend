@@ -5,6 +5,7 @@ import { RoleClearer } from './role-clearer.schema';
 import { RoleOrganization } from './role-organization.schema';
 import { RoleDesk } from './role-desk.schema';
 import { RoleDeskMulti } from './role-desk-multi.schema';
+import { PermissionAny } from './permission.helper';
 
 export const ROLE_DEFAULT = '_default';
 export const ROLE_ADMIN = 'Administrator';
@@ -34,9 +35,8 @@ export class Role {
   @Prop()
   disabled?: boolean;
 
-  // TODO: get all permission list if possible
-  @Prop({ type: [String] })
-  permissions?: string[];
+  @Prop({ type: [String], enum: PermissionAny })
+  permissions?: PermissionAny[];
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);

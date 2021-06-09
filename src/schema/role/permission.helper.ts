@@ -1,17 +1,3 @@
-// function iterateGroup(obj: any): Array<string> {
-//   return Object.keys(obj).reduce((prev, key) => {
-//     if (typeof obj[key] === 'object') {
-//       return [...prev, ...iterateGroup(obj[key])];
-//     }
-
-//     if (key === 'code') {
-//       return [...prev, obj[key]];
-//     }
-
-//     return prev;
-//   }, []);
-// }
-
 export const PermissionClearer = {
   default: 'clearer',
 
@@ -345,16 +331,32 @@ export const PermissionDeskGroup = [
   },
 ];
 
+export const PermissionAny = [
+  ...Object.values(PermissionClearer),
+  ...Object.values(PermissionOrganization),
+  ...Object.values(PermissionDesk),
+] as const;
+
 export type PermissionClearer = typeof PermissionClearer[keyof typeof PermissionClearer];
 export type PermissionOrganization = typeof PermissionOrganization[keyof typeof PermissionOrganization];
 export type PermissionDesk = typeof PermissionDesk[keyof typeof PermissionDesk];
-
-export type PermissionAny =
-  | PermissionClearer
-  | PermissionOrganization
-  | PermissionDesk;
+export type PermissionAny = typeof PermissionAny[number];
 
 // TODO: retrieve permissions from group object if it is possible to keep type
 // export const permissionClearer = iterateGroup(PermissionClearerGroup);
 // export const permissionOrganization = iterateGroup(PermissionOrganizationGroup);
 // export const permissionDesk = iterateGroup(PermissionDeskGroup);
+
+// function iterateGroup(obj: any): Array<string> {
+//   return Object.keys(obj).reduce((prev, key) => {
+//     if (typeof obj[key] === 'object') {
+//       return [...prev, ...iterateGroup(obj[key])];
+//     }
+
+//     if (key === 'code') {
+//       return [...prev, obj[key]];
+//     }
+
+//     return prev;
+//   }, []);
+// }
