@@ -61,9 +61,13 @@ export class InitController {
     const organization = await this.organizationService.create(
       request.organization,
     );
+
     const user = await this.userService.create(request.user, false);
     const roleDefault = await this.roleService.createRoleClearerDefault(user);
-    const roleAll = await this.roleService.createRoleClearerAdmin(user);
+    const roleAdmin = await this.roleService.createRoleClearerAdmin(user);
+
+    await this.roleService.createRoleOrganizationDefault(organization, user);
+    await this.roleService.createRoleOrganizationAdmin(organization, user);
 
     user.roles.push({
       role: roleDefault,
@@ -71,7 +75,7 @@ export class InitController {
       assignedBy: user,
     });
     user.roles.push({
-      role: roleAll,
+      role: roleAdmin,
       assignedAt: new Date(),
       assignedBy: user,
     });
