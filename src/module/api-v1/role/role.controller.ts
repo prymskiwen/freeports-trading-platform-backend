@@ -76,6 +76,7 @@ export class RoleController {
 
     return roles.map((role) => {
       return {
+        id: role.id,
         name: role.name,
         permissions: role.permissions,
       };
@@ -176,6 +177,7 @@ export class RoleController {
 
     return roles.map((role) => {
       return {
+        id: role.id,
         name: role.name,
         permissions: role.permissions,
       };
@@ -297,6 +299,7 @@ export class RoleController {
 
     return roles.map((role) => {
       return {
+        id: role.id,
         name: role.name,
         permissions: role.permissions,
       };
@@ -420,6 +423,7 @@ export class RoleController {
 
     return roles.map((role) => {
       return {
+        id: role.id,
         name: role.name,
         permissions: role.permissions,
       };
