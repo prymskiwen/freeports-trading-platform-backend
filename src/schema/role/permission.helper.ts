@@ -157,10 +157,10 @@ export const PermissionOrganization = {
   deskUpdate: 'organization.#organizationId#.desk.update',
   deskDisable: 'organization.#organizationId#.desk.disable',
 
-  deskManagerRead: 'organization.#organizationId#.desk.manager.read',
-  deskManagerCreate: 'organization.#organizationId#.desk.manager.create',
-  deskManagerUpdate: 'organization.#organizationId#.desk.manager.update',
-  deskManagerDisable: 'organization.#organizationId#.desk.manager.disable',
+  deskUserRead: 'organization.#organizationId#.desk.user.read',
+  deskUserCreate: 'organization.#organizationId#.desk.user.create',
+  deskUserUpdate: 'organization.#organizationId#.desk.user.update',
+  deskUserDisable: 'organization.#organizationId#.desk.user.disable',
 } as const;
 
 export const PermissionOrganizationGroup = [
@@ -245,23 +245,23 @@ export const PermissionOrganizationGroup = [
     ],
   },
   {
-    name: 'Desk manager',
+    name: 'Desk user',
     permissions: [
       {
         name: 'Read',
-        code: PermissionOrganization.deskManagerRead,
+        code: PermissionOrganization.deskUserRead,
       },
       {
         name: 'Create',
-        code: PermissionOrganization.deskManagerCreate,
+        code: PermissionOrganization.deskUserCreate,
       },
       {
         name: 'Update',
-        code: PermissionOrganization.deskManagerUpdate,
+        code: PermissionOrganization.deskUserUpdate,
       },
       {
         name: 'Disable',
-        code: PermissionOrganization.deskManagerDisable,
+        code: PermissionOrganization.deskUserDisable,
       },
     ],
   },

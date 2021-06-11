@@ -269,34 +269,6 @@ export class RoleService {
       .exec();
   }
 
-  async createRoleDeskAdmin(
-    desk: DeskDocument,
-    user: UserDocument,
-    persist = true,
-  ): Promise<RoleDeskDocument> {
-    const role = new this.roleDeskModel();
-
-    role.name = ROLE_ADMIN;
-    // all except default
-    role.permissions = Object.values(PermissionDesk).filter(
-      (v) => v !== PermissionDesk.default,
-    );
-    role.desk = desk;
-    role.owner = user;
-
-    if (persist) {
-      await role.save();
-    }
-
-    return role;
-  }
-
-  async getRoleDeskAdmin(desk: DeskDocument): Promise<RoleDeskDocument> {
-    return await this.roleDeskModel
-      .findOne({ desk: desk, name: ROLE_ADMIN })
-      .exec();
-  }
-
   async createRoleDesk(
     desk: DeskDocument,
     request: CreateRoleDeskRequestDto,

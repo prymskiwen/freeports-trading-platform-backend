@@ -9,14 +9,9 @@ import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { RoleOrganization } from 'src/schema/role/role-organization.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
-import { ROLE_DEFAULT } from 'src/schema/role/role.schema';
+import { ROLE_ADMIN, ROLE_DEFAULT } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 import { RoleClearer } from 'src/schema/role/role-clearer.schema';
-import {
-  PermissionClearer,
-  PermissionDesk,
-  PermissionOrganization,
-} from 'src/schema/role/permission.helper';
 
 @Injectable()
 export class UserService {
@@ -30,33 +25,171 @@ export class UserService {
     return await this.userModel.findOne({ 'personal.email': email }).exec();
   }
 
-  async ensureClearer(user: UserDocument): Promise<boolean> {
-    const userPermissions: string[] = await user.get('permissions');
+  async getUserOfClearerById(id: string): Promise<UserDocument> {
+    const users = await this.userModel
+      .aggregate([
+        {
+          $lookup: {
+            from: 'roles',
+            localField: 'roles.role',
+            foreignField: '_id',
+            as: 'user_roles',
+          },
+        },
+        {
+          $match: {
+            $and: [
+              { _id: id },
+              {
+                user_roles: {
+                  $elemMatch: {
+                    kind: RoleClearer.name,
+                    name: ROLE_DEFAULT,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ])
+      .exec();
 
-    return userPermissions.includes(PermissionClearer.default);
+    if (!Array.isArray(users) || users.length !== 1) {
+      return null;
+    }
+
+    return this.userModel.hydrate(users[0]);
   }
 
-  async ensureOrganization(
-    user: UserDocument,
+  async getManagerOfOrganizationById(
+    id: string,
     organization: OrganizationDocument,
-  ): Promise<boolean> {
-    const userPermissions: string[] = await user.get('permissions');
-    const permissionDefault = PermissionOrganization.default.replace(
-      '#organizationId#',
-      organization.id,
-    );
+  ): Promise<UserDocument> {
+    const users = await this.userModel
+      .aggregate([
+        {
+          $lookup: {
+            from: 'roles',
+            localField: 'roles.role',
+            foreignField: '_id',
+            as: 'user_roles',
+          },
+        },
+        {
+          $match: {
+            $and: [
+              { _id: id },
+              {
+                user_roles: {
+                  $all: [
+                    {
+                      $elemMatch: {
+                        kind: RoleOrganization.name,
+                        name: ROLE_DEFAULT,
+                        organization: organization._id,
+                      },
+                    },
+                    {
+                      $elemMatch: {
+                        kind: RoleOrganization.name,
+                        name: ROLE_ADMIN,
+                        organization: organization._id,
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ])
+      .exec();
 
-    return userPermissions.includes(permissionDefault);
+    if (!Array.isArray(users) || users.length !== 1) {
+      return null;
+    }
+
+    return this.userModel.hydrate(users[0]);
   }
 
-  async ensureDesk(user: UserDocument, desk: DeskDocument): Promise<boolean> {
-    const userPermissions: string[] = await user.get('permissions');
-    const permissionDefault = PermissionDesk.default.replace(
-      '#deskId#',
-      desk.id,
-    );
+  async getUserOfOrganizationById(
+    id: string,
+    organization: OrganizationDocument,
+  ): Promise<UserDocument> {
+    const users = await this.userModel
+      .aggregate([
+        {
+          $lookup: {
+            from: 'roles',
+            localField: 'roles.role',
+            foreignField: '_id',
+            as: 'user_roles',
+          },
+        },
+        {
+          $match: {
+            $and: [
+              { _id: id },
+              {
+                user_roles: {
+                  $elemMatch: {
+                    kind: RoleOrganization.name,
+                    name: ROLE_DEFAULT,
+                    organization: organization._id,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ])
+      .exec();
 
-    return userPermissions.includes(permissionDefault);
+    if (!Array.isArray(users) || users.length !== 1) {
+      return null;
+    }
+
+    return this.userModel.hydrate(users[0]);
+  }
+
+  async getUserOfDeskById(
+    id: string,
+    desk: DeskDocument,
+  ): Promise<UserDocument> {
+    const users = await this.userModel
+      .aggregate([
+        {
+          $lookup: {
+            from: 'roles',
+            localField: 'roles.role',
+            foreignField: '_id',
+            as: 'user_roles',
+          },
+        },
+        {
+          $match: {
+            $and: [
+              { _id: id },
+              {
+                user_roles: {
+                  $elemMatch: {
+                    kind: RoleDesk.name,
+                    name: ROLE_DEFAULT,
+                    desk: desk._id,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ])
+      .exec();
+
+    if (!Array.isArray(users) || users.length !== 1) {
+      return null;
+    }
+
+    return this.userModel.hydrate(users[0]);
   }
 
   async create(
@@ -95,7 +228,7 @@ export class UserService {
     return user;
   }
 
-  async getClearerManagersPaginated(
+  async getUserOfClearerPaginated(
     pagination: PaginationRequest,
   ): Promise<any[]> {
     const {
@@ -116,10 +249,12 @@ export class UserService {
       },
       {
         $match: {
-          $and: [
-            { 'user_roles.kind': RoleClearer.name },
-            { 'user_roles.name': ROLE_DEFAULT },
-          ],
+          user_roles: {
+            $elemMatch: {
+              kind: RoleClearer.name,
+              name: ROLE_DEFAULT,
+            },
+          },
         },
       },
     ];
@@ -156,7 +291,7 @@ export class UserService {
     ]);
   }
 
-  async getOrganizationManagersPaginated(
+  async getManagerOfOrganizationPaginated(
     organization: OrganizationDocument,
     pagination: PaginationRequest,
   ): Promise<any[]> {
@@ -178,11 +313,24 @@ export class UserService {
       },
       {
         $match: {
-          $and: [
-            { 'user_roles.kind': RoleOrganization.name },
-            { 'user_roles.name': ROLE_DEFAULT },
-            { 'user_roles.organization': organization._id },
-          ],
+          user_roles: {
+            $all: [
+              {
+                $elemMatch: {
+                  kind: RoleOrganization.name,
+                  name: ROLE_DEFAULT,
+                  organization: organization._id,
+                },
+              },
+              {
+                $elemMatch: {
+                  kind: RoleOrganization.name,
+                  name: ROLE_ADMIN,
+                  organization: organization._id,
+                },
+              },
+            ],
+          },
         },
       },
     ];
@@ -219,7 +367,72 @@ export class UserService {
     ]);
   }
 
-  async getDeskManagersPaginated(
+  async getUserOfOrganizationPaginated(
+    organization: OrganizationDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'roles.role',
+          foreignField: '_id',
+          as: 'user_roles',
+        },
+      },
+      {
+        $match: {
+          user_roles: {
+            $elemMatch: {
+              kind: RoleOrganization.name,
+              name: ROLE_DEFAULT,
+              organization: organization._id,
+            },
+          },
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          $or: [
+            {
+              'personal.nickname': {
+                $regex: '.*' + search + '.*',
+                $options: 'i',
+              },
+            },
+            {
+              'personal.email': { $regex: '.*' + search + '.*', $options: 'i' },
+            },
+          ],
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.userModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+  }
+
+  async getUserOfDeskPaginated(
     desk: DeskDocument,
     pagination: PaginationRequest,
   ): Promise<any[]> {
@@ -241,11 +454,13 @@ export class UserService {
       },
       {
         $match: {
-          $and: [
-            { 'user_roles.kind': RoleDesk.name },
-            { 'user_roles.name': ROLE_DEFAULT },
-            { 'user_roles.desk': desk._id },
-          ],
+          user_roles: {
+            $elemMatch: {
+              kind: RoleDesk.name,
+              name: ROLE_DEFAULT,
+              desk: desk._id,
+            },
+          },
         },
       },
     ];
