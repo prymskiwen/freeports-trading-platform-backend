@@ -23,7 +23,7 @@ async function bootstrap() {
   );
   app.enableCors({
     origin: corsConf.origin,
-    methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
+    methods: 'GET,PUT,POST,PATCH,DELETE,UPDATE,OPTIONS',
     preflightContinue: false,
     optionsSuccessStatus: 204,
     credentials: true,
