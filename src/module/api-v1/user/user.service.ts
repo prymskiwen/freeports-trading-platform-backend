@@ -9,7 +9,11 @@ import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { RoleOrganization } from 'src/schema/role/role-organization.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
-import { ROLE_ADMIN, ROLE_DEFAULT } from 'src/schema/role/role.schema';
+import {
+  RoleDocument,
+  ROLE_ADMIN,
+  ROLE_DEFAULT,
+} from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 import { RoleClearer } from 'src/schema/role/role-clearer.schema';
 
@@ -45,6 +49,7 @@ export class UserService {
                   $elemMatch: {
                     kind: RoleClearer.name,
                     name: ROLE_DEFAULT,
+                    system: true,
                   },
                 },
               },
@@ -87,6 +92,7 @@ export class UserService {
                         kind: RoleOrganization.name,
                         name: ROLE_DEFAULT,
                         organization: organization._id,
+                        system: true,
                       },
                     },
                     {
@@ -94,6 +100,7 @@ export class UserService {
                         kind: RoleOrganization.name,
                         name: ROLE_ADMIN,
                         organization: organization._id,
+                        system: false,
                       },
                     },
                   ],
@@ -136,6 +143,7 @@ export class UserService {
                     kind: RoleOrganization.name,
                     name: ROLE_DEFAULT,
                     organization: organization._id,
+                    system: true,
                   },
                 },
               },
@@ -176,6 +184,7 @@ export class UserService {
                     kind: RoleDesk.name,
                     name: ROLE_DEFAULT,
                     desk: desk._id,
+                    system: true,
                   },
                 },
               },
@@ -253,6 +262,7 @@ export class UserService {
             $elemMatch: {
               kind: RoleClearer.name,
               name: ROLE_DEFAULT,
+              system: true,
             },
           },
         },
@@ -320,6 +330,7 @@ export class UserService {
                   kind: RoleOrganization.name,
                   name: ROLE_DEFAULT,
                   organization: organization._id,
+                  system: true,
                 },
               },
               {
@@ -327,6 +338,7 @@ export class UserService {
                   kind: RoleOrganization.name,
                   name: ROLE_ADMIN,
                   organization: organization._id,
+                  system: false,
                 },
               },
             ],
@@ -394,6 +406,7 @@ export class UserService {
               kind: RoleOrganization.name,
               name: ROLE_DEFAULT,
               organization: organization._id,
+              system: true,
             },
           },
         },
@@ -459,8 +472,60 @@ export class UserService {
               kind: RoleDesk.name,
               name: ROLE_DEFAULT,
               desk: desk._id,
+              system: true,
             },
           },
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          $or: [
+            {
+              'personal.nickname': {
+                $regex: '.*' + search + '.*',
+                $options: 'i',
+              },
+            },
+            {
+              'personal.email': { $regex: '.*' + search + '.*', $options: 'i' },
+            },
+          ],
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.userModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+  }
+
+  async getUserOfRolePaginated(
+    role: RoleDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          roles: { $elemMatch: { role: role._id } },
         },
       },
     ];

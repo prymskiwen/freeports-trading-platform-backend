@@ -563,4 +563,169 @@ export class UserController {
       userDtos,
     );
   }
+
+  @Get('clearer/role/:roleId')
+  @Permissions(PermissionClearer.roleRead)
+  @ApiTags('clearer', 'role')
+  @ApiOperation({ summary: 'Get clearer role user list' })
+  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiNotFoundResponse({
+    description: 'Organization role has not been found',
+    type: ExceptionDto,
+  })
+  async getRoleClearerUserList(
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+    const role = await this.roleService.getRoleClearerById(roleId);
+
+    if (!role) {
+      throw new NotFoundException();
+    }
+
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+
+    const userDtos = paginatedResult.map((user: UserDocument) =>
+      UserMapper.toGetDto(user),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      userDtos,
+    );
+  }
+
+  @Get(':organizationId/role/:roleId')
+  @Permissions(PermissionOrganization.roleRead)
+  @ApiTags('organization', 'role')
+  @ApiOperation({ summary: 'Get organization role user list' })
+  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiNotFoundResponse({
+    description: 'Organization role has not been found',
+    type: ExceptionDto,
+  })
+  async getRoleOrganizationUserList(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleOrganizationById(
+      roleId,
+      organization,
+    );
+
+    if (!role) {
+      throw new NotFoundException();
+    }
+
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+
+    const userDtos = paginatedResult.map((user: UserDocument) =>
+      UserMapper.toGetDto(user),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      userDtos,
+    );
+  }
+
+  @Get(':organizationId/role-multi/:roleId')
+  @Permissions(PermissionOrganization.roleRead)
+  @ApiTags('organization', 'role')
+  @ApiOperation({ summary: 'Get multi-desk role user list' })
+  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiNotFoundResponse({
+    description: 'Multi-desk role has not been found',
+    type: ExceptionDto,
+  })
+  async getRoleDeskMultiUserList(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleDeskMultiById(
+      roleId,
+      organization,
+    );
+
+    if (!role) {
+      throw new NotFoundException();
+    }
+
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+
+    const userDtos = paginatedResult.map((user: UserDocument) =>
+      UserMapper.toGetDto(user),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      userDtos,
+    );
+  }
+
+  @Get(':organizationId/desk/:deskId/role/:roleId')
+  @Permissions(PermissionOrganization.roleRead, PermissionDesk.roleRead)
+  @ApiTags('organization', 'desk', 'role')
+  @ApiOperation({ summary: 'Get desk role user list' })
+  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiNotFoundResponse({
+    description: 'Desk role has not been found',
+    type: ExceptionDto,
+  })
+  async getRoleDeskUserList(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (!organization || !desk || desk.organization !== organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleDeskById(roleId, desk);
+
+    if (!role) {
+      throw new NotFoundException();
+    }
+
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+
+    const userDtos = paginatedResult.map((user: UserDocument) =>
+      UserMapper.toGetDto(user),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      userDtos,
+    );
+  }
 }
