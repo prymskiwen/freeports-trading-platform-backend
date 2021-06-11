@@ -12,6 +12,7 @@ export class RoleOrganization {
   name: string;
   owner: User;
   disabled?: boolean;
+  system?: boolean;
 
   @Prop({ type: [String], enum: PermissionOrganization })
   permissions?: PermissionOrganization[];

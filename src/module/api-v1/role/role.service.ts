@@ -64,6 +64,7 @@ export class RoleService {
 
     role.name = ROLE_DEFAULT;
     role.permissions.push(PermissionClearer.default);
+    role.system = true;
     role.owner = user;
 
     if (persist) {
@@ -74,7 +75,9 @@ export class RoleService {
   }
 
   async getRoleClearerDefault(): Promise<RoleClearerDocument> {
-    return await this.roleClearerModel.findOne({ name: ROLE_DEFAULT }).exec();
+    return await this.roleClearerModel
+      .findOne({ name: ROLE_DEFAULT, system: true })
+      .exec();
   }
 
   async createRoleClearerAdmin(
@@ -88,6 +91,7 @@ export class RoleService {
     role.permissions = Object.values(PermissionClearer).filter(
       (v) => v !== PermissionClearer.default,
     );
+    role.system = false;
     role.owner = user;
 
     if (persist) {
@@ -105,6 +109,7 @@ export class RoleService {
 
     role.name = request.name;
     role.permissions = request.permissions;
+    role.system = false;
     role.owner = user;
     await role.save();
 
@@ -112,7 +117,11 @@ export class RoleService {
   }
 
   async getRoleClearerList(): Promise<RoleClearerDocument[]> {
-    return await this.roleClearerModel.find().exec();
+    return await this.roleClearerModel
+      .find({
+        $or: [{ system: { $exists: false } }, { system: false }],
+      })
+      .exec();
   }
 
   async getRoleClearerById(id: string): Promise<RoleClearerDocument> {
@@ -144,6 +153,7 @@ export class RoleService {
     role.name = ROLE_DEFAULT;
     role.permissions.push(PermissionOrganization.default);
     role.organization = organization;
+    role.system = true;
     role.owner = user;
 
     if (persist) {
@@ -157,7 +167,7 @@ export class RoleService {
     organization: OrganizationDocument,
   ): Promise<RoleOrganizationDocument> {
     return await this.roleOrganizationModel
-      .findOne({ organization: organization, name: ROLE_DEFAULT })
+      .findOne({ organization: organization, name: ROLE_DEFAULT, system: true })
       .exec();
   }
 
@@ -174,6 +184,7 @@ export class RoleService {
       (v) => v !== PermissionOrganization.default,
     );
     role.organization = organization;
+    role.system = false;
     role.owner = user;
 
     if (persist) {
@@ -187,7 +198,7 @@ export class RoleService {
     organization: OrganizationDocument,
   ): Promise<RoleOrganizationDocument> {
     return await this.roleOrganizationModel
-      .findOne({ organization: organization, name: ROLE_ADMIN })
+      .findOne({ organization: organization, name: ROLE_ADMIN, system: false })
       .exec();
   }
 
@@ -201,6 +212,7 @@ export class RoleService {
     role.name = request.name;
     role.permissions = request.permissions;
     role.organization = organization;
+    role.system = false;
     role.owner = user;
     await role.save();
 
@@ -213,6 +225,7 @@ export class RoleService {
     return await this.roleOrganizationModel
       .find({
         organization: organization,
+        $or: [{ system: { $exists: false } }, { system: false }],
       })
       .exec();
   }
@@ -254,6 +267,7 @@ export class RoleService {
     role.name = ROLE_DEFAULT;
     role.permissions.push(PermissionDesk.default);
     role.desk = desk;
+    role.system = true;
     role.owner = user;
 
     if (persist) {
@@ -265,7 +279,7 @@ export class RoleService {
 
   async getRoleDeskDefault(desk: DeskDocument): Promise<RoleDeskDocument> {
     return await this.roleDeskModel
-      .findOne({ desk: desk, name: ROLE_DEFAULT })
+      .findOne({ desk: desk, name: ROLE_DEFAULT, system: true })
       .exec();
   }
 
@@ -279,6 +293,7 @@ export class RoleService {
     role.name = request.name;
     role.permissions = request.permissions;
     role.desk = desk;
+    role.system = false;
     role.owner = user;
     await role.save();
 
@@ -289,6 +304,7 @@ export class RoleService {
     return await this.roleDeskModel
       .find({
         desk: desk,
+        $or: [{ system: { $exists: false } }, { system: false }],
       })
       .exec();
   }
@@ -330,6 +346,7 @@ export class RoleService {
     role.name = request.name;
     role.permissions = request.permissions;
     role.organization = organization;
+    role.system = false;
     role.owner = user;
     await role.save();
 
@@ -342,6 +359,7 @@ export class RoleService {
     return await this.roleDeskMultiModel
       .find({
         organization: organization,
+        $or: [{ system: { $exists: false } }, { system: false }],
       })
       .exec();
   }

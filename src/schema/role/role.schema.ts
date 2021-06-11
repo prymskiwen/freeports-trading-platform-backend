@@ -35,6 +35,9 @@ export class Role {
   @Prop()
   disabled?: boolean;
 
+  @Prop()
+  system?: boolean;
+
   @Prop({ type: [String], enum: PermissionAny })
   permissions?: PermissionAny[];
 }

@@ -12,6 +12,7 @@ export class RoleDesk {
   name: string;
   owner: User;
   disabled?: boolean;
+  system?: boolean;
 
   @Prop({ type: [String], enum: PermissionDesk })
   permissions?: PermissionDesk[];
