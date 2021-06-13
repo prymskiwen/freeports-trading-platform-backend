@@ -253,6 +253,51 @@ export class UserController {
     return UserMapper.toUpdateDto(manager);
   }
 
+  @Get(':organizationId/manager/:managerId')
+  @Permissions(PermissionClearer.organizationManagerUpdate)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Update organization manager' })
+  @ApiOkResponse({
+    description: 'Successfully updated organization manager id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization manager has not been found',
+    type: ExceptionDto,
+  })
+  async getManagerOfOrganization(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('managerId', ParseObjectIdPipe) managerId: string,
+    @Body() request: UpdateUserRequestDto,
+  ): Promise<UpdateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const manager = await this.userService.getManagerOfOrganizationById(
+      managerId,
+      organization,
+    );
+
+    if (!manager) {
+      throw new NotFoundException();
+    }
+
+    // await this.userService.update(manager, request);
+
+    return UserMapper.toGetDto(manager);
+  }
+
   @Get(':organizationId/manager')
   @Permissions(PermissionClearer.organizationManagerRead)
   @ApiTags('clearer')
