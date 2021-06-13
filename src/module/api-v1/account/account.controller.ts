@@ -85,8 +85,6 @@ export class AccountController {
     return AccountMapper.toCreateDto(account);
   }
 
-
-
   @Delete(':organizationId/account/:accountId')
   @Permissions(PermissionClearer.organizationAccountDelete)
   @ApiTags('clearer')

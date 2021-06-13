@@ -125,9 +125,9 @@ export class AuthController {
       userCurrent,
     );
 
-    // if (!isCodeValid) {
-    //   throw new Invalid2faCodeException();
-    // }
+    if (!isCodeValid) {
+      throw new Invalid2faCodeException();
+    }
 
     return this.authService.login2FA(userCurrent);
   }
