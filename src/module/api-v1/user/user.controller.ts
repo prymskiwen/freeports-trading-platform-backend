@@ -46,6 +46,10 @@ import {
   PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
+import { AssignRoleClearerDto } from './dto/assign-role-clearer.dto';
+import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
+import { AssignRoleDeskDto } from './dto/assign-role-desk.dto';
+import { AssignRoleDeskMultiDto } from './dto/assign-role-desk-multi.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -126,6 +130,66 @@ export class UserController {
     await this.userService.update(user, request);
 
     return UserMapper.toUpdateDto(user);
+  }
+
+  @Post('clearer/user/:userId/role')
+  @Permissions(PermissionClearer.roleAssign)
+  @ApiTags('clearer', 'role')
+  @ApiOperation({ summary: 'Assign clearer role to user' })
+  @ApiCreatedResponse({
+    description: 'Successfully updated user id',
+    type: CreateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async assignRoleClearer(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: AssignRoleClearerDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateUserResponseDto> {
+    const user = await this.userService.getUserOfClearerById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await Promise.all(
+      request.roles.map(async (roleId) => {
+        const role = await this.roleService.getRoleClearerById(roleId);
+
+        if (!role) {
+          return;
+        }
+
+        const hasRole = user.roles.some(
+          (userRole) => userRole.role.toString() === role.id,
+        );
+
+        if (hasRole) {
+          return;
+        }
+
+        user.roles.push({
+          role: role,
+          assignedAt: new Date(),
+          assignedBy: userCurrent,
+        });
+      }),
+    );
+
+    await user.save();
+
+    return UserMapper.toCreateDto(user);
   }
 
   @Get('clearer/user')
@@ -386,6 +450,170 @@ export class UserController {
     return UserMapper.toUpdateDto(user);
   }
 
+  @Post(':organizationId/user/:userId/role')
+  @Permissions(PermissionOrganization.roleAssign)
+  @ApiTags('organization', 'role')
+  @ApiOperation({ summary: 'Assign organization role to user' })
+  @ApiCreatedResponse({
+    description: 'Successfully updated user id',
+    type: CreateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async assignRoleOrganizationClearer(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: AssignRoleOrganizationDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getUserOfOrganizationById(
+      userId,
+      organization,
+    );
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await Promise.all(
+      request.roles.map(async (roleId) => {
+        const role = await this.roleService.getRoleOrganizationById(
+          roleId,
+          organization,
+        );
+
+        if (!role) {
+          return;
+        }
+
+        const hasRole = user.roles.some(
+          (userRole) => userRole.role.toString() === role.id,
+        );
+
+        if (hasRole) {
+          return;
+        }
+
+        user.roles.push({
+          role: role,
+          assignedAt: new Date(),
+          assignedBy: userCurrent,
+        });
+      }),
+    );
+
+    await user.save();
+
+    return UserMapper.toCreateDto(user);
+  }
+
+  @Post(':organizationId/user/:userId/role-multi')
+  @Permissions(PermissionOrganization.roleAssign)
+  @ApiTags('organization', 'role')
+  @ApiOperation({ summary: 'Assign multi-desk role to user' })
+  @ApiCreatedResponse({
+    description: 'Successfully updated user id',
+    type: CreateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async assignRoleDeskMultiClearer(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: AssignRoleDeskMultiDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getUserOfOrganizationById(
+      userId,
+      organization,
+    );
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await Promise.all(
+      request.roles.map(async (roleId) => {
+        const effectiveDesks = [];
+        const role = await this.roleService.getRoleDeskMultiById(
+          roleId,
+          organization,
+        );
+
+        if (!role) {
+          return;
+        }
+
+        const hasRole = user.roles.some(
+          (userRole) => userRole.role.toString() === role.id,
+        );
+
+        if (hasRole) {
+          return;
+        }
+
+        await Promise.all(
+          request.desks.map(async (deskId) => {
+            const desk = await this.deskService.getById(deskId);
+
+            if (!desk) {
+              return;
+            }
+
+            if (desk.organization !== organization) {
+              return;
+            }
+
+            effectiveDesks.push(desk);
+          }),
+        );
+
+        user.roles.push({
+          effectiveDesks: [...effectiveDesks],
+          role: role,
+          assignedAt: new Date(),
+          assignedBy: userCurrent,
+        });
+      }),
+    );
+
+    await user.save();
+
+    return UserMapper.toCreateDto(user);
+  }
+
   @Get(':organizationId/user')
   @Permissions(PermissionOrganization.coworkerRead)
   @ApiTags('organization')
@@ -524,6 +752,75 @@ export class UserController {
     return UserMapper.toUpdateDto(user);
   }
 
+  @Post(':organizationId/desk/:deskId/user/:userId/role')
+  @Permissions(PermissionOrganization.roleAssign, PermissionDesk.roleAssign)
+  @ApiTags('organization', 'desk', 'role')
+  @ApiOperation({ summary: 'Assign desk role to user' })
+  @ApiCreatedResponse({
+    description: 'Successfully updated user id',
+    type: CreateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async assignRoleDesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: AssignRoleDeskDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (!organization || !desk || desk.organization !== organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getUserOfDeskById(userId, desk);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await Promise.all(
+      request.roles.map(async (roleId) => {
+        const role = await this.roleService.getRoleDeskById(roleId, desk);
+
+        if (!role) {
+          return;
+        }
+
+        const hasRole = user.roles.some(
+          (userRole) => userRole.role.toString() === role.id,
+        );
+
+        if (hasRole) {
+          return;
+        }
+
+        user.roles.push({
+          role: role,
+          assignedAt: new Date(),
+          assignedBy: userCurrent,
+        });
+      }),
+    );
+
+    await user.save();
+
+    return UserMapper.toCreateDto(user);
+  }
+
   @Get(':organizationId/desk/:deskId/user')
   @Permissions(PermissionOrganization.deskUserRead, PermissionDesk.coworkerRead)
   @ApiTags('organization', 'desk')
@@ -537,7 +834,7 @@ export class UserController {
     description: 'Desk has not been found',
     type: ExceptionDto,
   })
-  async getUserOfDeskPaginater(
+  async getUserOfDeskPaginated(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @PaginationParams() pagination: PaginationRequest,
@@ -570,7 +867,7 @@ export class UserController {
   @ApiOperation({ summary: 'Get clearer role user list' })
   @ApiPaginationResponse(GetUserResponseDto)
   @ApiNotFoundResponse({
-    description: 'Organization role has not been found',
+    description: 'Clearer role has not been found',
     type: ExceptionDto,
   })
   async getRoleClearerUserList(
