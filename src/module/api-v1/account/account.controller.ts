@@ -77,12 +77,15 @@ export class AccountController {
 
     organization.clearing.push({
       currency: request.currency,
+      iban: request.iban,
       account: account,
     });
     await organization.save();
 
     return AccountMapper.toCreateDto(account);
   }
+
+
 
   @Delete(':organizationId/account/:accountId')
   @Permissions(PermissionClearer.organizationAccountDelete)

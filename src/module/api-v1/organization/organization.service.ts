@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UploadedFile } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -38,6 +38,7 @@ export class OrganizationService {
 
     organization.commissionRatio = {
       organization: request.сommission,
+      clearer: request.clearer,
     };
 
     if (persist) {
@@ -63,6 +64,7 @@ export class OrganizationService {
 
     organization.commissionRatio = {
       organization: request.сommission,
+      clearer: request.clearer,
     };
 
     if (persist) {

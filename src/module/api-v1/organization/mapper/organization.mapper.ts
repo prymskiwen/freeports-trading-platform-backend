@@ -28,10 +28,12 @@ export class OrganizationMapper {
     document: OrganizationDocument,
   ): GetOrganizationResponseDto {
     const dto = new GetOrganizationResponseDto();
-
-    dto.id = document.id;
+  
+    dto.id = document._id;
     dto.name = document.details.name;
     dto.commission = document.commissionRatio.organization;
+    dto.commissionclear = document.commissionRatio.clearer;
+    dto.clearing = document.clearing;
 
     return dto;
   }

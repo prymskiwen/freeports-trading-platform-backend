@@ -271,7 +271,7 @@ export class UserController {
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetUserResponseDto>> {
     const organization = await this.organizationService.getById(organizationId);
-
+  
     if (!organization) {
       throw new NotFoundException();
     }
