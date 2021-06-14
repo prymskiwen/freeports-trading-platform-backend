@@ -19,6 +19,10 @@ export class OrganizationDetails {
 
   @Prop()
   country?: string;
+
+  @Prop()
+  logofile?: string;
+
 }
 
 export const OrganizationDetailsSchema = SchemaFactory.createForClass(

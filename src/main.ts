@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import commonConfig from './config/common.config';
 import corsConfig from './config/cors.config';
 import openapiConfig from './config/openapi.config';
+import * as bodyParser from "body-parser";
 import { AppModule } from './module/app.module';
 import { ValidationPipeCustomException } from './pipe/validation.pipe';
 import { useContainer } from 'class-validator';
@@ -21,6 +22,14 @@ async function bootstrap() {
       contentSecurityPolicy: false,
     }),
   );
+  app.use(bodyParser.json({
+    limit: '200mb',
+  }));
+  
+  app.use(bodyParser.urlencoded({
+    limit: '200mb',
+  }));
+
   app.enableCors({
     origin: corsConf.origin,
     methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
