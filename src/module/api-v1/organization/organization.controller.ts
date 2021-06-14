@@ -147,7 +147,8 @@ export class OrganizationController {
       throw new NotFoundException();
     }
 
-    return OrganizationMapper.toGetDto(organization);
+    // return OrganizationMapper.toGetDto(organization);
+    return OrganizationMapper.toGetsignDto(organization);
   }
 
   @Get()
