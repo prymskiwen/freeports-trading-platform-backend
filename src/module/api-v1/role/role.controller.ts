@@ -308,6 +308,51 @@ export class RoleController {
     return RoleMapper.toUpdateDto(role);
   }
 
+  @Delete(':organizationId/role/:roleId')
+  @Permissions(PermissionOrganization.roleDelete)
+  @ApiTags('organization')
+  @ApiOperation({ summary: 'Delete organization role' })
+  @ApiOkResponse({
+    description: 'Successfully deleted organization role id',
+    type: DeleteRoleResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization role has not been found',
+    type: ExceptionDto,
+  })
+  async deleteRoleOrganization(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+  ): Promise<DeleteRoleResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleOrganizationById(
+      roleId,
+      organization,
+    );
+
+    if (!role) {
+      throw new NotFoundException();
+    }
+
+    await role.remove();
+    await this.userService.deleteRole(role);
+
+    return RoleMapper.toUpdateDto(role);
+  }
+
   @Get(':organizationId/role-multi')
   @Permissions(PermissionOrganization.roleRead)
   @ApiTags('organization')
@@ -426,6 +471,51 @@ export class RoleController {
     }
 
     await this.roleService.updateRoleDeskMulti(role, request);
+
+    return RoleMapper.toUpdateDto(role);
+  }
+
+  @Delete(':organizationId/role-multi/:roleId')
+  @Permissions(PermissionOrganization.roleDelete)
+  @ApiTags('organization')
+  @ApiOperation({ summary: 'Delete multi-desk role' })
+  @ApiOkResponse({
+    description: 'Successfully deleted multi-desk role id',
+    type: DeleteRoleResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Multi-desk role has not been found',
+    type: ExceptionDto,
+  })
+  async deleteRoleDeskMulti(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+  ): Promise<DeleteRoleResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleDeskMultiById(
+      roleId,
+      organization,
+    );
+
+    if (!role) {
+      throw new NotFoundException();
+    }
+
+    await role.remove();
+    await this.userService.deleteRole(role);
 
     return RoleMapper.toUpdateDto(role);
   }
@@ -551,6 +641,50 @@ export class RoleController {
     }
 
     await this.roleService.updateRoleDesk(role, request);
+
+    return RoleMapper.toUpdateDto(role);
+  }
+
+  @Delete(':organizationId/desk/:deskId/role/:roleId')
+  @Permissions(PermissionOrganization.roleDelete)
+  @ApiTags('organization')
+  @ApiOperation({ summary: 'Delete multi-desk role' })
+  @ApiOkResponse({
+    description: 'Successfully deleted multi-desk role id',
+    type: DeleteRoleResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Multi-desk role has not been found',
+    type: ExceptionDto,
+  })
+  async deleteRoleDesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+  ): Promise<DeleteRoleResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (!organization || !desk || desk.organization !== organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleDeskById(roleId, desk);
+
+    if (!role) {
+      throw new NotFoundException();
+    }
+
+    await role.remove();
+    await this.userService.deleteRole(role);
 
     return RoleMapper.toUpdateDto(role);
   }
