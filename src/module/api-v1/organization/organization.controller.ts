@@ -161,7 +161,7 @@ export class OrganizationController {
     const [
       { paginatedResult, totalResult },
     ] = await this.organizationService.getOrganizationsPaginated(pagination);
-   
+
     const organizationDtos = paginatedResult.map(
       (organization: OrganizationDocument) =>
         OrganizationMapper.toGetDto(organization),

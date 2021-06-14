@@ -1,7 +1,8 @@
+import { RevokeOTPSecretResponseDto } from './dto/revoke-otp-secret-response.dto';
 import { OTPSecretAlreadySet } from './../../../exeption/otp-secret-already-set.exception';
 import { TwoFactorAuthenticationCodeDto } from './dto/twoFactorAuthenticationCode.dto';
 import { Invalid2faCodeException } from '../../../exeption/invalid-2fa-code.exception';
-import { Controller, Post, Body, UseGuards, Res } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Res, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
@@ -26,6 +27,7 @@ import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { Response } from 'express';
+import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 
 @Controller('api/v1/auth')
 @ApiTags('auth')
@@ -163,5 +165,21 @@ export class AuthController {
     @Body() validateTokenDto: ValidateTokenRequestDto,
   ): Promise<ValidateTokenResponseDto> {
     return this.authService.validateToken(validateTokenDto.token);
+  }
+
+  @Post('/:userId/revoke-secret')
+  @ApiOperation({ description: 'Revoke OTP secret' })
+  @ApiOkResponse({
+    description: 'Secret was revoked successfully',
+    type: RevokeOTPSecretResponseDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  async revokeOTPSecret(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<RevokeOTPSecretResponseDto> {
+    return this.authService.revokeOTPSecret(userId);
   }
 }

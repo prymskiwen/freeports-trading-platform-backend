@@ -14,6 +14,7 @@ import { UserMapper } from '../user/mapper/user.mapper';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { Response } from 'express';
+import { OTPSecretNotSet } from 'src/exeption/otp-secret-not-set.exception';
 
 @Injectable()
 export class AuthService {
@@ -122,6 +123,9 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserDocument,
   ) {
+    if (!user.twoFactorAuthenticationSecret) {
+      throw new OTPSecretNotSet();
+    }
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,
@@ -137,5 +141,12 @@ export class AuthService {
     const { exp, iat, ...rest } = payload;
 
     return rest;
+  }
+
+  public async revokeOTPSecret(userId: string) {
+    const user = await this.userService.getById(userId);
+    user.twoFactorAuthenticationSecret = undefined;
+    await user.save();
+    return { success: true };
   }
 }
