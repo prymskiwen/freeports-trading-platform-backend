@@ -647,10 +647,10 @@ export class RoleController {
 
   @Delete(':organizationId/desk/:deskId/role/:roleId')
   @Permissions(PermissionOrganization.roleDelete)
-  @ApiTags('organization')
-  @ApiOperation({ summary: 'Delete multi-desk role' })
+  @ApiTags('organization', 'desk')
+  @ApiOperation({ summary: 'Delete desk role' })
   @ApiOkResponse({
-    description: 'Successfully deleted multi-desk role id',
+    description: 'Successfully deleted desk role id',
     type: DeleteRoleResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -662,7 +662,7 @@ export class RoleController {
     type: InvalidFormExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Multi-desk role has not been found',
+    description: 'Desk role has not been found',
     type: ExceptionDto,
   })
   async deleteRoleDesk(
