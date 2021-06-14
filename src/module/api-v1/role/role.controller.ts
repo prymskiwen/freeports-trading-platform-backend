@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Patch,
   Get,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -50,6 +51,8 @@ import {
   PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
+import { DeleteRoleResponseDto } from './dto/delete-role-response.dto';
+import { UserService } from '../user/user.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -60,6 +63,7 @@ export class RoleController {
     private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
+    private readonly userService: UserService,
   ) {}
 
   @Get('clearer/role')
@@ -143,6 +147,41 @@ export class RoleController {
     }
 
     await this.roleService.updateRoleClearer(role, request);
+
+    return RoleMapper.toUpdateDto(role);
+  }
+
+  @Delete('clearer/role/:roleId')
+  @Permissions(PermissionClearer.roleDelete)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Delete clearer role' })
+  @ApiOkResponse({
+    description: 'Successfully deleted clearer role id',
+    type: DeleteRoleResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Clearer role has not been found',
+    type: ExceptionDto,
+  })
+  async deleteRoleClearer(
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+  ): Promise<DeleteRoleResponseDto> {
+    const role = await this.roleService.getRoleClearerById(roleId);
+
+    if (!role) {
+      throw new NotFoundException();
+    }
+
+    await role.remove();
+    await this.userService.deleteRole(role);
 
     return RoleMapper.toUpdateDto(role);
   }
