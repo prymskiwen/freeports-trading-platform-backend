@@ -75,6 +75,10 @@ export class AuthController {
       },
     },
   })
+  @ApiBadRequestResponse({
+    description: 'OTP secret is already set',
+    type: ExceptionDto,
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authenticated',
     type: ExceptionDto,

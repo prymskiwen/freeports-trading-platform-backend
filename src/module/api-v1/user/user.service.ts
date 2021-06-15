@@ -565,9 +565,4 @@ export class UserService {
   async deleteRole(role: RoleDocument) {
     await this.userModel.updateMany({ $pull: { roles: { role: role._id } } });
   }
-
-  async setTwoFactorAuthenticationSecret(user: UserDocument, secret: string) {
-    user.twoFactorAuthenticationSecret = secret;
-    await user.save();
-  }
 }

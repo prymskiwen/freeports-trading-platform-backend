@@ -111,7 +111,8 @@ export class AuthService {
       secret,
     );
 
-    await this.userService.setTwoFactorAuthenticationSecret(user, secret);
+    user.twoFactorAuthenticationSecret = secret;
+    await user.save();
 
     return {
       secret,
@@ -126,6 +127,7 @@ export class AuthService {
     if (!user.twoFactorAuthenticationSecret) {
       throw new OTPSecretNotSet();
     }
+
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,
@@ -145,8 +147,10 @@ export class AuthService {
 
   public async revokeOTPSecret(userId: string) {
     const user = await this.userService.getById(userId);
+
     user.twoFactorAuthenticationSecret = undefined;
     await user.save();
+
     return { success: true };
   }
 }
