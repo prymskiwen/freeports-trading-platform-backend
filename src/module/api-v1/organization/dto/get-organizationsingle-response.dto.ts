@@ -7,4 +7,6 @@ export class GetOrganizationSingleResponseDto {
   commission: number;
   commissionclear: number;
   clearing: OrganizationClearing[];
+  acitveUser: number;
+  discativeUser: number;
 }

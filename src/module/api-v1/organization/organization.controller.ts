@@ -149,9 +149,11 @@ export class OrganizationController {
     if (!organization) {
       throw new NotFoundException();
     }
+    const disableUser = await this.userService.getDisActiveUserCountOfOrganization(organization);
+    const ableUser = await this.userService.getActiveUserCountOfOrganization(organization);
 
     // return OrganizationMapper.toGetDto(organization);
-    return OrganizationMapper.toGetsignDto(organization);
+    return OrganizationMapper.toGetsignDto(organization, ableUser, disableUser);
   }
 
   @Get()

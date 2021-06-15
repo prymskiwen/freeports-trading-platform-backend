@@ -29,6 +29,8 @@ export class OrganizationMapper {
 
   public static toGetsignDto(
     document: OrganizationDocument,
+    acitveUser: number,
+    discativeUser: number,
   ): GetOrganizationSingleResponseDto {
     const dto = new GetOrganizationSingleResponseDto();
 
@@ -39,6 +41,8 @@ export class OrganizationMapper {
     dto.commission = document.commissionRatio.organization;
     dto.commissionclear = document.commissionRatio.clearer;
     dto.clearing = document.clearing;
+    dto.acitveUser = acitveUser;
+    dto.discativeUser = discativeUser;
 
     return dto;
   }
