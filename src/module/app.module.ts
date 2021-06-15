@@ -7,7 +7,6 @@ import authConfig from 'src/config/auth.config';
 import commonConfig from 'src/config/common.config';
 import databaseConfig from 'src/config/database.config';
 import openapiConfig from 'src/config/openapi.config';
-import { APIV0Module } from './api-v0/api.v0.module';
 import { APIV1Module } from './api-v1/api.v1.module';
 import corsConfig from 'src/config/cors.config';
 
@@ -34,7 +33,6 @@ import corsConfig from 'src/config/cors.config';
       }),
       inject: [databaseConfig.KEY],
     }),
-    APIV0Module,
     APIV1Module,
   ],
   controllers: [AppController],
