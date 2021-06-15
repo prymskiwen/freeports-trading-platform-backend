@@ -180,7 +180,7 @@ export class OrganizationController {
           commissionclear: organization.commissionRatio.clearer,
           clearing: organization.clearing,
           acitveUser: ableUser,
-          discativeUser: disableUser,
+          disactiveUser: disableUser,
           }
       },
         // OrganizationMapper.toGetDto(organization),
