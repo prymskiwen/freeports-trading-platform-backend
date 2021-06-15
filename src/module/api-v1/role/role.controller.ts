@@ -163,10 +163,6 @@ export class RoleController {
     description: 'Invalid Id',
     type: ExceptionDto,
   })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
   @ApiNotFoundResponse({
     description: 'Clearer role has not been found',
     type: ExceptionDto,

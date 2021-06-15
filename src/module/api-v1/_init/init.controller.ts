@@ -22,7 +22,7 @@ import { InitResponseDto } from './dto/init-response.dto';
 import { OrganizationMapper } from '../organization/mapper/organization.mapper';
 import { AuthService } from '../auth/auth.service';
 
-@Controller('api/v1/organization')
+@Controller('api/v1')
 @ApiTags('init')
 export class InitController {
   constructor(
