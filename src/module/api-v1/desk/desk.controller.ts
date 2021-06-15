@@ -25,9 +25,6 @@ import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { DeskService } from './desk.service';
 import { OrganizationService } from '../organization/organization.service';
 import { DeskMapper } from './mapper/desk.mapper';
-import { UserDocument } from 'src/schema/user/user.schema';
-import { CurrentUser } from '../auth/decorator/current-user.decorator';
-import { RoleService } from '../role/role.service';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionOrganization } from 'src/schema/role/permission.helper';
 
@@ -38,7 +35,6 @@ export class DeskController {
   constructor(
     private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
-    private readonly roleService: RoleService,
   ) {}
 
   @Post(':organizationId/desk')
@@ -64,7 +60,6 @@ export class DeskController {
   async createDesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Body() request: CreateDeskRequestDto,
-    @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateDeskResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
@@ -73,8 +68,6 @@ export class DeskController {
     }
 
     const desk = await this.deskService.create(organization, request);
-
-    await this.roleService.createRoleDeskDefault(desk, userCurrent);
 
     return DeskMapper.toCreateDto(desk);
   }

@@ -1,6 +1,4 @@
 export const PermissionClearer = {
-  default: 'clearer',
-
   coworkerRead: 'clearer.coworker.read',
   coworkerCreate: 'clearer.coworker.create',
   coworkerUpdate: 'clearer.coworker.update',
@@ -146,8 +144,6 @@ export const PermissionClearerGroup = [
 ];
 
 export const PermissionOrganization = {
-  default: 'organization.#organizationId#',
-
   coworkerRead: 'organization.#organizationId#.coworker.read',
   coworkerCreate: 'organization.#organizationId#.coworker.create',
   coworkerUpdate: 'organization.#organizationId#.coworker.update',
@@ -278,8 +274,6 @@ export const PermissionOrganizationGroup = [
 ];
 
 export const PermissionDesk = {
-  default: 'desk.#deskId#',
-
   coworkerRead: 'desk.#deskId#.coworker.read',
   coworkerCreate: 'desk.#deskId#.coworker.create',
   coworkerUpdate: 'desk.#deskId#.coworker.update',

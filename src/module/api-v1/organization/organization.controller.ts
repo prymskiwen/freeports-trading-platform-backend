@@ -46,7 +46,7 @@ import {
 } from 'src/schema/role/permission.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization')
+@Controller('api/v1')
 @ApiBearerAuth()
 export class OrganizationController {
   constructor(
@@ -54,7 +54,7 @@ export class OrganizationController {
     private readonly roleService: RoleService,
   ) {}
 
-  @Post()
+  @Post('clearer/organization')
   @Permissions(PermissionClearer.organizationCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create organization' })
@@ -72,11 +72,7 @@ export class OrganizationController {
   ): Promise<CreateOrganizationResponseDto> {
     const organization = await this.organizationService.create(request);
 
-    await this.roleService.createRoleOrganizationDefault(
-      organization,
-      userCurrent,
-    );
-    await this.roleService.createRoleOrganizationAdmin(
+    await this.roleService.createRoleOrganizationManager(
       organization,
       userCurrent,
     );
@@ -84,7 +80,7 @@ export class OrganizationController {
     return OrganizationMapper.toCreateDto(organization);
   }
 
-  @Patch(':organizationId')
+  @Patch('organization/:organizationId')
   @Permissions(
     PermissionClearer.organizationUpdate,
     PermissionOrganization.organizationUpdate,
@@ -122,7 +118,7 @@ export class OrganizationController {
     return OrganizationMapper.toUpdateDto(organization);
   }
 
-  @Get(':organizationId')
+  @Get('organization/:organizationId')
   @Permissions(
     PermissionClearer.organizationRead,
     PermissionOrganization.organizationRead,
@@ -150,7 +146,7 @@ export class OrganizationController {
     return OrganizationMapper.toGetDto(organization);
   }
 
-  @Get()
+  @Get('organization')
   @Permissions(PermissionClearer.organizationRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get organization list' })
