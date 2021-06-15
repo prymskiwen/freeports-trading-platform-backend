@@ -16,6 +16,8 @@ class CreateOrganizationDetailslDto {
   zip?: string;
   city?: string;
   country?: string;
+  logofile?: string;
+  createtime?: Date;
 }
 
 class CreateOrganizationClearingDto {

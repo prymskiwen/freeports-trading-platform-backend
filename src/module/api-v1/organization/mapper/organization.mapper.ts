@@ -3,6 +3,8 @@ import { CreateOrganizationResponseDto } from '../dto/create-organization-respon
 import { GetOrganizationResponseDto } from '../dto/get-organization-response.dto';
 import { GetOrganizationSingleResponseDto } from '../dto/get-organizationsingle-response.dto';
 import { UpdateOrganizationResponseDto } from '../dto/update-organization-response.dto';
+import { UserService } from '../../user/user.service';
+
 
 export class OrganizationMapper {
   public static toCreateDto(
@@ -50,7 +52,10 @@ export class OrganizationMapper {
     dto.commission = document.commissionRatio.organization;
     dto.commissionclear = document.commissionRatio.clearer;
     dto.clearing = document.clearing;
+    dto.acitveUser = 0;
+    dto.discativeUser = 0;
 
     return dto;
   }
+
 }

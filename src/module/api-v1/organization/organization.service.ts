@@ -35,6 +35,7 @@ export class OrganizationService {
       city: request.city,
       country: request.country,
       logofile: request.logofile,
+      createtime: request.createtime,
     };
 
     organization.commissionRatio = {
@@ -61,6 +62,7 @@ export class OrganizationService {
       zip: request.zip,
       city: request.city,
       country: request.country,
+      createtime: request.createtime,
     };
 
     organization.commissionRatio = {

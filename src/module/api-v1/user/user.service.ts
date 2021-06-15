@@ -379,6 +379,75 @@ export class UserService {
     ]);
   }
 
+  async getActiveUserCountOfOrganization(organization: OrganizationDocument): Promise<any> {
+    const query: any[] = [
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'roles.role',
+          foreignField: '_id',
+          as: 'user_roles',
+        },
+      },
+      {
+        $match: {
+          user_roles: {
+            $elemMatch: {
+              kind: RoleOrganization.name,
+              name: ROLE_DEFAULT,
+              organization: organization._id,
+              system: true,
+            },
+          },
+        },
+      },
+    ];
+     const users = await this.userModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+    return users.length;
+  }
+
+  async getDisActiveUserCountOfOrganization(organization: OrganizationDocument): Promise<any> {
+    const query: any[] = [
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'roles.role',
+          foreignField: '_id',
+          as: 'user_roles',
+        },
+      },
+      {
+        $match: {
+          user_roles: {
+            $elemMatch: {
+              kind: RoleOrganization.name,
+              name: ROLE_DEFAULT,
+              organization: organization._id,
+              system: false,
+            },
+          },
+        },
+      },
+    ];
+     const users = await this.userModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+    return users.length;
+  }
+
+
   async getUserOfOrganizationPaginated(
     organization: OrganizationDocument,
     pagination: PaginationRequest,

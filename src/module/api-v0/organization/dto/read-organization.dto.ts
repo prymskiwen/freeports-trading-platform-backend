@@ -9,6 +9,8 @@ class ReadOrganizationDetailslDto {
   zip?: string;
   city?: string;
   country?: string;
+  logofile?: string;
+  createtime?: Date;
 }
 
 export class ReadOrganizationDto {

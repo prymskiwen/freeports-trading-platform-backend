@@ -7,6 +7,7 @@ import {
   OrganizationSchema,
 } from 'src/schema/organization/organization.schema';
 import { RoleModule } from '../role/role.module';
+import { UserModule } from '../user/user.module';
 import { IsUniqueInDbConstraint } from 'src/validation/is-unique-in-db.validation';
 
 @Module({
@@ -15,6 +16,7 @@ import { IsUniqueInDbConstraint } from 'src/validation/is-unique-in-db.validatio
       { name: Organization.name, schema: OrganizationSchema },
     ]),
     forwardRef(() => RoleModule),
+    forwardRef(() => UserModule),
   ],
   controllers: [OrganizationController],
   providers: [OrganizationService, IsUniqueInDbConstraint],

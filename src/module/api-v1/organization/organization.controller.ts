@@ -31,13 +31,15 @@ import { UpdateOrganizationRequestDto } from './dto/update-organization-request.
 import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
 import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
 import { GetOrganizationResponseDto } from './dto/get-organization-response.dto';
+import {GetOrganizationSingleResponseDto} from './dto/get-organizationsingle-response.dto';
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from '../role/role.service';
+import { UserService } from '../user/user.service';
 import { OrganizationMapper } from './mapper/organization.mapper';
-import { OrganizationDocument } from 'src/schema/organization/organization.schema';
+import { Organization, OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import {
@@ -52,6 +54,7 @@ export class OrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
+    private readonly userService: UserService,
   ) {}
 
   @Post()
@@ -140,7 +143,7 @@ export class OrganizationController {
   })
   async getOrganization(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-  ): Promise<GetOrganizationResponseDto> {
+  ): Promise<GetOrganizationSingleResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
     if (!organization) {
@@ -163,10 +166,24 @@ export class OrganizationController {
       { paginatedResult, totalResult },
     ] = await this.organizationService.getOrganizationsPaginated(pagination);
    
-    const organizationDtos = paginatedResult.map(
-      (organization: OrganizationDocument) =>
-        OrganizationMapper.toGetDto(organization),
-    );
+    const organizationDtos: any[] = await Promise.all(paginatedResult.map(
+      async (organization: OrganizationDocument): Promise<any> => {
+        const disableUser = await this.userService.getDisActiveUserCountOfOrganization(organization);
+        const ableUser = await this.userService.getActiveUserCountOfOrganization(organization);
+        console.log(disableUser);
+        return {
+          id: organization._id,
+          name: organization.details.name,
+          createtime: organization.details.createtime,
+          commission: organization.commissionRatio.organization,
+          commissionclear: organization.commissionRatio.clearer,
+          clearing: organization.clearing,
+          acitveUser: ableUser,
+          discativeUser: disableUser,
+          }
+      },
+        // OrganizationMapper.toGetDto(organization),
+    ));
 
     return PaginationHelper.of(
       pagination,

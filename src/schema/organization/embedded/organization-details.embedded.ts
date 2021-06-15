@@ -23,6 +23,9 @@ export class OrganizationDetails {
   @Prop()
   logofile?: string;
 
+  @Prop()
+  createtime?: Date;
+
 }
 
 export const OrganizationDetailsSchema = SchemaFactory.createForClass(
