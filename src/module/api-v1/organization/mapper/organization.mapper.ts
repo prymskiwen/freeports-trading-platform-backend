@@ -35,6 +35,7 @@ export class OrganizationMapper {
     dto.id = document._id;
     dto.name = document.details.name;
     dto.logofile = document.details.logofile;
+    dto.createtime = document.details.createtime;
     dto.commission = document.commissionRatio.organization;
     dto.commissionclear = document.commissionRatio.clearer;
     dto.clearing = document.clearing;

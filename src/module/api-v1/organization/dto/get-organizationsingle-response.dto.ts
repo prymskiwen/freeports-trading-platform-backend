@@ -2,6 +2,7 @@ import { OrganizationClearing } from 'src/schema/organization/embedded/organizat
 export class GetOrganizationSingleResponseDto {
   id: string;
   name: string;
+  createtime: Date;
   logofile: string;
   commission: number;
   commissionclear: number;
