@@ -167,7 +167,6 @@ export class OrganizationController {
     const [
       { paginatedResult, totalResult },
     ] = await this.organizationService.getOrganizationsPaginated(pagination);
-   
     const organizationDtos: any[] = await Promise.all(paginatedResult.map(
       async (organization: OrganizationDocument): Promise<any> => {
         const disableUser = await this.userService.getDisActiveUserCountOfOrganization(organization);
