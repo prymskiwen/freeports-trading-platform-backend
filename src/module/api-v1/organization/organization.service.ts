@@ -59,6 +59,7 @@ export class OrganizationService {
       name: request.name,
       street: request.street,
       street2: request.street2,
+      logofile: request.logofile,
       zip: request.zip,
       city: request.city,
       country: request.country,

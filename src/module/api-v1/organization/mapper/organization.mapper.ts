@@ -33,7 +33,6 @@ export class OrganizationMapper {
     discativeUser: number,
   ): GetOrganizationSingleResponseDto {
     const dto = new GetOrganizationSingleResponseDto();
-
     dto.id = document._id;
     dto.name = document.details.name;
     dto.logofile = document.details.logofile;
