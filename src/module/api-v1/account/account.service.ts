@@ -3,26 +3,114 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CreateAccountRequestDto } from './dto/create-account-request.dto';
-import { Account, AccountDocument } from 'src/schema/account/account.schema';
 import { AccountDetailsType } from 'src/schema/account/embedded/account-details.embedded';
+import {
+  AccountClearer,
+  AccountClearerDocument,
+} from 'src/schema/account/account-clearer.schema';
+import {
+  AccountInvestor,
+  AccountInvestorDocument,
+} from 'src/schema/account/account-investor.schema';
+import { UpdateAccountRequestDto } from './dto/update-account-request.dto';
+import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 
 @Injectable()
 export class AccountService {
   constructor(
-    @InjectModel(Account.name)
-    private accountModel: Model<AccountDocument>,
+    @InjectModel(AccountClearer.name)
+    private accountClearerModel: Model<AccountClearerDocument>,
+    @InjectModel(AccountInvestor.name)
+    private accountInvestorModel: Model<AccountInvestorDocument>,
   ) {}
 
-  async getById(id: string): Promise<AccountDocument> {
-    return await this.accountModel.findById(id).exec();
+  async getAccountClearerList(): Promise<AccountClearerDocument[]> {
+    return await this.accountClearerModel.find().exec();
   }
 
-  async create(
+  async getAccountClearerById(id: string): Promise<AccountClearerDocument> {
+    return await this.accountClearerModel.findById(id).exec();
+  }
+
+  async createAccountClearer(
     request: CreateAccountRequestDto,
     user: UserDocument,
     persist = true,
-  ): Promise<AccountDocument> {
-    const account = new this.accountModel();
+  ): Promise<AccountClearerDocument> {
+    const account = new this.accountClearerModel();
+
+    account.owner = user;
+    account.details = {
+      name: request.name,
+      currency: request.currency,
+      type: request.type,
+    };
+    if (request.type === AccountDetailsType.fiat) {
+      account.fiatDetails = {
+        iban: request.iban,
+      };
+    } else if (request.type === AccountDetailsType.crypto) {
+      account.cryptotDetails = {
+        publicAddress: request.publicAddress,
+        vaultWalletId: request.vaultWalletId,
+      };
+    }
+
+    if (persist) {
+      await account.save();
+    }
+
+    return account;
+  }
+
+  async updateAccountClearer(
+    account: AccountClearerDocument,
+    request: UpdateAccountRequestDto,
+    persist = true,
+  ): Promise<AccountClearerDocument> {
+    account.details = {
+      name: request.name,
+      currency: request.currency,
+      type: request.type,
+    };
+    if (request.type === AccountDetailsType.fiat) {
+      account.fiatDetails = {
+        iban: request.iban,
+      };
+    } else if (request.type === AccountDetailsType.crypto) {
+      account.cryptotDetails = {
+        publicAddress: request.publicAddress,
+        vaultWalletId: request.vaultWalletId,
+      };
+    }
+
+    if (persist) {
+      await account.save();
+    }
+
+    return account;
+  }
+
+  async unassignAccountClearerOrganization(
+    account: AccountClearerDocument,
+    organization: OrganizationDocument,
+  ) {
+    await this.accountClearerModel.updateOne(
+      { _id: account._id },
+      { $pull: { organizations: organization._id } },
+    );
+  }
+
+  async getAccountInvestorById(id: string): Promise<AccountInvestorDocument> {
+    return await this.accountInvestorModel.findById(id).exec();
+  }
+
+  async createAccountInvestor(
+    request: CreateAccountRequestDto,
+    user: UserDocument,
+    persist = true,
+  ): Promise<AccountInvestorDocument> {
+    const account = new this.accountInvestorModel();
 
     account.owner = user;
     account.details = {

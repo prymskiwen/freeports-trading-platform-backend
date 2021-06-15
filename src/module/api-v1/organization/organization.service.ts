@@ -108,7 +108,7 @@ export class OrganizationService {
     ]);
   }
 
-  async deleteAccount(
+  async unassignAccount(
     organization: OrganizationDocument,
     account: AccountDocument,
   ) {
