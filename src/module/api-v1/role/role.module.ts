@@ -20,6 +20,7 @@ import { OrganizationModule } from '../organization/organization.module';
 import { DeskModule } from '../desk/desk.module';
 import { PermissionController } from './permission.controller';
 import { UserModule } from '../user/user.module';
+import { RoleClearerController } from './role-clearer.controller';
 
 @Module({
   imports: [
@@ -45,7 +46,7 @@ import { UserModule } from '../user/user.module';
     forwardRef(() => OrganizationModule),
     forwardRef(() => UserModule),
   ],
-  controllers: [RoleController, PermissionController],
+  controllers: [RoleController, RoleClearerController, PermissionController],
   providers: [RoleService],
   exports: [RoleService],
 })
