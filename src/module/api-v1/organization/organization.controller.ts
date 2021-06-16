@@ -48,7 +48,7 @@ import {
 } from 'src/schema/role/permission.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1')
+@Controller('api/v1/organization')
 @ApiBearerAuth()
 export class OrganizationController {
   constructor(
@@ -57,7 +57,7 @@ export class OrganizationController {
     private readonly userService: UserService,
   ) {}
 
-  @Post('clearer/organization')
+  @Post()
   @Permissions(PermissionClearer.organizationCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create organization' })
@@ -83,7 +83,7 @@ export class OrganizationController {
     return OrganizationMapper.toCreateDto(organization);
   }
 
-  @Patch('organization/:organizationId')
+  @Patch(':organizationId')
   @Permissions(
     PermissionClearer.organizationUpdate,
     PermissionOrganization.organizationUpdate,
@@ -121,7 +121,7 @@ export class OrganizationController {
     return OrganizationMapper.toUpdateDto(organization);
   }
 
-  @Get('organization/:organizationId')
+  @Get(':organizationId')
   @Permissions(
     PermissionClearer.organizationRead,
     PermissionOrganization.organizationRead,
@@ -152,7 +152,7 @@ export class OrganizationController {
     return OrganizationMapper.toGetsignDto(organization, ableUser, disableUser);
   }
 
-  @Get('organization')
+  @Get()
   @Permissions(PermissionClearer.organizationRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get organization list' })

@@ -45,7 +45,7 @@ import { GetAccountClearerDetailsResponseDto } from './dto/get-account-clearer-d
 import { UnassignAccountResponseDto } from './dto/unassign-account-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/clearer')
+@Controller('api/v1/account')
 @ApiTags('account')
 @ApiBearerAuth()
 export class AccountController {
@@ -54,7 +54,7 @@ export class AccountController {
     private readonly organizationService: OrganizationService,
   ) {}
 
-  @Get('account')
+  @Get()
   @Permissions(PermissionClearer.accountRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer account list' })
@@ -69,7 +69,7 @@ export class AccountController {
     return accounts.map((account) => AccountMapper.toGetDto(account));
   }
 
-  @Get('/account/:accountId')
+  @Get(':accountId')
   @Permissions(PermissionClearer.accountRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer account' })
@@ -86,7 +86,7 @@ export class AccountController {
     return AccountMapper.toGetClearerDetailsDto(account);
   }
 
-  @Post('account')
+  @Post()
   @Permissions(PermissionClearer.accountCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create clearer account' })
@@ -110,7 +110,7 @@ export class AccountController {
     return AccountMapper.toCreateDto(account);
   }
 
-  @Patch('account/:accountId')
+  @Patch(':accountId')
   @Permissions(PermissionClearer.roleUpdate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Update clearer account' })
@@ -145,7 +145,7 @@ export class AccountController {
     return AccountMapper.toUpdateDto(account);
   }
 
-  @Delete('account/:accountId')
+  @Delete(':accountId')
   @Permissions(PermissionClearer.accountDelete)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Delete clearer account' })
@@ -185,7 +185,7 @@ export class AccountController {
     return AccountMapper.toDeleteDto(account);
   }
 
-  @Put('account/:accountId/:organizationId')
+  @Put(':accountId/:organizationId')
   @Permissions(PermissionClearer.accountAssign)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Assign clearer account to organization' })
@@ -231,7 +231,7 @@ export class AccountController {
     return AccountMapper.toAssignDto(account);
   }
 
-  @Delete('account/:accountId/:organizationId')
+  @Delete(':accountId/:organizationId')
   @Permissions(PermissionClearer.accountAssign)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Unassign clearer account from organization' })
