@@ -327,7 +327,7 @@ export class UserController {
 
 
   @Patch('organization/:organizationId/user/:userId')
-  @Permissions(PermissionOrganization.coworkerUpdate)
+  @Permissions(PermissionOrganization.coworkerUpdate, PermissionClearer.coworkerUpdate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Update organization user' })
   @ApiOkResponse({
