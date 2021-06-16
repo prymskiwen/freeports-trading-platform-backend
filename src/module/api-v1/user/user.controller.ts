@@ -34,6 +34,7 @@ import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
 import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
+import { GetSingleUserResponseDto } from '../user/dto/get-singleUser-response.dto';
 import { UserService } from './user.service';
 import { OrganizationService } from '../organization/organization.service';
 import { RoleService } from '../role/role.service';
@@ -321,7 +322,7 @@ export class UserController {
       organization,
     );
     
-    return UserMapper.toGetDto(getResult);
+    return UserMapper.toGetSingleDto(getResult);
   }
 
 

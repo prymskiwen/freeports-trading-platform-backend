@@ -57,6 +57,8 @@ export class UserService {
       email: request.email,
       nickname: request.nickname,
       password: await bcrypt.hash(request.password, 13),
+      phone: request.phone,
+      avata: request.avata,
     };
 
     if (persist) {
@@ -73,6 +75,8 @@ export class UserService {
   ): Promise<UserDocument> {
     user.personal.nickname = request.nickname;
     user.personal.email = request.email;
+    user.personal.phone = request.phone;
+    user.personal.avata = request.avata;
 
     await user.save();
 
