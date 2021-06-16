@@ -49,6 +49,7 @@ import {
 import { AssignRoleClearerDto } from './dto/assign-role-clearer.dto';
 import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
 import { AssignRoleDeskMultiDto } from './dto/assign-role-desk-multi.dto';
+import { Organization } from 'src/schema/organization/organization.schema';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1')
@@ -293,6 +294,37 @@ export class UserController {
     return UserMapper.toCreateDto(user);
   }
 
+  @Get('organization/:organizationId/user/:userId')
+  @ApiTags('Organization')
+  @ApiOperation({ summary: 'Get organization user'})
+  @ApiOkResponse({
+    description: 'Successfully updated organization user id',
+    type: GetUserResponseDto,
+  })
+  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  async getOrganizationSingleUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<any>{
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const getResult = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
+    
+    return UserMapper.toGetDto(getResult);
+  }
+
+
   @Patch('organization/:organizationId/user/:userId')
   @Permissions(PermissionOrganization.coworkerUpdate)
   @ApiTags('organization')
@@ -506,6 +538,8 @@ export class UserController {
   @Permissions(
     PermissionOrganization.coworkerRead,
     PermissionOrganization.organizationRead,
+    PermissionClearer.organizationRead,
+    PermissionClearer.coworkerRead,
   )
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get organization user list' })
