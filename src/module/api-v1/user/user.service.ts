@@ -6,17 +6,10 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserRequestDto } from './dto/create-user-request.dto';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
-import { RoleOrganization } from 'src/schema/role/role-organization.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
-import { ROLE_DEFAULT } from 'src/schema/role/role.schema';
+import { RoleDocument } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
-import { RoleClearer } from 'src/schema/role/role-clearer.schema';
-import {
-  PermissionClearer,
-  PermissionDesk,
-  PermissionOrganization,
-} from 'src/schema/role/permission.helper';
 
 @Injectable()
 export class UserService {
@@ -30,33 +23,28 @@ export class UserService {
     return await this.userModel.findOne({ 'personal.email': email }).exec();
   }
 
-  async ensureClearer(user: UserDocument): Promise<boolean> {
-    const userPermissions: string[] = await user.get('permissions');
-
-    return userPermissions.includes(PermissionClearer.default);
+  async getClearerUserById(id: string): Promise<UserDocument> {
+    return await this.userModel
+      .findOne({
+        _id: id,
+        $or: [{ organization: { $exists: false } }, { organization: null }],
+      })
+      .exec();
   }
 
-  async ensureOrganization(
-    user: UserDocument,
+  async getOrganizationUserById(
+    id: string,
     organization: OrganizationDocument,
-  ): Promise<boolean> {
-    const userPermissions: string[] = await user.get('permissions');
-    const permissionDefault = PermissionOrganization.default.replace(
-      '#organizationId#',
-      organization.id,
-    );
-
-    return userPermissions.includes(permissionDefault);
-  }
-
-  async ensureDesk(user: UserDocument, desk: DeskDocument): Promise<boolean> {
-    const userPermissions: string[] = await user.get('permissions');
-    const permissionDefault = PermissionDesk.default.replace(
-      '#deskId#',
-      desk.id,
-    );
-
-    return userPermissions.includes(permissionDefault);
+  ): Promise<UserDocument> {
+    return await this.userModel
+      .findOne({
+        _id: id,
+        $and: [
+          { organization: { $exists: true } },
+          { organization: organization._id },
+        ],
+      })
+      .exec();
   }
 
   async create(
@@ -95,9 +83,7 @@ export class UserService {
     return user;
   }
 
-  async getClearerManagersPaginated(
-    pagination: PaginationRequest,
-  ): Promise<any[]> {
+  async getClearerUserPaginated(pagination: PaginationRequest): Promise<any[]> {
     const {
       skip,
       limit,
@@ -107,19 +93,8 @@ export class UserService {
 
     const query: any[] = [
       {
-        $lookup: {
-          from: 'roles',
-          localField: 'roles.role',
-          foreignField: '_id',
-          as: 'user_roles',
-        },
-      },
-      {
         $match: {
-          $and: [
-            { 'user_roles.kind': RoleClearer.name },
-            { 'user_roles.name': ROLE_DEFAULT },
-          ],
+          $or: [{ organization: { $exists: false } }, { organization: null }],
         },
       },
     ];
@@ -156,7 +131,7 @@ export class UserService {
     ]);
   }
 
-  async getOrganizationManagersPaginated(
+  async getOrganizationUserPaginated(
     organization: OrganizationDocument,
     pagination: PaginationRequest,
   ): Promise<any[]> {
@@ -169,19 +144,10 @@ export class UserService {
 
     const query: any[] = [
       {
-        $lookup: {
-          from: 'roles',
-          localField: 'roles.role',
-          foreignField: '_id',
-          as: 'user_roles',
-        },
-      },
-      {
         $match: {
           $and: [
-            { 'user_roles.kind': RoleOrganization.name },
-            { 'user_roles.name': ROLE_DEFAULT },
-            { 'user_roles.organization': organization._id },
+            { organization: { $exists: true } },
+            { organization: organization._id },
           ],
         },
       },
@@ -219,7 +185,29 @@ export class UserService {
     ]);
   }
 
-  async getDeskManagersPaginated(
+  async getOrganizationUserActiveCount(
+    organization: OrganizationDocument,
+  ): Promise<number> {
+    return await this.userModel
+      .countDocuments({
+        organization: { $exists: true, $eq: organization._id },
+        $or: [{ suspended: { $exists: false } }, { suspended: false }],
+      })
+      .exec();
+  }
+
+  async getOrganizationUserSuspendedCount(
+    organization: OrganizationDocument,
+  ): Promise<number> {
+    return await this.userModel
+      .countDocuments({
+        organization: { $exists: true, $eq: organization._id },
+        $and: [{ suspended: { $exists: true } }, { suspended: true }],
+      })
+      .exec();
+  }
+
+  async getDeskUserPaginated(
     desk: DeskDocument,
     pagination: PaginationRequest,
   ): Promise<any[]> {
@@ -241,10 +229,21 @@ export class UserService {
       },
       {
         $match: {
-          $and: [
-            { 'user_roles.kind': RoleDesk.name },
-            { 'user_roles.name': ROLE_DEFAULT },
-            { 'user_roles.desk': desk._id },
+          $or: [
+            {
+              'roles.effectiveDesks': {
+                $and: [{ $exists: true }, { $elemMatch: desk._id }],
+              },
+            },
+            {
+              user_roles: {
+                $elemMatch: {
+                  kind: RoleDesk.name,
+                  desk: desk._id,
+                  system: true,
+                },
+              },
+            },
           ],
         },
       },
@@ -282,8 +281,58 @@ export class UserService {
     ]);
   }
 
-  async setTwoFactorAuthenticationSecret(user: UserDocument, secret: string) {
-    user.twoFactorAuthenticationSecret = secret;
-    await user.save();
+  async getUserOfRolePaginated(
+    role: RoleDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          roles: { $elemMatch: { role: role._id } },
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          $or: [
+            {
+              'personal.nickname': {
+                $regex: '.*' + search + '.*',
+                $options: 'i',
+              },
+            },
+            {
+              'personal.email': { $regex: '.*' + search + '.*', $options: 'i' },
+            },
+          ],
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.userModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+  }
+
+  async deleteRole(role: RoleDocument) {
+    await this.userModel.updateMany({ $pull: { roles: { role: role._id } } });
   }
 }

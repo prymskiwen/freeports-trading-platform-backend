@@ -41,6 +41,9 @@ export class User {
 
   @Prop()
   twoFactorAuthenticationSecret?: string;
+
+  @Prop()
+  suspended?: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

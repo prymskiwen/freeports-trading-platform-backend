@@ -34,10 +34,13 @@ export class OrganizationService {
       zip: request.zip,
       city: request.city,
       country: request.country,
+      logofile: request.logofile,
+      createtime: request.createtime,
     };
 
     organization.commissionRatio = {
       organization: request.сommission,
+      clearer: request.clearer,
     };
 
     if (persist) {
@@ -56,13 +59,16 @@ export class OrganizationService {
       name: request.name,
       street: request.street,
       street2: request.street2,
+      logofile: request.logofile,
       zip: request.zip,
       city: request.city,
       country: request.country,
+      createtime: request.createtime,
     };
 
     organization.commissionRatio = {
       organization: request.сommission,
+      clearer: request.clearer,
     };
 
     if (persist) {
@@ -106,7 +112,7 @@ export class OrganizationService {
     ]);
   }
 
-  async deleteAccount(
+  async unassignAccount(
     organization: OrganizationDocument,
     account: AccountDocument,
   ) {

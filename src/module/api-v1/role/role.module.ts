@@ -19,6 +19,7 @@ import { RoleController } from './role.controller';
 import { OrganizationModule } from '../organization/organization.module';
 import { DeskModule } from '../desk/desk.module';
 import { PermissionController } from './permission.controller';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PermissionController } from './permission.controller';
     ]),
     forwardRef(() => DeskModule),
     forwardRef(() => OrganizationModule),
+    forwardRef(() => UserModule),
   ],
   controllers: [RoleController, PermissionController],
   providers: [RoleService],

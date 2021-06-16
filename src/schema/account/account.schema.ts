@@ -13,11 +13,20 @@ import {
   AccountFiatDetails,
   AccountFiatDetailsSchema,
 } from './embedded/account-fiat-details.embedded';
+import { AccountClearer } from './account-clearer.schema';
+import { AccountInvestor } from './account-investor.schema';
 
 export type AccountDocument = Account & Document;
 
-@Schema({ versionKey: false })
+@Schema({ versionKey: false, discriminatorKey: 'kind' })
 export class Account {
+  @Prop({
+    type: String,
+    required: true,
+    enum: [AccountClearer.name, AccountInvestor.name],
+  })
+  kind: string;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   owner?: User;
 

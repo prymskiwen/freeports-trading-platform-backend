@@ -11,6 +11,9 @@ export class CreateOrganizationRequestDto {
   zip?: string;
   city?: string;
   country?: string;
-
+  logofile?: string;
+  createtime?: Date;
+  
   сommission?: number;
+  clearer?: number;
 }

@@ -1,6 +1,4 @@
 export const PermissionClearer = {
-  default: 'clearer',
-
   coworkerRead: 'clearer.coworker.read',
   coworkerCreate: 'clearer.coworker.create',
   coworkerUpdate: 'clearer.coworker.update',
@@ -17,9 +15,11 @@ export const PermissionClearer = {
   organizationUpdate: 'clearer.organization.update',
   organizationDisable: 'clearer.organization.disable',
 
-  organizationAccountRead: 'clearer.organization.account.read',
-  organizationAccountCreate: 'clearer.organization.account.create',
-  organizationAccountDelete: 'clearer.organization.account.delete',
+  accountRead: 'clearer.account.read',
+  accountCreate: 'clearer.account.create',
+  accountUpdate: 'clearer.account.update',
+  accountDelete: 'clearer.account.delete',
+  accountAssign: 'clearer.account.assign',
 
   organizationManagerRead: 'clearer.organization.manager.read',
   organizationManagerCreate: 'clearer.organization.manager.create',
@@ -100,15 +100,23 @@ export const PermissionClearerGroup = [
     permissions: [
       {
         name: 'Read',
-        code: PermissionClearer.organizationAccountRead,
+        code: PermissionClearer.accountRead,
       },
       {
         name: 'Create',
-        code: PermissionClearer.organizationAccountCreate,
+        code: PermissionClearer.accountCreate,
+      },
+      {
+        name: 'Update',
+        code: PermissionClearer.accountUpdate,
       },
       {
         name: 'Delete',
-        code: PermissionClearer.organizationAccountDelete,
+        code: PermissionClearer.accountDelete,
+      },
+      {
+        name: 'Assign',
+        code: PermissionClearer.accountAssign,
       },
     ],
   },
@@ -136,8 +144,6 @@ export const PermissionClearerGroup = [
 ];
 
 export const PermissionOrganization = {
-  default: 'organization.#organizationId#',
-
   coworkerRead: 'organization.#organizationId#.coworker.read',
   coworkerCreate: 'organization.#organizationId#.coworker.create',
   coworkerUpdate: 'organization.#organizationId#.coworker.update',
@@ -157,10 +163,10 @@ export const PermissionOrganization = {
   deskUpdate: 'organization.#organizationId#.desk.update',
   deskDisable: 'organization.#organizationId#.desk.disable',
 
-  deskManagerRead: 'organization.#organizationId#.desk.manager.read',
-  deskManagerCreate: 'organization.#organizationId#.desk.manager.create',
-  deskManagerUpdate: 'organization.#organizationId#.desk.manager.update',
-  deskManagerDisable: 'organization.#organizationId#.desk.manager.disable',
+  deskUserRead: 'organization.#organizationId#.desk.user.read',
+  deskUserCreate: 'organization.#organizationId#.desk.user.create',
+  deskUserUpdate: 'organization.#organizationId#.desk.user.update',
+  deskUserDisable: 'organization.#organizationId#.desk.user.disable',
 } as const;
 
 export const PermissionOrganizationGroup = [
@@ -245,31 +251,29 @@ export const PermissionOrganizationGroup = [
     ],
   },
   {
-    name: 'Desk manager',
+    name: 'Desk user',
     permissions: [
       {
         name: 'Read',
-        code: PermissionOrganization.deskManagerRead,
+        code: PermissionOrganization.deskUserRead,
       },
       {
         name: 'Create',
-        code: PermissionOrganization.deskManagerCreate,
+        code: PermissionOrganization.deskUserCreate,
       },
       {
         name: 'Update',
-        code: PermissionOrganization.deskManagerUpdate,
+        code: PermissionOrganization.deskUserUpdate,
       },
       {
         name: 'Disable',
-        code: PermissionOrganization.deskManagerDisable,
+        code: PermissionOrganization.deskUserDisable,
       },
     ],
   },
 ];
 
 export const PermissionDesk = {
-  default: 'desk.#deskId#',
-
   coworkerRead: 'desk.#deskId#.coworker.read',
   coworkerCreate: 'desk.#deskId#.coworker.create',
   coworkerUpdate: 'desk.#deskId#.coworker.update',

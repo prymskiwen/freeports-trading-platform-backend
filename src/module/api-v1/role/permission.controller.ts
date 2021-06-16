@@ -19,11 +19,11 @@ import { GetPermissionDeskResponseDto } from './dto/permission/get-permission-de
 import { GetPermissionOrganizationResponseDto } from './dto/permission/get-permission-organization-response.dto';
 
 @UseGuards(JwtTwoFactorGuard)
-@Controller('api/v1/permission')
+@Controller('api/v1')
 @ApiTags('permission', 'role')
 @ApiBearerAuth()
 export class PermissionController {
-  @Get('clearer')
+  @Get('permission')
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer permission list' })
   @ApiOkResponse({ type: [GetPermissionClearerResponseDto] })
@@ -39,7 +39,7 @@ export class PermissionController {
     return PermissionClearerGroup;
   }
 
-  @Get('organization')
+  @Get('organization/:anyOrganizationId/permission')
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get organization permission list' })
   @ApiOkResponse({ type: [GetPermissionOrganizationResponseDto] })
@@ -55,7 +55,7 @@ export class PermissionController {
     return PermissionOrganizationGroup;
   }
 
-  @Get('desk')
+  @Get('organization/:anyOrganizationId/desk/:anyDeskId/permission')
   @ApiTags('desk')
   @ApiOperation({ summary: 'Get desk permission list' })
   @ApiOkResponse({ type: [GetPermissionDeskResponseDto] })

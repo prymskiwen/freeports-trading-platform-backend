@@ -7,6 +7,9 @@ export class OrganizationClearing {
   @Prop()
   currency?: string;
 
+  @Prop()
+  iban?: string;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Account' })
   account?: Account;
 }

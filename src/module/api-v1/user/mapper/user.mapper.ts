@@ -23,7 +23,7 @@ export class UserMapper {
   public static toGetDto(document: UserDocument): GetUserResponseDto {
     const dto = new GetUserResponseDto();
 
-    dto.id = document.id;
+    dto.id = document._id;
     dto.nickname = document.personal.nickname;
     dto.email = document.personal.email;
 

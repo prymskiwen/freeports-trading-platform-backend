@@ -7,8 +7,8 @@ import { RoleDesk } from './role-desk.schema';
 import { RoleDeskMulti } from './role-desk-multi.schema';
 import { PermissionAny } from './permission.helper';
 
-export const ROLE_DEFAULT = '_default';
-export const ROLE_ADMIN = 'Administrator';
+export const ROLE_MANAGER = 'Manager';
+
 
 export type RoleDocument = Role & Document;
 
@@ -34,6 +34,9 @@ export class Role {
 
   @Prop()
   disabled?: boolean;
+
+  @Prop()
+  system?: boolean;
 
   @Prop({ type: [String], enum: PermissionAny })
   permissions?: PermissionAny[];
