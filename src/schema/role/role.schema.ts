@@ -7,7 +7,8 @@ import { RoleDesk } from './role-desk.schema';
 import { RoleDeskMulti } from './role-desk-multi.schema';
 import { PermissionAny } from './permission.helper';
 
-export const ROLE_MANAGER = 'Manager';
+export const ROLE_DEFAULT = '_default';
+export const ROLE_ADMIN = 'Administrator';
 
 export type RoleDocument = Role & Document;
 
