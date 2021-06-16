@@ -35,19 +35,15 @@ import { OrganizationService } from '../organization/organization.service';
 import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
 import { DeskService } from '../desk/desk.service';
 import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
-import { CreateRoleClearerRequestDto } from './dto/create-role-clearer-request.dto';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
-import { UpdateRoleClearerRequestDto } from './dto/update-role-clearer-request.dto';
 import { UpdateRoleResponseDto } from './dto/update-role-response.dto';
 import { UpdateRoleOrganizationRequestDto } from './dto/update-role-organization-request.dto';
-import { GetRoleClearerResponseDto } from './dto/get-role-clearer-response.dto';
 import { GetRoleOrganizationResponseDto } from './dto/get-role-organization-response.dto';
 import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto';
 import { GetRoleDeskMultiResponseDto } from './dto/get-role-desk-multi-response.dto';
 import { GetRoleDeskResponseDto } from './dto/get-role-desk-response.dto';
 import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
 import {
-  PermissionClearer,
   PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
@@ -65,122 +61,6 @@ export class RoleController {
     private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
-
-  @Get('role')
-  @Permissions(PermissionClearer.roleRead)
-  @ApiTags('clearer')
-  @ApiOperation({ summary: 'Get clearer role list' })
-  @ApiOkResponse({ type: [GetRoleClearerResponseDto] })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
-  async getRoleClearerList(): Promise<GetRoleClearerResponseDto[]> {
-    const roles = await this.roleService.getRoleClearerList();
-
-    return roles.map((role) => {
-      return {
-        id: role.id,
-        name: role.name,
-        permissions: role.permissions,
-      };
-    });
-  }
-
-  @Post('role')
-  @Permissions(PermissionClearer.roleCreate)
-  @ApiTags('clearer')
-  @ApiOperation({ summary: 'Create clearer role' })
-  @ApiCreatedResponse({
-    description: 'Successfully created clearer role id',
-    type: CreateRoleResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization has not been found',
-    type: ExceptionDto,
-  })
-  async createRoleClearer(
-    @Body() request: CreateRoleClearerRequestDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<CreateRoleResponseDto> {
-    const role = await this.roleService.createRoleClearer(request, userCurrent);
-
-    return RoleMapper.toCreateDto(role);
-  }
-
-  @Patch('role/:roleId')
-  @Permissions(PermissionClearer.roleUpdate)
-  @ApiTags('clearer')
-  @ApiOperation({ summary: 'Update clearer role' })
-  @ApiOkResponse({
-    description: 'Successfully updated clearer role id',
-    type: UpdateRoleResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Clearer role has not been found',
-    type: ExceptionDto,
-  })
-  async updateRoleClearer(
-    @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Body() request: UpdateRoleClearerRequestDto,
-  ): Promise<UpdateRoleResponseDto> {
-    const role = await this.roleService.getRoleClearerById(roleId);
-
-    if (!role) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.updateRoleClearer(role, request);
-
-    return RoleMapper.toUpdateDto(role);
-  }
-
-  @Delete('role/:roleId')
-  @Permissions(PermissionClearer.roleDelete)
-  @ApiTags('clearer')
-  @ApiOperation({ summary: 'Delete clearer role' })
-  @ApiOkResponse({
-    description: 'Successfully deleted clearer role id',
-    type: DeleteRoleResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Clearer role has not been found',
-    type: ExceptionDto,
-  })
-  async deleteRoleClearer(
-    @Param('roleId', ParseObjectIdPipe) roleId: string,
-  ): Promise<DeleteRoleResponseDto> {
-    const role = await this.roleService.getRoleClearerById(roleId);
-
-    if (!role) {
-      throw new NotFoundException();
-    }
-
-    await role.remove();
-    await this.userService.deleteRole(role);
-
-    return RoleMapper.toUpdateDto(role);
-  }
 
   @Get('organization/:organizationId/role')
   @Permissions(PermissionOrganization.roleRead)

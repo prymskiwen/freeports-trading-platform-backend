@@ -16,13 +16,13 @@ import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
 import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
 import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
-import { CreateRoleClearerRequestDto } from './dto/create-role-clearer-request.dto';
+import { CreateRoleClearerRequestDto } from './dto/clearer/create-role-clearer-request.dto';
 import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
 import {
   RoleDeskMulti,
   RoleDeskMultiDocument,
 } from 'src/schema/role/role-desk-multi.schema';
-import { UpdateRoleClearerRequestDto } from './dto/update-role-clearer-request.dto';
+import { UpdateRoleClearerRequestDto } from './dto/clearer/update-role-clearer-request.dto';
 import { UpdateRoleOrganizationRequestDto } from './dto/update-role-organization-request.dto';
 import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto';
 import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
