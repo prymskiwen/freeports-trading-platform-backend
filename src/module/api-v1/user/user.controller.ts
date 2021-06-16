@@ -242,6 +242,7 @@ export class UserController {
     );
     const user = await this.userService.create(request, false);
 
+    user.organization = organization;
     user.roles.push({
       role: roleManager,
       assignedAt: new Date(),
