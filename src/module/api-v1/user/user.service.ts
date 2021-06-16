@@ -444,7 +444,7 @@ export class UserService {
         },
       },
     ]);
-    return users.length;
+    return users;
   }
 
 
