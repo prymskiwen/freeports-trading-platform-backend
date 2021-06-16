@@ -8,7 +8,8 @@ import { OrganizationDocument } from 'src/schema/organization/organization.schem
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
-import { RoleDocument } from 'src/schema/role/role.schema';
+import { RoleOrganization } from 'src/schema/role/role-organization.schema';
+import { RoleDocument, ROLE_MANAGER } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 
 @Injectable()
@@ -200,7 +201,7 @@ export class UserService {
           user_roles: {
             $elemMatch: {
               kind: RoleOrganization.name,
-              name: ROLE_DEFAULT,
+              name: ROLE_MANAGER,
               organization: organization._id,
               system: true,
             },
@@ -234,7 +235,7 @@ export class UserService {
           user_roles: {
             $elemMatch: {
               kind: RoleOrganization.name,
-              name: ROLE_DEFAULT,
+              name: ROLE_MANAGER,
               organization: organization._id,
               system: false,
             },
@@ -250,12 +251,12 @@ export class UserService {
         },
       },
     ]);
-    return users;
+    return users.length;
   }
 
 
-  async getUserOfOrganizationPaginated(
-    organization: OrganizationDocument,
+  async getDeskUserPaginated(
+    desk: DeskDocument,
     pagination: PaginationRequest,
   ): Promise<any[]> {
     const {

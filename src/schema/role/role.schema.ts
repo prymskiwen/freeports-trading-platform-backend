@@ -9,6 +9,7 @@ import { PermissionAny } from './permission.helper';
 
 export const ROLE_MANAGER = 'Manager';
 
+
 export type RoleDocument = Role & Document;
 
 @Schema({ versionKey: false, discriminatorKey: 'kind' })
