@@ -189,7 +189,7 @@ export class UserService {
     organization: OrganizationDocument,
   ): Promise<number> {
     return await this.userModel
-      .count({
+      .countDocuments({
         organization: { $exists: true, $eq: organization._id },
         $or: [{ suspended: { $exists: false } }, { suspended: false }],
       })
@@ -200,7 +200,7 @@ export class UserService {
     organization: OrganizationDocument,
   ): Promise<number> {
     return await this.userModel
-      .count({
+      .countDocuments({
         organization: { $exists: true, $eq: organization._id },
         $and: [{ suspended: { $exists: true } }, { suspended: true }],
       })
