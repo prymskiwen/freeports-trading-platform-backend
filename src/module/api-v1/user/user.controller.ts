@@ -62,7 +62,7 @@ export class UserController {
     private readonly userService: UserService,
   ) {}
 
-  @Post('clearer/user')
+  @Post('user')
   @Permissions(PermissionClearer.coworkerCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create clearer user' })
@@ -88,7 +88,7 @@ export class UserController {
     return UserMapper.toCreateDto(user);
   }
 
-  @Patch('clearer/user/:userId')
+  @Patch('user/:userId')
   @Permissions(PermissionClearer.coworkerUpdate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Update clearer user' })
@@ -123,7 +123,7 @@ export class UserController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Post('clearer/user/:userId/role')
+  @Post('user/:userId/role')
   @Permissions(PermissionClearer.roleAssign)
   @ApiTags('clearer', 'role')
   @ApiOperation({ summary: 'Assign clearer role to user' })
@@ -183,7 +183,7 @@ export class UserController {
     return UserMapper.toCreateDto(user);
   }
 
-  @Get('clearer/user')
+  @Get('user')
   @Permissions(PermissionClearer.coworkerRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer user list' })
@@ -502,7 +502,10 @@ export class UserController {
   }
 
   @Get('organization/:organizationId/user')
-  @Permissions(PermissionOrganization.coworkerRead)
+  @Permissions(
+    PermissionOrganization.coworkerRead,
+    PermissionOrganization.organizationRead,
+  )
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get organization user list' })
   @ApiPaginationResponse(GetUserResponseDto)
@@ -582,7 +585,7 @@ export class UserController {
     );
   }
 
-  @Get('clearer/role/:roleId')
+  @Get('role/:roleId')
   @Permissions(PermissionClearer.roleRead)
   @ApiTags('clearer', 'role')
   @ApiOperation({ summary: 'Get clearer role user list' })

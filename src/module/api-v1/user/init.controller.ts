@@ -29,7 +29,7 @@ export class InitController {
     private readonly userService: UserService,
   ) {}
 
-  @Post('clearer/manager')
+  @Post('manager')
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create clearer manager' })
   @ApiCreatedResponse({

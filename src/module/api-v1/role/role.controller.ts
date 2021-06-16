@@ -66,7 +66,7 @@ export class RoleController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('clearer/role')
+  @Get('role')
   @Permissions(PermissionClearer.roleRead)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer role list' })
@@ -87,7 +87,7 @@ export class RoleController {
     });
   }
 
-  @Post('clearer/role')
+  @Post('role')
   @Permissions(PermissionClearer.roleCreate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Create clearer role' })
@@ -116,7 +116,7 @@ export class RoleController {
     return RoleMapper.toCreateDto(role);
   }
 
-  @Patch('clearer/role/:roleId')
+  @Patch('role/:roleId')
   @Permissions(PermissionClearer.roleUpdate)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Update clearer role' })
@@ -151,7 +151,7 @@ export class RoleController {
     return RoleMapper.toUpdateDto(role);
   }
 
-  @Delete('clearer/role/:roleId')
+  @Delete('role/:roleId')
   @Permissions(PermissionClearer.roleDelete)
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Delete clearer role' })

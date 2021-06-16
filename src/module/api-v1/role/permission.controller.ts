@@ -23,7 +23,7 @@ import { GetPermissionOrganizationResponseDto } from './dto/permission/get-permi
 @ApiTags('permission', 'role')
 @ApiBearerAuth()
 export class PermissionController {
-  @Get('clearer/permission')
+  @Get('permission')
   @ApiTags('clearer')
   @ApiOperation({ summary: 'Get clearer permission list' })
   @ApiOkResponse({ type: [GetPermissionClearerResponseDto] })
