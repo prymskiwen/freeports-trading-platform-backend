@@ -5,6 +5,7 @@ import { InvalidCredentialsException } from 'src/exeption/invalid-credentials.ex
 import { UserDocument } from 'src/schema/user/user.schema';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../../user/user.service';
+import { SuspendedUserException } from 'src/exeption/suspended-user.exception';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -20,6 +21,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
     if (!user || !(await bcrypt.compare(password, user.personal.password))) {
       throw new InvalidCredentialsException();
+    }
+
+    if (user.suspended) {
+      throw new SuspendedUserException();
     }
 
     return user;

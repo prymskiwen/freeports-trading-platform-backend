@@ -7,4 +7,5 @@ export enum ErrorType {
   TokenWrong = 'TOKEN_WRONG',
   ParameterMissed = 'PARAMETER_MISSED',
   ValueExists = 'VALUE_EXISTS',
+  UserSuspended = 'USER_SUSPENDED',
 }
