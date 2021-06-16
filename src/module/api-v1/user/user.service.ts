@@ -8,8 +8,7 @@ import { OrganizationDocument } from 'src/schema/organization/organization.schem
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
-import { RoleOrganization } from 'src/schema/role/role-organization.schema';
-import { RoleDocument, ROLE_MANAGER } from 'src/schema/role/role.schema';
+import { RoleDocument } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 
 @Injectable()
@@ -186,74 +185,27 @@ export class UserService {
     ]);
   }
 
-  async getActiveUserCountOfOrganization(organization: OrganizationDocument): Promise<any> {
-    const query: any[] = [
-      {
-        $lookup: {
-          from: 'roles',
-          localField: 'roles.role',
-          foreignField: '_id',
-          as: 'user_roles',
-        },
-      },
-      {
-        $match: {
-          user_roles: {
-            $elemMatch: {
-              kind: RoleOrganization.name,
-              name: ROLE_MANAGER,
-              organization: organization._id,
-              system: true,
-            },
-          },
-        },
-      },
-    ];
-     const users = await this.userModel.aggregate([
-      ...query,
-      {
-        $facet: {
-          totalResult: [{ $count: 'total' }],
-        },
-      },
-    ]);
-    return users.length;
+  async getOrganizationUserActiveCount(
+    organization: OrganizationDocument,
+  ): Promise<number> {
+    return await this.userModel
+      .count({
+        organization: { $exists: true, $eq: organization._id },
+        $or: [{ suspended: { $exists: false } }, { suspended: false }],
+      })
+      .exec();
   }
 
-  async getDisActiveUserCountOfOrganization(organization: OrganizationDocument): Promise<any> {
-    const query: any[] = [
-      {
-        $lookup: {
-          from: 'roles',
-          localField: 'roles.role',
-          foreignField: '_id',
-          as: 'user_roles',
-        },
-      },
-      {
-        $match: {
-          user_roles: {
-            $elemMatch: {
-              kind: RoleOrganization.name,
-              name: ROLE_MANAGER,
-              organization: organization._id,
-              system: false,
-            },
-          },
-        },
-      },
-    ];
-     const users = await this.userModel.aggregate([
-      ...query,
-      {
-        $facet: {
-          totalResult: [{ $count: 'total' }],
-        },
-      },
-    ]);
-    return users.length;
+  async getOrganizationUserSuspendedCount(
+    organization: OrganizationDocument,
+  ): Promise<number> {
+    return await this.userModel
+      .count({
+        organization: { $exists: true, $eq: organization._id },
+        $and: [{ suspended: { $exists: true } }, { suspended: true }],
+      })
+      .exec();
   }
-
 
   async getDeskUserPaginated(
     desk: DeskDocument,

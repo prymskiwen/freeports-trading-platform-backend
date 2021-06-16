@@ -145,8 +145,8 @@ export class OrganizationController {
     if (!organization) {
       throw new NotFoundException();
     }
-    const disableUser = await this.userService.getDisActiveUserCountOfOrganization(organization);
-    const ableUser = await this.userService.getActiveUserCountOfOrganization(organization);
+    const disableUser = await this.userService.getOrganizationUserSuspendedCount(organization);
+    const ableUser = await this.userService.getOrganizationUserActiveCount(organization);
 
     // return OrganizationMapper.toGetDto(organization);
     return OrganizationMapper.toGetsignDto(organization, ableUser, disableUser);
@@ -165,8 +165,8 @@ export class OrganizationController {
     ] = await this.organizationService.getOrganizationsPaginated(pagination);
     const organizationDtos: any[] = await Promise.all(paginatedResult.map(
       async (organization: OrganizationDocument): Promise<any> => {
-        const disableUser = await this.userService.getDisActiveUserCountOfOrganization(organization);
-        const ableUser = await this.userService.getActiveUserCountOfOrganization(organization);
+        const disableUser = await this.userService.getOrganizationUserSuspendedCount(organization);
+        const ableUser = await this.userService.getOrganizationUserActiveCount(organization);
         console.log(disableUser);
         return {
           id: organization._id,
