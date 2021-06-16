@@ -7,6 +7,7 @@ import {
   Get,
   UseGuards,
   NotFoundException,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -119,6 +120,68 @@ export class UserController {
     }
 
     await this.userService.update(user, request);
+
+    return UserMapper.toUpdateDto(user);
+  }
+
+  @Put('user/:userId/suspend')
+  @Permissions(PermissionClearer.coworkerState)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Suspend clearer user' })
+  @ApiOkResponse({
+    description: 'Successfully suspended clearer user id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Clearer user has not been found',
+    type: ExceptionDto,
+  })
+  async suspendClearerUser(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<UpdateUserResponseDto> {
+    const user = await this.userService.getClearerUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    user.suspended = true;
+    await user.save();
+
+    return UserMapper.toUpdateDto(user);
+  }
+
+  @Put('user/:userId/resume')
+  @Permissions(PermissionClearer.coworkerState)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Resume clearer user' })
+  @ApiOkResponse({
+    description: 'Successfully resumed clearer user id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Clearer user has not been found',
+    type: ExceptionDto,
+  })
+  async resumeClearerUser(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<UpdateUserResponseDto> {
+    const user = await this.userService.getClearerUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    user.suspended = false;
+    await user.save();
 
     return UserMapper.toUpdateDto(user);
   }
@@ -334,6 +397,88 @@ export class UserController {
     }
 
     await this.userService.update(user, request);
+
+    return UserMapper.toUpdateDto(user);
+  }
+
+  @Put('organization/:organizationId/user/:userId/suspend')
+  @Permissions(PermissionOrganization.coworkerState)
+  @ApiTags('organization')
+  @ApiOperation({ summary: 'Suspend organization user' })
+  @ApiOkResponse({
+    description: 'Successfully suspended organization user id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization user has not been found',
+    type: ExceptionDto,
+  })
+  async suspendOrganizationUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<UpdateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    user.suspended = true;
+    await user.save();
+
+    return UserMapper.toUpdateDto(user);
+  }
+
+  @Put('organization/:organizationId/user/:userId/resume')
+  @Permissions(PermissionOrganization.coworkerState)
+  @ApiTags('organization')
+  @ApiOperation({ summary: 'Resume organization user' })
+  @ApiOkResponse({
+    description: 'Successfully resumed organization user id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization user has not been found',
+    type: ExceptionDto,
+  })
+  async resumeOrganizationUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<UpdateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    user.suspended = false;
+    await user.save();
 
     return UserMapper.toUpdateDto(user);
   }
