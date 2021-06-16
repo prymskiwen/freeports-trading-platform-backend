@@ -11,12 +11,7 @@ import {
   RoleClearer,
   RoleClearerDocument,
 } from 'src/schema/role/role-clearer.schema';
-import {
-  Role,
-  RoleDocument,
-  ROLE_ADMIN,
-  ROLE_DEFAULT,
-} from 'src/schema/role/role.schema';
+import { ROLE_MANAGER } from 'src/schema/role/role.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
 import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
@@ -33,15 +28,12 @@ import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto'
 import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
 import {
   PermissionClearer,
-  PermissionDesk,
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
 
 @Injectable()
 export class RoleService {
   constructor(
-    @InjectModel(Role.name)
-    private roleModel: Model<RoleDocument>,
     @InjectModel(RoleClearer.name)
     private roleClearerModel: Model<RoleClearerDocument>,
     @InjectModel(RoleOrganization.name)
@@ -52,20 +44,16 @@ export class RoleService {
     private roleDeskMultiModel: Model<RoleDeskMultiDocument>,
   ) {}
 
-  // async getById(id: string): Promise<RoleDocument> {
-  //   return await this.roleModel.findById(id).exec();
-  // }
-
-  async createRoleClearerDefault(
+  async createRoleClearerManager(
     user: UserDocument,
     persist = true,
   ): Promise<RoleClearerDocument> {
     const role = new this.roleClearerModel();
 
-    role.name = ROLE_DEFAULT;
-    role.permissions.push(PermissionClearer.default);
+    role.name = ROLE_MANAGER;
     role.system = true;
     role.owner = user;
+    role.permissions = Object.values(PermissionClearer);
 
     if (persist) {
       await role.save();
@@ -74,31 +62,10 @@ export class RoleService {
     return role;
   }
 
-  async getRoleClearerDefault(): Promise<RoleClearerDocument> {
+  async getRoleClearerManager(): Promise<RoleClearerDocument> {
     return await this.roleClearerModel
-      .findOne({ name: ROLE_DEFAULT, system: true })
+      .findOne({ name: ROLE_MANAGER, system: true })
       .exec();
-  }
-
-  async createRoleClearerAdmin(
-    user: UserDocument,
-    persist = true,
-  ): Promise<RoleClearerDocument> {
-    const role = new this.roleClearerModel();
-
-    role.name = ROLE_ADMIN;
-    // all except default
-    role.permissions = Object.values(PermissionClearer).filter(
-      (v) => v !== PermissionClearer.default,
-    );
-    role.system = false;
-    role.owner = user;
-
-    if (persist) {
-      await role.save();
-    }
-
-    return role;
   }
 
   async createRoleClearer(
@@ -108,9 +75,9 @@ export class RoleService {
     const role = new this.roleClearerModel();
 
     role.name = request.name;
-    role.permissions = request.permissions;
     role.system = false;
     role.owner = user;
+    role.permissions = request.permissions;
     await role.save();
 
     return role;
@@ -143,49 +110,18 @@ export class RoleService {
     return role;
   }
 
-  async createRoleOrganizationDefault(
+  async createRoleOrganizationManager(
     organization: OrganizationDocument,
     user: UserDocument,
     persist = true,
   ): Promise<RoleOrganizationDocument> {
     const role = new this.roleOrganizationModel();
 
-    role.name = ROLE_DEFAULT;
-    role.permissions.push(PermissionOrganization.default);
-    role.organization = organization;
+    role.name = ROLE_MANAGER;
     role.system = true;
     role.owner = user;
-
-    if (persist) {
-      await role.save();
-    }
-
-    return role;
-  }
-
-  async getRoleOrganizationDefault(
-    organization: OrganizationDocument,
-  ): Promise<RoleOrganizationDocument> {
-    return await this.roleOrganizationModel
-      .findOne({ organization: organization, name: ROLE_DEFAULT, system: true })
-      .exec();
-  }
-
-  async createRoleOrganizationAdmin(
-    organization: OrganizationDocument,
-    user: UserDocument,
-    persist = true,
-  ): Promise<RoleOrganizationDocument> {
-    const role = new this.roleOrganizationModel();
-
-    role.name = ROLE_ADMIN;
-    // all except default
-    role.permissions = Object.values(PermissionOrganization).filter(
-      (v) => v !== PermissionOrganization.default,
-    );
     role.organization = organization;
-    role.system = false;
-    role.owner = user;
+    role.permissions = Object.values(PermissionOrganization);
 
     if (persist) {
       await role.save();
@@ -194,11 +130,11 @@ export class RoleService {
     return role;
   }
 
-  async getRoleOrganizationAdmin(
+  async getRoleOrganizationManager(
     organization: OrganizationDocument,
   ): Promise<RoleOrganizationDocument> {
     return await this.roleOrganizationModel
-      .findOne({ organization: organization, name: ROLE_ADMIN, system: false })
+      .findOne({ organization: organization, name: ROLE_MANAGER, system: true })
       .exec();
   }
 
@@ -210,10 +146,10 @@ export class RoleService {
     const role = new this.roleOrganizationModel();
 
     role.name = request.name;
-    role.permissions = request.permissions;
-    role.organization = organization;
     role.system = false;
     role.owner = user;
+    role.organization = organization;
+    role.permissions = request.permissions;
     await role.save();
 
     return role;
@@ -257,32 +193,6 @@ export class RoleService {
     return role;
   }
 
-  async createRoleDeskDefault(
-    desk: DeskDocument,
-    user: UserDocument,
-    persist = true,
-  ): Promise<RoleDeskDocument> {
-    const role = new this.roleDeskModel();
-
-    role.name = ROLE_DEFAULT;
-    role.permissions.push(PermissionDesk.default);
-    role.desk = desk;
-    role.system = true;
-    role.owner = user;
-
-    if (persist) {
-      await role.save();
-    }
-
-    return role;
-  }
-
-  async getRoleDeskDefault(desk: DeskDocument): Promise<RoleDeskDocument> {
-    return await this.roleDeskModel
-      .findOne({ desk: desk, name: ROLE_DEFAULT, system: true })
-      .exec();
-  }
-
   async createRoleDesk(
     desk: DeskDocument,
     request: CreateRoleDeskRequestDto,
@@ -291,10 +201,10 @@ export class RoleService {
     const role = new this.roleDeskModel();
 
     role.name = request.name;
-    role.permissions = request.permissions;
-    role.desk = desk;
     role.system = false;
     role.owner = user;
+    role.desk = desk;
+    role.permissions = request.permissions;
     await role.save();
 
     return role;
@@ -344,10 +254,10 @@ export class RoleService {
     const role = new this.roleDeskMultiModel();
 
     role.name = request.name;
-    role.permissions = request.permissions;
-    role.organization = organization;
     role.system = false;
     role.owner = user;
+    role.organization = organization;
+    role.permissions = request.permissions;
     await role.save();
 
     return role;

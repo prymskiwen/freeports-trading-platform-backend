@@ -7,15 +7,18 @@ import { UserController } from './user.controller';
 import { OrganizationModule } from '../organization/organization.module';
 import { RoleModule } from '../role/role.module';
 import { DeskModule } from '../desk/desk.module';
+import { InitController } from './init.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    forwardRef(() => AuthModule),
     DeskModule,
     OrganizationModule,
     forwardRef(() => RoleModule),
   ],
-  controllers: [UserController],
+  controllers: [UserController, InitController],
   providers: [UserService, IsUniqueInDbConstraint],
   exports: [UserService],
 })

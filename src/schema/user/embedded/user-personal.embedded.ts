@@ -11,6 +11,12 @@ export class UserPersonal {
   @Prop()
   password: string;
 
+  @Prop()
+  phone?: string;
+
+  @Prop()
+  avata?: string;
+
   /**
    * @example 'john@doe.com'
    */
