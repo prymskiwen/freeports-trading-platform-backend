@@ -6,16 +6,10 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserRequestDto } from './dto/create-user-request.dto';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
-import { RoleOrganization } from 'src/schema/role/role-organization.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
-import {
-  RoleDocument,
-  ROLE_ADMIN,
-  ROLE_DEFAULT,
-} from 'src/schema/role/role.schema';
+import { RoleDocument } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
-import { RoleClearer } from 'src/schema/role/role-clearer.schema';
 
 @Injectable()
 export class UserService {
@@ -29,176 +23,28 @@ export class UserService {
     return await this.userModel.findOne({ 'personal.email': email }).exec();
   }
 
-  async getUserOfClearerById(id: string): Promise<UserDocument> {
-    const users = await this.userModel
-      .aggregate([
-        {
-          $lookup: {
-            from: 'roles',
-            localField: 'roles.role',
-            foreignField: '_id',
-            as: 'user_roles',
-          },
-        },
-        {
-          $match: {
-            $and: [
-              { _id: id },
-              {
-                user_roles: {
-                  $elemMatch: {
-                    kind: RoleClearer.name,
-                    name: ROLE_DEFAULT,
-                    system: true,
-                  },
-                },
-              },
-            ],
-          },
-        },
-      ])
+  async getClearerUserById(id: string): Promise<UserDocument> {
+    return await this.userModel
+      .findOne({
+        _id: id,
+        $or: [{ organization: { $exists: false } }, { organization: null }],
+      })
       .exec();
-
-    if (!Array.isArray(users) || users.length !== 1) {
-      return null;
-    }
-
-    return this.userModel.hydrate(users[0]);
   }
 
-  async getManagerOfOrganizationById(
+  async getOrganizationUserById(
     id: string,
     organization: OrganizationDocument,
   ): Promise<UserDocument> {
-    const users = await this.userModel
-      .aggregate([
-        {
-          $lookup: {
-            from: 'roles',
-            localField: 'roles.role',
-            foreignField: '_id',
-            as: 'user_roles',
-          },
-        },
-        {
-          $match: {
-            $and: [
-              { _id: id },
-              {
-                user_roles: {
-                  $all: [
-                    {
-                      $elemMatch: {
-                        kind: RoleOrganization.name,
-                        name: ROLE_DEFAULT,
-                        organization: organization._id,
-                        system: true,
-                      },
-                    },
-                    {
-                      $elemMatch: {
-                        kind: RoleOrganization.name,
-                        name: ROLE_ADMIN,
-                        organization: organization._id,
-                        system: false,
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      ])
+    return await this.userModel
+      .findOne({
+        _id: id,
+        $and: [
+          { organization: { $exists: true } },
+          { organization: organization._id },
+        ],
+      })
       .exec();
-
-    if (!Array.isArray(users) || users.length !== 1) {
-      return null;
-    }
-
-    return this.userModel.hydrate(users[0]);
-  }
-
-  async getUserOfOrganizationById(
-    id: string,
-    organization: OrganizationDocument,
-  ): Promise<UserDocument> {
-    const users = await this.userModel
-      .aggregate([
-        {
-          $lookup: {
-            from: 'roles',
-            localField: 'roles.role',
-            foreignField: '_id',
-            as: 'user_roles',
-          },
-        },
-        {
-          $match: {
-            $and: [
-              { _id: id },
-              {
-                user_roles: {
-                  $elemMatch: {
-                    kind: RoleOrganization.name,
-                    name: ROLE_DEFAULT,
-                    organization: organization._id,
-                    system: true,
-                  },
-                },
-              },
-            ],
-          },
-        },
-      ])
-      .exec();
-
-    if (!Array.isArray(users) || users.length !== 1) {
-      return null;
-    }
-
-    return this.userModel.hydrate(users[0]);
-  }
-
-  async getUserOfDeskById(
-    id: string,
-    desk: DeskDocument,
-  ): Promise<UserDocument> {
-    const users = await this.userModel
-      .aggregate([
-        {
-          $lookup: {
-            from: 'roles',
-            localField: 'roles.role',
-            foreignField: '_id',
-            as: 'user_roles',
-          },
-        },
-        {
-          $match: {
-            $and: [
-              { _id: id },
-              {
-                user_roles: {
-                  $elemMatch: {
-                    kind: RoleDesk.name,
-                    name: ROLE_DEFAULT,
-                    desk: desk._id,
-                    system: true,
-                  },
-                },
-              },
-            ],
-          },
-        },
-      ])
-      .exec();
-
-    if (!Array.isArray(users) || users.length !== 1) {
-      return null;
-    }
-
-    return this.userModel.hydrate(users[0]);
   }
 
   async create(
@@ -237,9 +83,7 @@ export class UserService {
     return user;
   }
 
-  async getUserOfClearerPaginated(
-    pagination: PaginationRequest,
-  ): Promise<any[]> {
+  async getClearerUserPaginated(pagination: PaginationRequest): Promise<any[]> {
     const {
       skip,
       limit,
@@ -249,22 +93,8 @@ export class UserService {
 
     const query: any[] = [
       {
-        $lookup: {
-          from: 'roles',
-          localField: 'roles.role',
-          foreignField: '_id',
-          as: 'user_roles',
-        },
-      },
-      {
         $match: {
-          user_roles: {
-            $elemMatch: {
-              kind: RoleClearer.name,
-              name: ROLE_DEFAULT,
-              system: true,
-            },
-          },
+          $or: [{ organization: { $exists: false } }, { organization: null }],
         },
       },
     ];
@@ -301,7 +131,7 @@ export class UserService {
     ]);
   }
 
-  async getManagerOfOrganizationPaginated(
+  async getOrganizationUserPaginated(
     organization: OrganizationDocument,
     pagination: PaginationRequest,
   ): Promise<any[]> {
@@ -314,35 +144,11 @@ export class UserService {
 
     const query: any[] = [
       {
-        $lookup: {
-          from: 'roles',
-          localField: 'roles.role',
-          foreignField: '_id',
-          as: 'user_roles',
-        },
-      },
-      {
         $match: {
-          user_roles: {
-            $all: [
-              {
-                $elemMatch: {
-                  kind: RoleOrganization.name,
-                  name: ROLE_DEFAULT,
-                  organization: organization._id,
-                  system: true,
-                },
-              },
-              {
-                $elemMatch: {
-                  kind: RoleOrganization.name,
-                  name: ROLE_ADMIN,
-                  organization: organization._id,
-                  system: false,
-                },
-              },
-            ],
-          },
+          $and: [
+            { organization: { $exists: true } },
+            { organization: organization._id },
+          ],
         },
       },
     ];
@@ -470,80 +276,22 @@ export class UserService {
       },
       {
         $match: {
-          user_roles: {
-            $elemMatch: {
-              kind: RoleOrganization.name,
-              name: ROLE_DEFAULT,
-              organization: organization._id,
-              system: true,
-            },
-          },
-        },
-      },
-    ];
-
-    if (search) {
-      query.push({
-        $match: {
           $or: [
             {
-              'personal.nickname': {
-                $regex: '.*' + search + '.*',
-                $options: 'i',
+              'roles.effectiveDesks': {
+                $and: [{ $exists: true }, { $elemMatch: desk._id }],
               },
             },
             {
-              'personal.email': { $regex: '.*' + search + '.*', $options: 'i' },
+              user_roles: {
+                $elemMatch: {
+                  kind: RoleDesk.name,
+                  desk: desk._id,
+                  system: true,
+                },
+              },
             },
           ],
-        },
-      });
-    }
-    if (Object.keys(order).length) {
-      query.push({ $sort: order });
-    }
-
-    return await this.userModel.aggregate([
-      ...query,
-      {
-        $facet: {
-          paginatedResult: [{ $skip: skip }, { $limit: limit }],
-          totalResult: [{ $count: 'total' }],
-        },
-      },
-    ]);
-  }
-
-  async getUserOfDeskPaginated(
-    desk: DeskDocument,
-    pagination: PaginationRequest,
-  ): Promise<any[]> {
-    const {
-      skip,
-      limit,
-      order,
-      params: { search },
-    } = pagination;
-
-    const query: any[] = [
-      {
-        $lookup: {
-          from: 'roles',
-          localField: 'roles.role',
-          foreignField: '_id',
-          as: 'user_roles',
-        },
-      },
-      {
-        $match: {
-          user_roles: {
-            $elemMatch: {
-              kind: RoleDesk.name,
-              name: ROLE_DEFAULT,
-              desk: desk._id,
-              system: true,
-            },
-          },
         },
       },
     ];

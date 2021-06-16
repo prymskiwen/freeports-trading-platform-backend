@@ -55,7 +55,7 @@ import { DeleteRoleResponseDto } from './dto/delete-role-response.dto';
 import { UserService } from '../user/user.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization')
+@Controller('api/v1')
 @ApiTags('role')
 @ApiBearerAuth()
 export class RoleController {
@@ -182,7 +182,7 @@ export class RoleController {
     return RoleMapper.toUpdateDto(role);
   }
 
-  @Get(':organizationId/role')
+  @Get('organization/:organizationId/role')
   @Permissions(PermissionOrganization.roleRead)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get organization role list' })
@@ -219,7 +219,7 @@ export class RoleController {
     });
   }
 
-  @Post(':organizationId/role')
+  @Post('organization/:organizationId/role')
   @Permissions(PermissionOrganization.roleCreate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Create organization role' })
@@ -259,7 +259,7 @@ export class RoleController {
     return RoleMapper.toCreateDto(role);
   }
 
-  @Patch(':organizationId/role/:roleId')
+  @Patch('organization/:organizationId/role/:roleId')
   @Permissions(PermissionOrganization.roleUpdate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Update organization role' })
@@ -304,7 +304,7 @@ export class RoleController {
     return RoleMapper.toUpdateDto(role);
   }
 
-  @Delete(':organizationId/role/:roleId')
+  @Delete('organization/:organizationId/role/:roleId')
   @Permissions(PermissionOrganization.roleDelete)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Delete organization role' })
@@ -349,7 +349,7 @@ export class RoleController {
     return RoleMapper.toUpdateDto(role);
   }
 
-  @Get(':organizationId/role-multi')
+  @Get('organization/:organizationId/role-multi')
   @Permissions(PermissionOrganization.roleRead)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get multi-desk role list' })
@@ -386,7 +386,7 @@ export class RoleController {
     });
   }
 
-  @Post(':organizationId/role-multi')
+  @Post('organization/:organizationId/role-multi')
   @Permissions(PermissionOrganization.roleCreate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Create multi-desk role' })
@@ -426,7 +426,7 @@ export class RoleController {
     return RoleMapper.toCreateDto(role);
   }
 
-  @Patch(':organizationId/role-multi/:roleId')
+  @Patch('organization/:organizationId/role-multi/:roleId')
   @Permissions(PermissionOrganization.roleUpdate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Update multi-desk role' })
@@ -471,7 +471,7 @@ export class RoleController {
     return RoleMapper.toUpdateDto(role);
   }
 
-  @Delete(':organizationId/role-multi/:roleId')
+  @Delete('organization/:organizationId/role-multi/:roleId')
   @Permissions(PermissionOrganization.roleDelete)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Delete multi-desk role' })
@@ -516,7 +516,7 @@ export class RoleController {
     return RoleMapper.toUpdateDto(role);
   }
 
-  @Get(':organizationId/desk/:deskId/role')
+  @Get('organization/:organizationId/desk/:deskId/role')
   @Permissions(PermissionOrganization.roleRead, PermissionDesk.roleRead)
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Get desk role list' })
@@ -555,7 +555,7 @@ export class RoleController {
     });
   }
 
-  @Post(':organizationId/desk/:deskId/role')
+  @Post('organization/:organizationId/desk/:deskId/role')
   @Permissions(PermissionOrganization.roleCreate, PermissionDesk.roleCreate)
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Create desk role' })
@@ -597,7 +597,7 @@ export class RoleController {
     return RoleMapper.toCreateDto(role);
   }
 
-  @Patch(':organizationId/desk/:deskId/role/:roleId')
+  @Patch('organization/:organizationId/desk/:deskId/role/:roleId')
   @Permissions(PermissionOrganization.roleUpdate, PermissionDesk.roleUpdate)
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Update desk role' })
@@ -641,7 +641,7 @@ export class RoleController {
     return RoleMapper.toUpdateDto(role);
   }
 
-  @Delete(':organizationId/desk/:deskId/role/:roleId')
+  @Delete('organization/:organizationId/desk/:deskId/role/:roleId')
   @Permissions(PermissionOrganization.roleDelete)
   @ApiTags('organization', 'desk')
   @ApiOperation({ summary: 'Delete desk role' })
