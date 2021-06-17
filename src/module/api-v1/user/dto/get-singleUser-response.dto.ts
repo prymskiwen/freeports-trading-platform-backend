@@ -4,4 +4,5 @@ export class GetSingleUserResponseDto {
   email: string;
   phone: string;
   avata: string;
+  suspended: boolean;
 }
