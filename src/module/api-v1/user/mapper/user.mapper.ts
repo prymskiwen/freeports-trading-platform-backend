@@ -40,6 +40,7 @@ export class UserMapper {
     dto.email = document.personal.email;
     dto.phone = document.personal.phone;
     dto.avata = document.personal.avata;
+    dto.suspended = document.suspended;
 
     return dto;
   }
