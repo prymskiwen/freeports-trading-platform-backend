@@ -15,6 +15,7 @@ import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { Response } from 'express';
 import { OTPSecretNotSet } from 'src/exeption/otp-secret-not-set.exception';
+import { SuspendedUserException } from 'src/exeption/suspended-user.exception';
 
 @Injectable()
 export class AuthService {
@@ -76,12 +77,27 @@ export class AuthService {
     };
   }
 
-  public generateRefreshToken(refreshToken: string): TokenDto {
+  async generateRefreshToken(refreshToken: string): Promise<TokenDto> {
     try {
-      return this.generateAuthToken(this.jwtService.verify(refreshToken));
-    } catch ({ name }) {
-      if (name === 'TokenExpiredError') {
+      const token = this.jwtService.verify(refreshToken);
+      const user = await this.userService.getById(token.sub);
+
+      if (!user) {
+        throw new InvalidTokenException();
+      }
+
+      if (user.suspended) {
+        throw new SuspendedUserException();
+      }
+
+      return this.generateAuthToken(token);
+    } catch (error) {
+      if (error.name && error.name === 'TokenExpiredError') {
         throw new ExpiredTokenException();
+      }
+
+      if (error.response) {
+        throw error;
       }
 
       throw new InvalidTokenException();
@@ -93,7 +109,7 @@ export class AuthService {
       const { sub } = this.jwtService.verify(token);
       const user = await this.userService.getById(sub);
 
-      if (!user) {
+      if (!user || user.suspended) {
         return { valid: false };
       }
 
