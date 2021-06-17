@@ -319,6 +319,48 @@ export class UserController {
     return UserMapper.toCreateDto(user);
   }
 
+  @Get('organization/:organizationId/manager')
+  @Permissions(PermissionClearer.organizationManagerRead)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Get organization manager list' })
+  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  async getOrganizationManagerPaginated(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const roleManager = await this.roleService.getRoleOrganizationManager(
+      organization,
+    );
+
+    if (!roleManager) {
+      throw new NotFoundException();
+    }
+
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.userService.getUserOfRolePaginated(roleManager, pagination);
+
+    const userDtos = paginatedResult.map((user: UserDocument) =>
+      UserMapper.toGetDto(user),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      userDtos,
+    );
+  }
+
   @Post('organization/:organizationId/user')
   @Permissions(PermissionOrganization.coworkerCreate)
   @ApiTags('organization')
