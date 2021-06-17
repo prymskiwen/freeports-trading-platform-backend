@@ -21,4 +21,8 @@ export class CreateUserRequestDto {
   @IsEmail()
   @IsUniqueInDb({ schema: 'users', path: 'personal.email' })
   email: string;
+
+  phone: string;
+
+  avata: string;
 }
