@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Account, AccountSchema } from 'src/schema/account/account.schema';
 import { OrganizationModule } from '../organization/organization.module';
 import { AccountService } from './account.service';
-import { AccountController } from './account.controller';
+import { AccountClearerController } from './account-clearer.controller';
 import {
   AccountClearer,
   AccountClearerSchema,
@@ -27,7 +27,7 @@ import {
     ]),
     OrganizationModule,
   ],
-  controllers: [AccountController],
+  controllers: [AccountClearerController],
   providers: [AccountService],
   exports: [AccountService],
 })

@@ -7,6 +7,7 @@ import { JwtPayload } from '../dto/jwt-payload';
 import authenticationConfig from 'src/config/auth.config';
 import { UserService } from '../../user/user.service';
 import { WrongTokenException } from 'src/exeption/wrong-token.exception';
+import { SuspendedUserException } from 'src/exeption/suspended-user.exception';
 
 @Injectable()
 export class JwtTwoFactorStrategy extends PassportStrategy(
@@ -38,6 +39,10 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
 
     if (!user) {
       throw new InvalidCredentialsException();
+    }
+
+    if (user.suspended) {
+      throw new SuspendedUserException();
     }
 
     return user;

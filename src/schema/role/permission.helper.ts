@@ -2,7 +2,7 @@ export const PermissionClearer = {
   coworkerRead: 'clearer.coworker.read',
   coworkerCreate: 'clearer.coworker.create',
   coworkerUpdate: 'clearer.coworker.update',
-  coworkerDisable: 'clearer.coworker.disable',
+  coworkerState: 'clearer.coworker.state',
 
   roleRead: 'clearer.role.read',
   roleCreate: 'clearer.role.create',
@@ -44,8 +44,8 @@ export const PermissionClearerGroup = [
         code: PermissionClearer.coworkerUpdate,
       },
       {
-        name: 'Disable',
-        code: PermissionClearer.coworkerDisable,
+        name: 'Suspend/Resume',
+        code: PermissionClearer.coworkerState,
       },
     ],
   },
@@ -147,7 +147,7 @@ export const PermissionOrganization = {
   coworkerRead: 'organization.#organizationId#.coworker.read',
   coworkerCreate: 'organization.#organizationId#.coworker.create',
   coworkerUpdate: 'organization.#organizationId#.coworker.update',
-  coworkerDisable: 'organization.#organizationId#.coworker.disable',
+  coworkerState: 'organization.#organizationId#.coworker.state',
 
   organizationRead: 'organization.#organizationId#.read',
   organizationUpdate: 'organization.#organizationId#.update',
@@ -199,8 +199,8 @@ export const PermissionOrganizationGroup = [
         code: PermissionOrganization.coworkerUpdate,
       },
       {
-        name: 'Disable',
-        code: PermissionOrganization.coworkerDisable,
+        name: 'Suspend/Resume',
+        code: PermissionOrganization.coworkerState,
       },
     ],
   },
@@ -277,7 +277,7 @@ export const PermissionDesk = {
   coworkerRead: 'desk.#deskId#.coworker.read',
   coworkerCreate: 'desk.#deskId#.coworker.create',
   coworkerUpdate: 'desk.#deskId#.coworker.update',
-  coworkerDisable: 'desk.#deskId#.coworker.disable',
+  coworkerState: 'desk.#deskId#.coworker.state',
 
   roleRead: 'desk.#deskId#.role.read',
   roleCreate: 'desk.#deskId#.role.create',
@@ -303,8 +303,8 @@ export const PermissionDeskGroup = [
         code: PermissionDesk.coworkerUpdate,
       },
       {
-        name: 'Disable',
-        code: PermissionDesk.coworkerDisable,
+        name: 'Suspend/Resume',
+        code: PermissionDesk.coworkerState,
       },
     ],
   },
