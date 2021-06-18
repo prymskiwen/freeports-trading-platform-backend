@@ -1,4 +1,4 @@
-export class GetSingleUserResponseDto {
+export class GetUserDetailsResponseDto {
   id: string;
   nickname: string;
   email: string;

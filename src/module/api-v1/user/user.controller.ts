@@ -36,7 +36,7 @@ import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
 import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
-import { GetSingleUserResponseDto } from '../user/dto/get-singleUser-response.dto';
+import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
 import { UserService } from './user.service';
 import { OrganizationService } from '../organization/organization.service';
 import { RoleService } from '../role/role.service';
@@ -404,7 +404,7 @@ export class UserController {
   @Permissions(PermissionOrganization.coworkerRead)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Get organization user' })
-  @ApiOkResponse({ type: GetSingleUserResponseDto })
+  @ApiOkResponse({ type: GetUserDetailsResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -420,7 +420,7 @@ export class UserController {
   async getOrganizationSingleUser(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-  ): Promise<GetSingleUserResponseDto> {
+  ): Promise<GetUserDetailsResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
     if (!organization) {
@@ -432,7 +432,7 @@ export class UserController {
       organization,
     );
 
-    return UserMapper.toGetSingleDto(getResult);
+    return UserMapper.toGetDetailsDto(getResult);
   }
 
   @Patch('organization/:organizationId/user/:userId')
