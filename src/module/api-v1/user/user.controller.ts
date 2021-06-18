@@ -13,6 +13,7 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -51,7 +52,6 @@ import {
 import { AssignRoleClearerDto } from './dto/assign-role-clearer.dto';
 import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
 import { AssignRoleDeskMultiDto } from './dto/assign-role-desk-multi.dto';
-import { Organization } from 'src/schema/organization/organization.schema';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1')
@@ -401,21 +401,26 @@ export class UserController {
   }
 
   @Get('organization/:organizationId/user/:userId')
-  @ApiTags('Organization')
-  @ApiOperation({ summary: 'Get organization user'})
-  @ApiOkResponse({
-    description: 'Successfully updated organization user id',
-    type: GetUserResponseDto,
-  })
-  @ApiPaginationResponse(GetUserResponseDto)
+  @Permissions(PermissionOrganization.coworkerRead)
+  @ApiTags('organization')
+  @ApiOperation({ summary: 'Get organization user' })
+  @ApiOkResponse({ type: GetSingleUserResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization user has not been found',
+    type: ExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
     type: ExceptionDto,
   })
   async getOrganizationSingleUser(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-  ): Promise<any>{
+  ): Promise<GetSingleUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
     if (!organization) {
@@ -426,13 +431,12 @@ export class UserController {
       userId,
       organization,
     );
-    
+
     return UserMapper.toGetSingleDto(getResult);
   }
 
-
   @Patch('organization/:organizationId/user/:userId')
-  @Permissions(PermissionOrganization.coworkerUpdate, PermissionClearer.coworkerUpdate)
+  @Permissions(PermissionOrganization.coworkerUpdate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Update organization user' })
   @ApiOkResponse({

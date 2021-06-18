@@ -1,4 +1,3 @@
-import { doc } from 'prettier';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CreateUserResponseDto } from '../dto/create-user-response.dto';
 import { GetSingleUserResponseDto } from '../dto/get-singleUser-response.dto';
@@ -32,7 +31,9 @@ export class UserMapper {
     return dto;
   }
 
-  public static toGetSingleDto(document: UserDocument): GetSingleUserResponseDto {
+  public static toGetSingleDto(
+    document: UserDocument,
+  ): GetSingleUserResponseDto {
     const dto = new GetSingleUserResponseDto();
 
     dto.id = document._id;
