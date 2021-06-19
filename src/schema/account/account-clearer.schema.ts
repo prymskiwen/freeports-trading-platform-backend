@@ -4,7 +4,7 @@ import { User } from 'src/schema/user/user.schema';
 import { AccountDetails } from './embedded/account-details.embedded';
 import { AccountCryptoDetails } from './embedded/account-crypto-details.embedded';
 import { AccountFiatDetails } from './embedded/account-fiat-details.embedded';
-import { OrganizationDocument } from '../organization/organization.schema';
+import { Organization } from '../organization/organization.schema';
 
 export type AccountClearerDocument = AccountClearer & Document;
 
@@ -17,7 +17,7 @@ export class AccountClearer {
   cryptotDetails?: AccountCryptoDetails;
 
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'Organization' }] })
-  organizations?: OrganizationDocument[];
+  organizations?: Organization[];
 }
 
 export const AccountClearerSchema = SchemaFactory.createForClass(

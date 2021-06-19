@@ -89,7 +89,7 @@ export class AccountClearerController {
   ): Promise<GetAccountClearerDetailsResponseDto> {
     const account = await this.accountService.getAccountClearerById(accountId);
 
-    return AccountMapper.toGetClearerDetailsDto(account);
+    return AccountMapper.toGetAccountClearerDetailsDto(account);
   }
 
   @Post()

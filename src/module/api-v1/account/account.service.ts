@@ -14,6 +14,7 @@ import {
 } from 'src/schema/account/account-investor.schema';
 import { UpdateAccountRequestDto } from './dto/update-account-request.dto';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
+import { InvestorDocument } from 'src/schema/investor/investor.schema';
 
 @Injectable()
 export class AccountService {
@@ -101,17 +102,37 @@ export class AccountService {
     );
   }
 
-  async getAccountInvestorById(id: string): Promise<AccountInvestorDocument> {
-    return await this.accountInvestorModel.findById(id).exec();
+  async getAccountInvestorList(
+    investor: InvestorDocument,
+  ): Promise<AccountInvestorDocument[]> {
+    return await this.accountInvestorModel
+      .find({
+        investor: investor._id,
+      })
+      .exec();
+  }
+
+  async getAccountInvestorById(
+    id: string,
+    investor: InvestorDocument,
+  ): Promise<AccountInvestorDocument> {
+    return await this.accountInvestorModel
+      .findOne({
+        _id: id,
+        investor: investor._id,
+      })
+      .exec();
   }
 
   async createAccountInvestor(
+    investor: InvestorDocument,
     request: CreateAccountRequestDto,
     user: UserDocument,
     persist = true,
   ): Promise<AccountInvestorDocument> {
     const account = new this.accountInvestorModel();
 
+    account.investor = investor;
     account.owner = user;
     account.details = {
       name: request.name,
