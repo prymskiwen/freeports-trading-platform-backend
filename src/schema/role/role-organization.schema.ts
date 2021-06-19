@@ -31,6 +31,6 @@ RoleOrganizationSchema.pre('save', function () {
 
 RoleOrganizationSchema.virtual('permissionsParsed').get(function () {
   return this.permissions.map((permission) => {
-    return permission.replace('#id#', this.organization);
+    return permission.replace('#organizationId#', this.organization);
   });
 });
