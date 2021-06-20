@@ -29,6 +29,6 @@ RoleDeskSchema.pre('save', function () {
 
 RoleDeskSchema.virtual('permissionsParsed').get(function () {
   return this.permissions.map((permission) => {
-    return permission.replace('#id#', this.desk);
+    return permission.replace('#deskId#', this.desk);
   });
 });

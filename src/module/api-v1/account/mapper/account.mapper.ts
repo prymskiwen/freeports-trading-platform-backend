@@ -78,7 +78,7 @@ export class AccountMapper {
     return dto;
   }
 
-  public static toGetClearerDetailsDto(
+  public static toGetAccountClearerDetailsDto(
     document: AccountClearerDocument,
   ): GetAccountClearerDetailsResponseDto {
     const dto = new GetAccountClearerDetailsResponseDto();
@@ -95,7 +95,7 @@ export class AccountMapper {
       dto.vaultWalletId = document.cryptotDetails.vaultWalletId;
     }
 
-    dto.organizations = document.organizations.map((org) => org._id);
+    dto.organizations = document.organizations;
 
     return dto;
   }

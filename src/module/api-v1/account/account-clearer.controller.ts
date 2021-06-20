@@ -72,6 +72,14 @@ export class AccountClearerController {
   @Permissions(PermissionClearer.accountRead)
   @ApiOperation({ summary: 'Get clearer account' })
   @ApiOkResponse({ type: GetAccountClearerDetailsResponseDto })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Account has not been found',
+    type: ExceptionDto,
+  })
   @ApiInternalServerErrorResponse({
     description: 'Server error',
     type: ExceptionDto,
@@ -81,7 +89,7 @@ export class AccountClearerController {
   ): Promise<GetAccountClearerDetailsResponseDto> {
     const account = await this.accountService.getAccountClearerById(accountId);
 
-    return AccountMapper.toGetClearerDetailsDto(account);
+    return AccountMapper.toGetAccountClearerDetailsDto(account);
   }
 
   @Post()

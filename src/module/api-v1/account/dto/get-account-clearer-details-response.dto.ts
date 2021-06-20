@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Organization } from 'src/schema/organization/organization.schema';
 
 export class GetAccountClearerDetailsResponseDto {
   id: string;
@@ -9,9 +10,6 @@ export class GetAccountClearerDetailsResponseDto {
   publicAddress?: string;
   vaultWalletId?: string;
 
-  /**
-   * id-s of organizations account assigned to
-   */
-  @ApiProperty({ type: [String], format: 'ObjectId' })
-  organizations: string[];
+  @ApiProperty({ type: [Organization] })
+  organizations: Organization[];
 }
