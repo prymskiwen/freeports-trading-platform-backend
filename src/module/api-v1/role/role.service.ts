@@ -42,7 +42,7 @@ export class RoleService {
     private roleDeskModel: Model<RoleDeskDocument>,
     @InjectModel(RoleDeskMulti.name)
     private roleDeskMultiModel: Model<RoleDeskMultiDocument>,
-  ) { }
+  ) {}
 
   async createRoleClearerManager(
     user: UserDocument,

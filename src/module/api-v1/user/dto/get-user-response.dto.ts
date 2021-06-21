@@ -1,3 +1,4 @@
+import { Organization } from 'src/schema/organization/organization.schema';
 import { UserRole } from 'src/schema/user/embedded/user-role.embedded';
 
 export class GetUserResponseDto {
@@ -6,4 +7,5 @@ export class GetUserResponseDto {
   email: string;
   roles: UserRole[];
   jobTitle: string;
+  organization: string | Organization;
 }

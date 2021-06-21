@@ -13,7 +13,7 @@ import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async getById(id: string): Promise<UserDocument> {
     return await this.userModel.findById(id).exec();

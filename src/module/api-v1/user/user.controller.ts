@@ -63,7 +63,7 @@ export class UserController {
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
     private readonly userService: UserService,
-  ) { }
+  ) {}
 
   @Post('user')
   @Permissions(PermissionClearer.coworkerCreate)

@@ -29,7 +29,7 @@ export class UserMapper {
     dto.email = document.personal.email;
     dto.jobTitle = document.personal.jobTitle;
     dto.roles = document.roles;
-
+    dto.organization = document.organization;
     return dto;
   }
 
