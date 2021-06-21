@@ -13,6 +13,7 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -35,7 +36,7 @@ import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
 import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
-import { GetSingleUserResponseDto } from '../user/dto/get-singleUser-response.dto';
+import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
 import { UserService } from './user.service';
 import { OrganizationService } from '../organization/organization.service';
 import { RoleService } from '../role/role.service';
@@ -51,7 +52,6 @@ import {
 import { AssignRoleClearerDto } from './dto/assign-role-clearer.dto';
 import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
 import { AssignRoleDeskMultiDto } from './dto/assign-role-desk-multi.dto';
-import { Organization } from 'src/schema/organization/organization.schema';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1')
@@ -383,21 +383,26 @@ export class UserController {
   }
 
   @Get('organization/:organizationId/user/:userId')
-  @ApiTags('Organization')
+  @Permissions(PermissionOrganization.coworkerRead)
+  @ApiTags('organization')
   @ApiOperation({ summary: 'Get organization user' })
-  @ApiOkResponse({
-    description: 'Successfully updated organization user id',
-    type: GetUserResponseDto,
-  })
-  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiOkResponse({ type: GetUserDetailsResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization user has not been found',
+    type: ExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
     type: ExceptionDto,
   })
   async getOrganizationSingleUser(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-  ): Promise<any> {
+  ): Promise<GetUserDetailsResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
     if (!organization) {
@@ -409,14 +414,11 @@ export class UserController {
       organization,
     );
 
-    return UserMapper.toGetSingleDto(getResult);
+    return UserMapper.toGetDetailsDto(getResult);
   }
 
   @Patch('organization/:organizationId/user/:userId')
-  @Permissions(
-    PermissionOrganization.coworkerUpdate,
-    PermissionClearer.coworkerUpdate,
-  )
+  @Permissions(PermissionOrganization.coworkerUpdate)
   @ApiTags('organization')
   @ApiOperation({ summary: 'Update organization user' })
   @ApiOkResponse({

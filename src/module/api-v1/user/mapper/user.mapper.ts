@@ -1,7 +1,6 @@
-import { doc } from 'prettier';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CreateUserResponseDto } from '../dto/create-user-response.dto';
-import { GetSingleUserResponseDto } from '../dto/get-singleUser-response.dto';
+import { GetUserDetailsResponseDto } from '../dto/get-user-details-response.dto';
 import { GetUserResponseDto } from '../dto/get-user-response.dto';
 import { UpdateUserResponseDto } from '../dto/update-user-response.dto';
 
@@ -34,10 +33,10 @@ export class UserMapper {
     return dto;
   }
 
-  public static toGetSingleDto(
+  public static toGetDetailsDto(
     document: UserDocument,
-  ): GetSingleUserResponseDto {
-    const dto = new GetSingleUserResponseDto();
+  ): GetUserDetailsResponseDto {
+    const dto = new GetUserDetailsResponseDto();
 
     dto.id = document._id;
     dto.nickname = document.personal.nickname;

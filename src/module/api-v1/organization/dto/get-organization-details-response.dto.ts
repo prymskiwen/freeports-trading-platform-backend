@@ -1,5 +1,6 @@
 import { OrganizationClearing } from 'src/schema/organization/embedded/organization-clearing.embedded';
-export class GetOrganizationSingleResponseDto {
+
+export class GetOrganizationDetailsResponseDto {
   id: string;
   name: string;
   createtime: Date;

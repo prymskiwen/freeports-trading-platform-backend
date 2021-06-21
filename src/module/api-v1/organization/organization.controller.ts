@@ -31,7 +31,7 @@ import { UpdateOrganizationRequestDto } from './dto/update-organization-request.
 import { UpdateOrganizationResponseDto } from './dto/update-organization-response.dto';
 import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
 import { GetOrganizationResponseDto } from './dto/get-organization-response.dto';
-import {GetOrganizationSingleResponseDto} from './dto/get-organizationsingle-response.dto';
+import { GetOrganizationDetailsResponseDto } from './dto/get-organization-details-response.dto';
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
@@ -39,7 +39,7 @@ import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from '../role/role.service';
 import { UserService } from '../user/user.service';
 import { OrganizationMapper } from './mapper/organization.mapper';
-import { Organization, OrganizationDocument } from 'src/schema/organization/organization.schema';
+import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import {
@@ -128,7 +128,7 @@ export class OrganizationController {
   )
   @ApiTags('clearer', 'organization')
   @ApiOperation({ summary: 'Get organization details' })
-  @ApiOkResponse({ type: GetOrganizationResponseDto })
+  @ApiOkResponse({ type: GetOrganizationDetailsResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -139,17 +139,24 @@ export class OrganizationController {
   })
   async getOrganization(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-  ): Promise<GetOrganizationSingleResponseDto> {
+  ): Promise<GetOrganizationDetailsResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
     if (!organization) {
       throw new NotFoundException();
     }
-    const disableUser = await this.userService.getOrganizationUserSuspendedCount(organization);
-    const ableUser = await this.userService.getOrganizationUserActiveCount(organization);
+    const userActive = await this.userService.getOrganizationUserActiveCount(
+      organization,
+    );
+    const userSuspended = await this.userService.getOrganizationUserSuspendedCount(
+      organization,
+    );
 
-    // return OrganizationMapper.toGetDto(organization);
-    return OrganizationMapper.toGetsignDto(organization, ableUser, disableUser);
+    return OrganizationMapper.toGetDetailsDto(
+      organization,
+      userActive,
+      userSuspended,
+    );
   }
 
   @Get()
@@ -163,24 +170,26 @@ export class OrganizationController {
     const [
       { paginatedResult, totalResult },
     ] = await this.organizationService.getOrganizationsPaginated(pagination);
-    const organizationDtos: any[] = await Promise.all(paginatedResult.map(
-      async (organization: OrganizationDocument): Promise<any> => {
-        const disableUser = await this.userService.getOrganizationUserSuspendedCount(organization);
-        const ableUser = await this.userService.getOrganizationUserActiveCount(organization);
-        console.log(disableUser);
-        return {
-          id: organization._id,
-          name: organization.details.name,
-          createtime: organization.details.createtime,
-          commission: organization.commissionRatio.organization,
-          commissionclear: organization.commissionRatio.clearer,
-          clearing: organization.clearing,
-          acitveUser: ableUser,
-          disactiveUser: disableUser,
-          }
-      },
-        // OrganizationMapper.toGetDto(organization),
-    ));
+    const organizationDtos: GetOrganizationResponseDto[] = await Promise.all(
+      paginatedResult.map(
+        async (
+          organization: OrganizationDocument,
+        ): Promise<GetOrganizationResponseDto> => {
+          const userActive = await this.userService.getOrganizationUserActiveCount(
+            organization,
+          );
+          const userSuspended = await this.userService.getOrganizationUserSuspendedCount(
+            organization,
+          );
+
+          return OrganizationMapper.toGetDto(
+            organization,
+            userActive,
+            userSuspended,
+          );
+        },
+      ),
+    );
 
     return PaginationHelper.of(
       pagination,

@@ -167,6 +167,16 @@ export const PermissionOrganization = {
   deskUserCreate: 'organization.#organizationId#.desk.user.create',
   deskUserUpdate: 'organization.#organizationId#.desk.user.update',
   deskUserDisable: 'organization.#organizationId#.desk.user.disable',
+
+  investorRead: 'organization.#organizationId#.investor.read',
+  investorCreate: 'organization.#organizationId#.investor.create',
+  investorUpdate: 'organization.#organizationId#.investor.update',
+  investorDelete: 'organization.#organizationId#.investor.delete',
+  investorDisable: 'organization.#organizationId#.investor.disable',
+
+  accountRead: 'organization.#organizationId#.account.read',
+  accountCreate: 'organization.#organizationId#.account.create',
+  accountDelete: 'organization.#organizationId#.account.delete',
 } as const;
 
 export const PermissionOrganizationGroup = [
@@ -268,6 +278,48 @@ export const PermissionOrganizationGroup = [
       {
         name: 'Disable',
         code: PermissionOrganization.deskUserDisable,
+      },
+    ],
+  },
+  {
+    name: 'Investor',
+    permissions: [
+      {
+        name: 'Read',
+        code: PermissionOrganization.investorRead,
+      },
+      {
+        name: 'Create',
+        code: PermissionOrganization.investorCreate,
+      },
+      {
+        name: 'Update',
+        code: PermissionOrganization.investorUpdate,
+      },
+      {
+        name: 'Delete',
+        code: PermissionOrganization.investorDelete,
+      },
+      {
+        name: 'Disable',
+        code: PermissionOrganization.investorDisable,
+      },
+    ],
+  },
+  {
+    name: 'Investor account',
+    permissions: [
+      {
+        name: 'Read',
+        code: PermissionOrganization.accountRead,
+      },
+      {
+        name: 'Create',
+        code: PermissionOrganization.accountCreate,
+      },
+      {
+        name: 'Delete',
+        code: PermissionOrganization.accountDelete,
       },
     ],
   },
