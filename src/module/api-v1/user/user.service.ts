@@ -56,10 +56,14 @@ export class UserService {
     user.personal = {
       email: request.email,
       nickname: request.nickname,
-      password: await bcrypt.hash(request.password, 13),
       phone: request.phone,
-      avata: request.avata,
+      avatar: request.avatar,
+      jobTitle: request.jobTitle,
     };
+
+    if (request.password) {
+      user.personal.password = await bcrypt.hash(request.password, 13);
+    }
 
     if (persist) {
       await user.save();
@@ -76,7 +80,7 @@ export class UserService {
     user.personal.nickname = request.nickname;
     user.personal.email = request.email;
     user.personal.phone = request.phone;
-    user.personal.avata = request.avata;
+    user.personal.avatar = request.avatar;
 
     await user.save();
 

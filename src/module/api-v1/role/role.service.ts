@@ -300,4 +300,35 @@ export class RoleService {
 
     return role;
   }
+  async assignRoles(
+    roles: string[],
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const role = await this.getRoleClearerById(roleId);
+
+        if (!role) {
+          return;
+        }
+
+        const hasRole = user.roles.some(
+          (userRole) => userRole.role.toString() === role.id,
+        );
+
+        if (hasRole) {
+          return;
+        }
+
+        user.roles.push({
+          role: role,
+          assignedAt: new Date(),
+          assignedBy: assignedBy,
+        });
+      }),
+    );
+
+    await user.save();
+  }
 }

@@ -11,8 +11,7 @@ export class CreateUserRequestDto {
   /**
    * @example 'p@ssword123'
    */
-  @IsNotEmpty()
-  password: string;
+  password?: string;
 
   /**
    * @example 'john@doe.com'
@@ -24,5 +23,9 @@ export class CreateUserRequestDto {
 
   phone: string;
 
-  avata: string;
+  avatar?: string;
+
+  jobTitle?: string;
+
+  roles?: string[];
 }

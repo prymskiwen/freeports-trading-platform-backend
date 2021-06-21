@@ -3,6 +3,6 @@ export class GetUserDetailsResponseDto {
   nickname: string;
   email: string;
   phone: string;
-  avata: string;
+  avatar: string;
   suspended: boolean;
 }

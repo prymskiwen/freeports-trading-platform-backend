@@ -27,7 +27,9 @@ export class UserMapper {
     dto.id = document._id;
     dto.nickname = document.personal.nickname;
     dto.email = document.personal.email;
-
+    dto.jobTitle = document.personal.jobTitle;
+    dto.roles = document.roles;
+    dto.organization = document.organization;
     return dto;
   }
 
@@ -40,7 +42,7 @@ export class UserMapper {
     dto.nickname = document.personal.nickname;
     dto.email = document.personal.email;
     dto.phone = document.personal.phone;
-    dto.avata = document.personal.avata;
+    dto.avatar = document.personal.avatar;
     dto.suspended = document.suspended;
 
     return dto;

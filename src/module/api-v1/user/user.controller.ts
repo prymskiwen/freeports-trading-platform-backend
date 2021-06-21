@@ -83,9 +83,13 @@ export class UserController {
   })
   async createClearerUser(
     @Body() request: CreateUserRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateUserResponseDto> {
     const user = await this.userService.create(request, false);
 
+    if (request.roles.length) {
+      await this.roleService.assignRoles(request.roles, user, userCurrent);
+    }
     await user.save();
 
     return UserMapper.toCreateDto(user);
@@ -219,29 +223,7 @@ export class UserController {
       throw new NotFoundException();
     }
 
-    await Promise.all(
-      request.roles.map(async (roleId) => {
-        const role = await this.roleService.getRoleClearerById(roleId);
-
-        if (!role) {
-          return;
-        }
-
-        const hasRole = user.roles.some(
-          (userRole) => userRole.role.toString() === role.id,
-        );
-
-        if (hasRole) {
-          return;
-        }
-
-        user.roles.push({
-          role: role,
-          assignedAt: new Date(),
-          assignedBy: userCurrent,
-        });
-      }),
-    );
+    await this.roleService.assignRoles(request.roles, user, userCurrent);
 
     await user.save();
 
