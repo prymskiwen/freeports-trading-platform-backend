@@ -26,6 +26,4 @@ export class CreateUserRequestDto {
   avatar?: string;
 
   jobTitle?: string;
-
-  roles?: string[];
 }

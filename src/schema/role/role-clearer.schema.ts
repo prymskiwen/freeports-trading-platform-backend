@@ -12,6 +12,7 @@ export class RoleClearer {
   owner: User;
   disabled?: boolean;
   system?: boolean;
+  users?: User[];
 
   @Prop({ type: [String], enum: PermissionClearer })
   permissions?: PermissionClearer[];

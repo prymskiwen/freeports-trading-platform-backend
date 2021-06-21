@@ -30,6 +30,7 @@ import {
   PermissionClearer,
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class RoleService {
@@ -42,6 +43,7 @@ export class RoleService {
     private roleDeskModel: Model<RoleDeskDocument>,
     @InjectModel(RoleDeskMulti.name)
     private roleDeskMultiModel: Model<RoleDeskMultiDocument>,
+    private userService: UserService,
   ) {}
 
   async createRoleClearerManager(
@@ -300,7 +302,8 @@ export class RoleService {
 
     return role;
   }
-  async assignRoles(
+
+  async assignRoleClearer(
     roles: string[],
     user: UserDocument,
     assignedBy: UserDocument,
@@ -308,16 +311,14 @@ export class RoleService {
     await Promise.all(
       roles.map(async (roleId) => {
         const role = await this.getRoleClearerById(roleId);
-
         if (!role) {
           return;
         }
 
-        const hasRole = user.roles.some(
-          (userRole) => userRole.role.toString() === role.id,
-        );
-
-        if (hasRole) {
+        const assigned = role.users.some((userId) => {
+          return userId.toString() === user.id;
+        });
+        if (assigned) {
           return;
         }
 
@@ -326,9 +327,38 @@ export class RoleService {
           assignedAt: new Date(),
           assignedBy: assignedBy,
         });
+
+        role.users.push(user);
+
+        await role.save();
       }),
     );
 
     await user.save();
+  }
+
+  async unassignRoleClearer(roles: string[], user: UserDocument) {
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const role = await this.getRoleClearerById(roleId);
+        if (!role) {
+          return;
+        }
+
+        const assigned = role.users.some((userId) => {
+          return userId.toString() === user.id;
+        });
+        if (!assigned) {
+          return;
+        }
+
+        await this.roleClearerModel.updateOne(
+          { _id: role.id },
+          { $pull: { users: user._id } },
+        );
+
+        await this.userService.unassignRole(role, user);
+      }),
+    );
   }
 }

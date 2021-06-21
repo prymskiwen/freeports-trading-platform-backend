@@ -25,11 +25,13 @@ export class UserMapper {
     const dto = new GetUserResponseDto();
 
     dto.id = document._id;
+    dto.organization = document.organization;
     dto.nickname = document.personal.nickname;
     dto.email = document.personal.email;
+    dto.phone = document.personal.phone;
     dto.jobTitle = document.personal.jobTitle;
-    dto.roles = document.roles;
-    dto.organization = document.organization;
+    dto.suspended = document.suspended;
+
     return dto;
   }
 
@@ -38,12 +40,18 @@ export class UserMapper {
   ): GetUserDetailsResponseDto {
     const dto = new GetUserDetailsResponseDto();
 
-    dto.id = document._id;
-    dto.nickname = document.personal.nickname;
-    dto.email = document.personal.email;
-    dto.phone = document.personal.phone;
+    Object.assign({}, dto, this.toGetDto(document));
+
     dto.avatar = document.personal.avatar;
-    dto.suspended = document.suspended;
+
+    dto.roles = document.roles.map((userRole) => {
+      return {
+        id: userRole.role['id'],
+        name: userRole.role.name,
+        system: userRole.role.system,
+        permissions: userRole.role.permissions,
+      };
+    });
 
     return dto;
   }

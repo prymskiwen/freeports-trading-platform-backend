@@ -343,4 +343,11 @@ export class UserService {
   async deleteRole(role: RoleDocument) {
     await this.userModel.updateMany({ $pull: { roles: { role: role._id } } });
   }
+
+  async unassignRole(role: RoleDocument, user: UserDocument) {
+    await this.userModel.updateOne(
+      { _id: user.id },
+      { $pull: { roles: { role: role._id } } },
+    );
+  }
 }
