@@ -63,7 +63,7 @@ export class UserController {
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
     private readonly userService: UserService,
-  ) {}
+  ) { }
 
   @Post('user')
   @Permissions(PermissionClearer.coworkerCreate)
@@ -83,9 +83,13 @@ export class UserController {
   })
   async createClearerUser(
     @Body() request: CreateUserRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateUserResponseDto> {
     const user = await this.userService.create(request, false);
 
+    if (request.roles.length) {
+      await this.roleService.assignRoles(request.roles, user, userCurrent);
+    }
     await user.save();
 
     return UserMapper.toCreateDto(user);
@@ -219,29 +223,7 @@ export class UserController {
       throw new NotFoundException();
     }
 
-    await Promise.all(
-      request.roles.map(async (roleId) => {
-        const role = await this.roleService.getRoleClearerById(roleId);
-
-        if (!role) {
-          return;
-        }
-
-        const hasRole = user.roles.some(
-          (userRole) => userRole.role.toString() === role.id,
-        );
-
-        if (hasRole) {
-          return;
-        }
-
-        user.roles.push({
-          role: role,
-          assignedAt: new Date(),
-          assignedBy: userCurrent,
-        });
-      }),
-    );
+    await this.roleService.assignRoles(request.roles, user, userCurrent);
 
     await user.save();
 
@@ -402,7 +384,7 @@ export class UserController {
 
   @Get('organization/:organizationId/user/:userId')
   @ApiTags('Organization')
-  @ApiOperation({ summary: 'Get organization user'})
+  @ApiOperation({ summary: 'Get organization user' })
   @ApiOkResponse({
     description: 'Successfully updated organization user id',
     type: GetUserResponseDto,
@@ -415,7 +397,7 @@ export class UserController {
   async getOrganizationSingleUser(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-  ): Promise<any>{
+  ): Promise<any> {
     const organization = await this.organizationService.getById(organizationId);
 
     if (!organization) {
@@ -426,13 +408,15 @@ export class UserController {
       userId,
       organization,
     );
-    
+
     return UserMapper.toGetSingleDto(getResult);
   }
 
-
   @Patch('organization/:organizationId/user/:userId')
-  @Permissions(PermissionOrganization.coworkerUpdate, PermissionClearer.coworkerUpdate)
+  @Permissions(
+    PermissionOrganization.coworkerUpdate,
+    PermissionClearer.coworkerUpdate,
+  )
   @ApiTags('organization')
   @ApiOperation({ summary: 'Update organization user' })
   @ApiOkResponse({

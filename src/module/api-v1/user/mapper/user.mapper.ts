@@ -28,18 +28,22 @@ export class UserMapper {
     dto.id = document._id;
     dto.nickname = document.personal.nickname;
     dto.email = document.personal.email;
+    dto.jobTitle = document.personal.jobTitle;
+    dto.roles = document.roles;
 
     return dto;
   }
 
-  public static toGetSingleDto(document: UserDocument): GetSingleUserResponseDto {
+  public static toGetSingleDto(
+    document: UserDocument,
+  ): GetSingleUserResponseDto {
     const dto = new GetSingleUserResponseDto();
 
     dto.id = document._id;
     dto.nickname = document.personal.nickname;
     dto.email = document.personal.email;
     dto.phone = document.personal.phone;
-    dto.avata = document.personal.avata;
+    dto.avatar = document.personal.avatar;
     dto.suspended = document.suspended;
 
     return dto;

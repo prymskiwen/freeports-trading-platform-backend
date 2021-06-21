@@ -9,19 +9,22 @@ export class UserPersonal {
   nickname: string;
 
   @Prop()
-  password: string;
+  password?: string;
 
   @Prop()
   phone?: string;
 
   @Prop()
-  avata?: string;
+  avatar?: string;
 
   /**
    * @example 'john@doe.com'
    */
   @Prop({ unique: true })
   email: string;
+
+  @Prop()
+  jobTitle?: string;
 }
 
 export const UserPersonalSchema = SchemaFactory.createForClass(UserPersonal);
