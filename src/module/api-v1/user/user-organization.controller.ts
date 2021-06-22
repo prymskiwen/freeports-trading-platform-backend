@@ -130,12 +130,14 @@ export class UserOrganizationController {
       throw new NotFoundException();
     }
 
-    const getResult = await this.userService.getOrganizationUserById(
+    const user = await this.userService.getOrganizationUserById(
       userId,
       organization,
     );
 
-    return UserMapper.toGetDetailsDto(getResult);
+    await user.populate('roles.role').execPopulate();
+
+    return UserMapper.toGetDetailsDto(user);
   }
 
   @Post('user')
