@@ -36,21 +36,24 @@ import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
 import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
+import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
 import { UserService } from './user.service';
+import { OrganizationService } from '../organization/organization.service';
 import { RoleService } from '../role/role.service';
 import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
-import { PermissionClearer } from 'src/schema/role/permission.helper';
-import { AssignRoleClearerDto } from './dto/assign-role-clearer.dto';
-import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
-import { OrganizationService } from '../organization/organization.service';
+import {
+  PermissionClearer,
+  PermissionOrganization,
+} from 'src/schema/role/permission.helper';
+import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1')
-@ApiTags('user', 'clearer')
+@Controller('api/v1/organization/:organizationId')
+@ApiTags('user', 'organization')
 @ApiBearerAuth()
-export class UserClearerController {
+export class UserOrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
@@ -58,15 +61,37 @@ export class UserClearerController {
   ) {}
 
   @Get('user')
-  @Permissions(PermissionClearer.coworkerRead)
-  @ApiOperation({ summary: 'Get clearer user list' })
+  @Permissions(
+    PermissionOrganization.coworkerRead,
+    PermissionOrganization.organizationRead,
+    PermissionClearer.organizationRead,
+  )
+  @ApiOperation({ summary: 'Get organization user list' })
   @ApiPaginationResponse(GetUserResponseDto)
-  async getClearerUserPaginated(
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  async getOrganizationUserPaginated(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetUserResponseDto>> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getClearerUserPaginated(pagination);
+    ] = await this.userService.getOrganizationUserPaginated(
+      organization,
+      pagination,
+    );
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -80,55 +105,82 @@ export class UserClearerController {
   }
 
   @Get('user/:userId')
-  @Permissions(PermissionClearer.coworkerRead)
-  @ApiOperation({ summary: 'Get clearer user' })
+  @Permissions(PermissionOrganization.coworkerRead)
+  @ApiOperation({ summary: 'Get organization user' })
   @ApiOkResponse({ type: GetUserDetailsResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Clearer user has not been found',
+    description: 'Organization user has not been found',
     type: ExceptionDto,
   })
   @ApiInternalServerErrorResponse({
     description: 'Server error',
     type: ExceptionDto,
   })
-  async getClearerUser(
+  async getOrganizationUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
   ): Promise<GetUserDetailsResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
+    const organization = await this.organizationService.getById(organizationId);
 
-    await user.populate('roles.role').execPopulate();
+    if (!organization) {
+      throw new NotFoundException();
+    }
 
-    return UserMapper.toGetDetailsDto(user);
+    const getResult = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
+
+    return UserMapper.toGetDetailsDto(getResult);
   }
 
   @Post('user')
-  @Permissions(PermissionClearer.coworkerCreate)
-  @ApiOperation({ summary: 'Create clearer user' })
+  @Permissions(PermissionOrganization.coworkerCreate)
+  @ApiOperation({ summary: 'Create organization user' })
   @ApiCreatedResponse({
-    description: 'Successfully registered clearer user id',
+    description: 'Successfully registered organization user id',
     type: CreateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
   })
   @ApiBadRequestResponse({
     description: 'Invalid form',
     type: InvalidFormExceptionDto,
   })
-  async createClearerUser(
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  async createOrganizationUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Body() request: CreateUserRequestDto,
   ): Promise<CreateUserResponseDto> {
-    const user = await this.userService.create(request);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.create(request, false);
+
+    user.organization = organization;
+
+    await user.save();
 
     return UserMapper.toCreateDto(user);
   }
 
   @Patch('user/:userId')
-  @Permissions(PermissionClearer.coworkerUpdate)
-  @ApiOperation({ summary: 'Update clearer user' })
+  @Permissions(PermissionOrganization.coworkerUpdate)
+  @ApiOperation({ summary: 'Update organization user' })
   @ApiOkResponse({
-    description: 'Successfully updated clearer user id',
+    description: 'Successfully updated organization user id',
     type: UpdateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -140,14 +192,24 @@ export class UserClearerController {
     type: InvalidFormExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Clearer user has not been found',
+    description: 'Organization user has not been found',
     type: ExceptionDto,
   })
-  async updateClearerUser(
+  async updateOrganizationUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
 
     if (!user) {
       throw new NotFoundException();
@@ -159,10 +221,10 @@ export class UserClearerController {
   }
 
   @Put('user/:userId/suspend')
-  @Permissions(PermissionClearer.coworkerState)
-  @ApiOperation({ summary: 'Suspend clearer user' })
+  @Permissions(PermissionOrganization.coworkerState)
+  @ApiOperation({ summary: 'Suspend organization user' })
   @ApiOkResponse({
-    description: 'Successfully suspended clearer user id',
+    description: 'Successfully suspended organization user id',
     type: UpdateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -170,13 +232,23 @@ export class UserClearerController {
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Clearer user has not been found',
+    description: 'Organization user has not been found',
     type: ExceptionDto,
   })
-  async suspendClearerUser(
+  async suspendOrganizationUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
   ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
 
     if (!user) {
       throw new NotFoundException();
@@ -189,10 +261,10 @@ export class UserClearerController {
   }
 
   @Put('user/:userId/resume')
-  @Permissions(PermissionClearer.coworkerState)
-  @ApiOperation({ summary: 'Resume clearer user' })
+  @Permissions(PermissionOrganization.coworkerState)
+  @ApiOperation({ summary: 'Resume organization user' })
   @ApiOkResponse({
-    description: 'Successfully resumed clearer user id',
+    description: 'Successfully resumed organization user id',
     type: UpdateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -200,13 +272,23 @@ export class UserClearerController {
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Clearer user has not been found',
+    description: 'Organization user has not been found',
     type: ExceptionDto,
   })
-  async resumeClearerUser(
+  async resumeOrganizationUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
   ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
 
     if (!user) {
       throw new NotFoundException();
@@ -219,9 +301,9 @@ export class UserClearerController {
   }
 
   @Post('user/:userId/role/assign')
-  @Permissions(PermissionClearer.roleAssign)
+  @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('role')
-  @ApiOperation({ summary: 'Assign clearer role to user' })
+  @ApiOperation({ summary: 'Assign organization role to user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -238,26 +320,41 @@ export class UserClearerController {
     description: 'User has not been found',
     type: ExceptionDto,
   })
-  async assignRoleClearer(
+  async assignRoleOrganization(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleClearerDto,
+    @Body() request: AssignRoleOrganizationDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
 
     if (!user) {
       throw new NotFoundException();
     }
 
-    await this.roleService.assignRoleClearer(request.roles, user, userCurrent);
+    await this.roleService.assignRoleOrganization(
+      request.roles,
+      organization,
+      user,
+      userCurrent,
+    );
 
     return UserMapper.toUpdateDto(user);
   }
 
   @Post('user/:userId/role/unassign')
-  @Permissions(PermissionClearer.roleAssign)
+  @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('role')
-  @ApiOperation({ summary: 'Unassign clearer role from user' })
+  @ApiOperation({ summary: 'Unassign organization role from user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -274,112 +371,32 @@ export class UserClearerController {
     description: 'User has not been found',
     type: ExceptionDto,
   })
-  async unassignRoleClearer(
+  async unassignRoleOrganization(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleClearerDto,
+    @Body() request: AssignRoleOrganizationDto,
   ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
 
     if (!user) {
       throw new NotFoundException();
     }
 
-    await this.roleService.unassignRoleClearer(request.roles, user);
+    await this.roleService.unassignRoleOrganization(
+      request.roles,
+      organization,
+      user,
+    );
 
     return UserMapper.toUpdateDto(user);
-  }
-
-  @Post('organization/:organizationId/manager')
-  @Permissions(PermissionClearer.organizationManagerCreate)
-  @ApiOperation({ summary: 'Create organization manager' })
-  @ApiCreatedResponse({
-    description: 'Successfully registered organization manager id',
-    type: CreateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization has not been found',
-    type: ExceptionDto,
-  })
-  async createOrganizationManager(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Body() request: CreateUserRequestDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<CreateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const roleManager = await this.roleService.getRoleOrganizationManager(
-      organization,
-    );
-    const user = await this.userService.create(request, false);
-
-    user.organization = organization;
-    user.roles.push({
-      role: roleManager,
-      assignedAt: new Date(),
-      assignedBy: userCurrent,
-    });
-    roleManager.users.push(user);
-
-    await user.save();
-    await roleManager.save();
-
-    return UserMapper.toCreateDto(user);
-  }
-
-  @Get('organization/:organizationId/manager')
-  @Permissions(PermissionClearer.organizationManagerRead)
-  @ApiOperation({ summary: 'Get organization manager list' })
-  @ApiPaginationResponse(GetUserResponseDto)
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization has not been found',
-    type: ExceptionDto,
-  })
-  async getOrganizationManagerPaginated(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @PaginationParams() pagination: PaginationRequest,
-  ): Promise<PaginationResponseDto<GetUserResponseDto>> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const roleManager = await this.roleService.getRoleOrganizationManager(
-      organization,
-    );
-
-    if (!roleManager) {
-      throw new NotFoundException();
-    }
-
-    const [
-      { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(roleManager, pagination);
-
-    const userDtos = paginatedResult.map((user: UserDocument) =>
-      UserMapper.toGetDto(user),
-    );
-
-    return PaginationHelper.of(
-      pagination,
-      totalResult[0]?.total || 0,
-      userDtos,
-    );
   }
 }

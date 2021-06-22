@@ -76,7 +76,6 @@ export class RoleClearerController {
 
   @Get(':roleId')
   @Permissions(PermissionClearer.roleRead)
-  @ApiTags('role')
   @ApiOperation({ summary: 'Get clearer role user list' })
   @ApiPaginationResponse(GetUserResponseDto)
   @ApiUnprocessableEntityResponse({

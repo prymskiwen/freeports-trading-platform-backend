@@ -14,7 +14,7 @@ import {
 import { ROLE_MANAGER } from 'src/schema/role/role.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
-import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
+import { CreateRoleOrganizationRequestDto } from './dto/organization/create-role-organization-request.dto';
 import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
 import { CreateRoleClearerRequestDto } from './dto/clearer/create-role-clearer-request.dto';
 import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
@@ -23,7 +23,6 @@ import {
   RoleDeskMultiDocument,
 } from 'src/schema/role/role-desk-multi.schema';
 import { UpdateRoleClearerRequestDto } from './dto/clearer/update-role-clearer-request.dto';
-import { UpdateRoleOrganizationRequestDto } from './dto/update-role-organization-request.dto';
 import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto';
 import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
 import {
@@ -31,6 +30,7 @@ import {
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
 import { UserService } from '../user/user.service';
+import { UpdateRoleOrganizationRequestDto } from './dto/organization/update-role-organization-request.dto';
 
 @Injectable()
 export class RoleService {
@@ -353,6 +353,70 @@ export class RoleService {
         }
 
         await this.roleClearerModel.updateOne(
+          { _id: role.id },
+          { $pull: { users: user._id } },
+        );
+
+        await this.userService.unassignRole(role, user);
+      }),
+    );
+  }
+
+  async assignRoleOrganization(
+    roles: string[],
+    organization: OrganizationDocument,
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const role = await this.getRoleOrganizationById(roleId, organization);
+        if (!role) {
+          return;
+        }
+
+        const assigned = role.users.some((userId) => {
+          return userId.toString() === user.id;
+        });
+        if (assigned) {
+          return;
+        }
+
+        user.roles.push({
+          role: role,
+          assignedAt: new Date(),
+          assignedBy: assignedBy,
+        });
+
+        role.users.push(user);
+
+        await role.save();
+      }),
+    );
+
+    await user.save();
+  }
+
+  async unassignRoleOrganization(
+    roles: string[],
+    organization: OrganizationDocument,
+    user: UserDocument,
+  ) {
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const role = await this.getRoleOrganizationById(roleId, organization);
+        if (!role) {
+          return;
+        }
+
+        const assigned = role.users.some((userId) => {
+          return userId.toString() === user.id;
+        });
+        if (!assigned) {
+          return;
+        }
+
+        await this.roleOrganizationModel.updateOne(
           { _id: role.id },
           { $pull: { users: user._id } },
         );
