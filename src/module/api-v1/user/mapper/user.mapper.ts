@@ -38,9 +38,10 @@ export class UserMapper {
   public static toGetDetailsDto(
     document: UserDocument,
   ): GetUserDetailsResponseDto {
-    const dto = new GetUserDetailsResponseDto();
-
-    Object.assign({}, dto, this.toGetDto(document));
+    const dto = Object.assign(
+      new GetUserDetailsResponseDto(),
+      this.toGetDto(document),
+    );
 
     dto.avatar = document.personal.avatar;
 
