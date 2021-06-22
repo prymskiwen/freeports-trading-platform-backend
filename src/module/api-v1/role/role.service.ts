@@ -323,12 +323,12 @@ export class RoleService {
         }
 
         user.roles.push({
-          role: role,
+          role: role.id,
           assignedAt: new Date(),
-          assignedBy: assignedBy,
+          assignedBy: assignedBy.id,
         });
 
-        role.users.push(user);
+        role.users.push(user.id);
 
         await role.save();
       }),
@@ -383,12 +383,12 @@ export class RoleService {
         }
 
         user.roles.push({
-          role: role,
+          role: role.id,
           assignedAt: new Date(),
-          assignedBy: assignedBy,
+          assignedBy: assignedBy.id,
         });
 
-        role.users.push(user);
+        role.users.push(user.id);
 
         await role.save();
       }),
