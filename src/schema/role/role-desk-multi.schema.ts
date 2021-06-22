@@ -13,6 +13,7 @@ export class RoleDeskMulti {
   owner: User;
   disabled?: boolean;
   system?: boolean;
+  users?: User[];
 
   @Prop({ type: [String], enum: PermissionDesk })
   permissions?: PermissionDesk[];

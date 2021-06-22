@@ -1,11 +1,11 @@
 import { Organization } from 'src/schema/organization/organization.schema';
-import { UserRole } from 'src/schema/user/embedded/user-role.embedded';
 
 export class GetUserResponseDto {
   id: string;
+  organization?: Organization;
   nickname: string;
   email: string;
-  roles: UserRole[];
+  phone: string;
   jobTitle: string;
-  organization: string | Organization;
+  suspended: boolean;
 }

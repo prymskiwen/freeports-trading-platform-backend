@@ -24,7 +24,6 @@ import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { Permissions } from '../auth/decorator/permissions.decorator';
-import { CreateRoleOrganizationRequestDto } from './dto/create-role-organization-request.dto';
 import { CreateRoleResponseDto } from './dto/create-role-response.dto';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
@@ -37,8 +36,6 @@ import { DeskService } from '../desk/desk.service';
 import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { UpdateRoleResponseDto } from './dto/update-role-response.dto';
-import { UpdateRoleOrganizationRequestDto } from './dto/update-role-organization-request.dto';
-import { GetRoleOrganizationResponseDto } from './dto/get-role-organization-response.dto';
 import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto';
 import { GetRoleDeskMultiResponseDto } from './dto/get-role-desk-multi-response.dto';
 import { GetRoleDeskResponseDto } from './dto/get-role-desk-response.dto';
@@ -61,173 +58,6 @@ export class RoleController {
     private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
-
-  @Get('organization/:organizationId/role')
-  @Permissions(PermissionOrganization.roleRead)
-  @ApiTags('organization')
-  @ApiOperation({ summary: 'Get organization role list' })
-  @ApiOkResponse({ type: [GetRoleOrganizationResponseDto] })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization has not been found',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
-  async getRoleOrganizationList(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-  ): Promise<GetRoleOrganizationResponseDto[]> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const roles = await this.roleService.getRoleOrganizationList(organization);
-
-    return roles.map((role) => {
-      return {
-        id: role.id,
-        name: role.name,
-        permissions: role.permissions,
-      };
-    });
-  }
-
-  @Post('organization/:organizationId/role')
-  @Permissions(PermissionOrganization.roleCreate)
-  @ApiTags('organization')
-  @ApiOperation({ summary: 'Create organization role' })
-  @ApiCreatedResponse({
-    description: 'Successfully created organization role id',
-    type: CreateRoleResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization has not been found',
-    type: ExceptionDto,
-  })
-  async createRoleOrganization(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Body() request: CreateRoleOrganizationRequestDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<CreateRoleResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const role = await this.roleService.createRoleOrganization(
-      organization,
-      request,
-      userCurrent,
-    );
-
-    return RoleMapper.toCreateDto(role);
-  }
-
-  @Patch('organization/:organizationId/role/:roleId')
-  @Permissions(PermissionOrganization.roleUpdate)
-  @ApiTags('organization')
-  @ApiOperation({ summary: 'Update organization role' })
-  @ApiOkResponse({
-    description: 'Successfully updated organization role id',
-    type: UpdateRoleResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization role has not been found',
-    type: ExceptionDto,
-  })
-  async updateRoleOrganization(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Body() request: UpdateRoleOrganizationRequestDto,
-  ): Promise<UpdateRoleResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const role = await this.roleService.getRoleOrganizationById(
-      roleId,
-      organization,
-    );
-
-    if (!role) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.updateRoleOrganization(role, request);
-
-    return RoleMapper.toUpdateDto(role);
-  }
-
-  @Delete('organization/:organizationId/role/:roleId')
-  @Permissions(PermissionOrganization.roleDelete)
-  @ApiTags('organization')
-  @ApiOperation({ summary: 'Delete organization role' })
-  @ApiOkResponse({
-    description: 'Successfully deleted organization role id',
-    type: DeleteRoleResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization role has not been found',
-    type: ExceptionDto,
-  })
-  async deleteRoleOrganization(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('roleId', ParseObjectIdPipe) roleId: string,
-  ): Promise<DeleteRoleResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const role = await this.roleService.getRoleOrganizationById(
-      roleId,
-      organization,
-    );
-
-    if (!role) {
-      throw new NotFoundException();
-    }
-
-    await role.remove();
-    await this.userService.deleteRole(role);
-
-    return RoleMapper.toUpdateDto(role);
-  }
 
   @Get('organization/:organizationId/role-multi')
   @Permissions(PermissionOrganization.roleRead)

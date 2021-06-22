@@ -9,6 +9,8 @@ import { RoleModule } from '../role/role.module';
 import { DeskModule } from '../desk/desk.module';
 import { InitController } from './init.controller';
 import { AuthModule } from '../auth/auth.module';
+import { UserClearerController } from './user-clearer.controller';
+import { UserOrganizationController } from './user-organization.controller';
 
 @Module({
   imports: [
@@ -18,7 +20,12 @@ import { AuthModule } from '../auth/auth.module';
     OrganizationModule,
     forwardRef(() => RoleModule),
   ],
-  controllers: [UserController, InitController],
+  controllers: [
+    InitController,
+    UserController,
+    UserClearerController,
+    UserOrganizationController,
+  ],
   providers: [UserService, IsUniqueInDbConstraint],
   exports: [UserService],
 })

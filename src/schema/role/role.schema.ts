@@ -9,7 +9,6 @@ import { PermissionAny } from './permission.helper';
 
 export const ROLE_MANAGER = 'Manager';
 
-
 export type RoleDocument = Role & Document;
 
 @Schema({ versionKey: false, discriminatorKey: 'kind' })
@@ -30,13 +29,16 @@ export class Role {
   name: string;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
-  owner?: User;
+  owner: User;
 
   @Prop()
   disabled?: boolean;
 
   @Prop()
   system?: boolean;
+
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }] })
+  users?: User[];
 
   @Prop({ type: [String], enum: PermissionAny })
   permissions?: PermissionAny[];

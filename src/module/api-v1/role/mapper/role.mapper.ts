@@ -1,6 +1,12 @@
+import { RoleClearerDocument } from 'src/schema/role/role-clearer.schema';
+import { RoleOrganizationDocument } from 'src/schema/role/role-organization.schema';
 import { RoleDocument } from 'src/schema/role/role.schema';
+import { AssignUserResponseDto } from '../dto/assign-user-response.dto';
+import { GetRoleClearerResponseDto } from '../dto/clearer/get-role-clearer-response.dto';
 import { CreateRoleResponseDto } from '../dto/create-role-response.dto';
 import { DeleteRoleResponseDto } from '../dto/delete-role-response.dto';
+import { GetRoleOrganizationResponseDto } from '../dto/organization/get-role-organization-response.dto';
+import { UnassignUserResponseDto } from '../dto/unassign-user-response.dto';
 import { UpdateRoleResponseDto } from '../dto/update-role-response.dto';
 
 export class RoleMapper {
@@ -24,6 +30,46 @@ export class RoleMapper {
     const dto = new DeleteRoleResponseDto();
 
     dto.id = document.id;
+
+    return dto;
+  }
+
+  public static toAssignDto(document: RoleDocument): AssignUserResponseDto {
+    const dto = new AssignUserResponseDto();
+
+    dto.id = document.id;
+
+    return dto;
+  }
+
+  public static toUnassignDto(document: RoleDocument): UnassignUserResponseDto {
+    const dto = new UnassignUserResponseDto();
+
+    dto.id = document.id;
+
+    return dto;
+  }
+
+  public static toGetRoleClearerDto(
+    document: RoleClearerDocument,
+  ): GetRoleClearerResponseDto {
+    const dto = new GetRoleClearerResponseDto();
+
+    dto.id = document._id;
+    dto.name = document.name;
+    dto.permissions = document.permissions;
+
+    return dto;
+  }
+
+  public static toGetRoleOrganizationDto(
+    document: RoleOrganizationDocument,
+  ): GetRoleOrganizationResponseDto {
+    const dto = new GetRoleOrganizationResponseDto();
+
+    dto.id = document._id;
+    dto.name = document.name;
+    dto.permissions = document.permissions;
 
     return dto;
   }
