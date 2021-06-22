@@ -56,20 +56,9 @@ export class InitController {
     }
 
     const user = await this.userService.create(request, false);
-    const roleManager = await this.roleService.createRoleClearerManager(
-      user,
-      false,
-    );
+    const roleManager = await this.roleService.createRoleClearerManager(user);
 
-    user.roles.push({
-      role: roleManager,
-      assignedAt: new Date(),
-      assignedBy: user,
-    });
-    roleManager.users.push(user);
-
-    await user.save();
-    await roleManager.save();
+    await this.roleService.assignRoleClearer([roleManager.id], user, user);
 
     return await this.authService.login(user);
   }
