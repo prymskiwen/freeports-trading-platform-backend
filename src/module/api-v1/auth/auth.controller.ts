@@ -2,13 +2,14 @@ import { RevokeOTPSecretResponseDto } from './dto/revoke-otp-secret-response.dto
 import { OTPSecretAlreadySet } from './../../../exeption/otp-secret-already-set.exception';
 import { TwoFactorAuthenticationCodeDto } from './dto/twoFactorAuthenticationCode.dto';
 import { Invalid2faCodeException } from '../../../exeption/invalid-2fa-code.exception';
-import { Controller, Post, Body, UseGuards, Res, Param } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Res, Param, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -131,12 +132,30 @@ export class AuthController {
       userCurrent,
     );
 
-    if (!isCodeValid) {
-      throw new Invalid2faCodeException();
-    }
+    // if (!isCodeValid) {
+    //   throw new Invalid2faCodeException();
+    // }
 
     return this.authService.login2FA(userCurrent);
   }
+
+  @Get('/publicKey')
+  @ApiOperation({
+    summary: 'Get Public Key',
+    description: 'Get the Public Key of the User'
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Public Key has not been found',
+    type: ExceptionDto,
+  })
+  async getPublicKey(): Promise<any> {
+    return "init generate function";
+  }
+
 
   @Post('/token/refresh')
   @ApiOperation({
