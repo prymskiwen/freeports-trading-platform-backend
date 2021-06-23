@@ -2,6 +2,8 @@ import { RevokeOTPSecretResponseDto } from './dto/revoke-otp-secret-response.dto
 import { OTPSecretAlreadySet } from './../../../exeption/otp-secret-already-set.exception';
 import { TwoFactorAuthenticationCodeDto } from './dto/twoFactorAuthenticationCode.dto';
 import { Invalid2faCodeException } from '../../../exeption/invalid-2fa-code.exception';
+import JwtTwoFactorGuard from './guard/jwt-two-factor.guard';
+import { PermissionsGuard } from './guard/permissions.guard';
 import { Controller, Post, Body, UseGuards, Res, Param, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -24,6 +26,7 @@ import { RefreshTokenRequestDto } from './dto/refresh-token-request.dto';
 import { TokenDto } from './dto/token.dto';
 import { ValidateTokenRequestDto } from './dto/validate-token-request.dto';
 import { ValidateTokenResponseDto } from './dto/validate-token-response.dto';
+import { PublicKeyDto } from './dto/publickey-response.dto'
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
@@ -144,6 +147,7 @@ export class AuthController {
     summary: 'Get Public Key',
     description: 'Get the Public Key of the User'
   })
+  @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
   @ApiUnauthorizedResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -152,8 +156,11 @@ export class AuthController {
     description: 'Public Key has not been found',
     type: ExceptionDto,
   })
-  async getPublicKey(): Promise<any> {
-    return "init generate function";
+  async getPublicKey(
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<PublicKeyDto> {
+    console.log(userCurrent);
+    return this.authService.publicKey(userCurrent);
   }
 
 
