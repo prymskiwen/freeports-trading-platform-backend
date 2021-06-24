@@ -289,6 +289,46 @@ export class UserClearerController {
     return UserMapper.toUpdateDto(user);
   }
 
+  @Patch('user/:userId/role')
+  @Permissions(PermissionClearer.roleAssign)
+  @ApiTags('role')
+  @ApiOperation({ summary: 'Update clearer roles to user' })
+  @ApiCreatedResponse({
+    description: 'Successfully updated user id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async updateRoleClearer(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: AssignRoleClearerDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<UpdateUserResponseDto> {
+    const user = await this.userService.getClearerUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await this.roleService.updateClearerUserRoles(
+      request.roles,
+      user,
+      userCurrent,
+    );
+
+    return UserMapper.toUpdateDto(user);
+  }
+
   @Post('organization/:organizationId/manager')
   @Permissions(PermissionClearer.organizationManagerCreate)
   @ApiOperation({ summary: 'Create organization manager' })
