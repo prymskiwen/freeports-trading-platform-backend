@@ -362,6 +362,28 @@ export class RoleService {
     );
   }
 
+  async updateClearerUserRoles(
+    roles: string[],
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    await this.resetClearerUserRoles(user);
+    if (roles.length) {
+      return this.assignRoleClearer(roles, user, assignedBy);
+    } else {
+      await user.save();
+    }
+  }
+
+  async resetClearerUserRoles(user: UserDocument) {
+    return this.unassignRoleClearer(
+      user.roles.map((r) => {
+        return r.role.toString();
+      }),
+      user,
+    );
+  }
+
   async assignRoleOrganization(
     roles: string[],
     organization: OrganizationDocument,

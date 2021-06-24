@@ -77,10 +77,9 @@ export class UserService {
     request: UpdateUserRequestDto,
     persist = true,
   ): Promise<UserDocument> {
-    user.personal.nickname = request.nickname;
-    user.personal.email = request.email;
-    user.personal.phone = request.phone;
-    user.personal.avatar = request.avatar;
+    Object.keys(request).forEach((key) => {
+      user.personal[key] = request[key];
+    });
 
     await user.save();
 
@@ -191,28 +190,6 @@ export class UserService {
         },
       },
     ]);
-  }
-
-  async getOrganizationUserActiveCount(
-    organization: OrganizationDocument,
-  ): Promise<number> {
-    return await this.userModel
-      .countDocuments({
-        organization: { $exists: true, $eq: organization._id },
-        $or: [{ suspended: { $exists: false } }, { suspended: false }],
-      })
-      .exec();
-  }
-
-  async getOrganizationUserSuspendedCount(
-    organization: OrganizationDocument,
-  ): Promise<number> {
-    return await this.userModel
-      .countDocuments({
-        organization: { $exists: true, $eq: organization._id },
-        $and: [{ suspended: { $exists: true } }, { suspended: true }],
-      })
-      .exec();
   }
 
   async getDeskUserPaginated(
