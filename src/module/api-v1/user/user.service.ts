@@ -77,10 +77,9 @@ export class UserService {
     request: UpdateUserRequestDto,
     persist = true,
   ): Promise<UserDocument> {
-    user.personal.nickname = request.nickname;
-    user.personal.email = request.email;
-    user.personal.phone = request.phone;
-    user.personal.avatar = request.avatar;
+    Object.keys(request).forEach((key) => {
+      user.personal[key] = request[key];
+    });
 
     await user.save();
 
