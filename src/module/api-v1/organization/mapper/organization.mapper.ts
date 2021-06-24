@@ -25,41 +25,46 @@ export class OrganizationMapper {
     return dto;
   }
 
-  public static toGetDetailsDto(
+  public static async toGetDto(
     document: OrganizationDocument,
-    userActive: number,
-    userSuspended: number,
-  ): GetOrganizationDetailsResponseDto {
-    const dto = new GetOrganizationDetailsResponseDto();
-
-    dto.id = document._id;
-    dto.name = document.details.name;
-    dto.logofile = document.details.logofile;
-    dto.createtime = document.details.createtime;
-    dto.commission = document.commissionRatio.organization;
-    dto.commissionclear = document.commissionRatio.clearer;
-    dto.clearing = document.clearing;
-    dto.acitveUser = userActive;
-    dto.discativeUser = userSuspended;
-
-    return dto;
-  }
-
-  public static toGetDto(
-    document: OrganizationDocument,
-    userActive: number,
-    userSuspended: number,
-  ): GetOrganizationResponseDto {
+  ): Promise<GetOrganizationResponseDto> {
     const dto = new GetOrganizationResponseDto();
 
     dto.id = document._id;
     dto.name = document.details.name;
-    dto.createtime = document.details.createtime;
-    dto.commission = document.commissionRatio.organization;
-    dto.commissionclear = document.commissionRatio.clearer;
+    dto.createdAt = document.createdAt;
+    dto.commissionOrganization = document.commissionRatio.organization;
+    dto.commissionClearer = document.commissionRatio.clearer;
+
+    await document.populate('users').execPopulate();
+
+    const userSuspendedCount = document.users.reduce(
+      (val, u) => val + (u.suspended ? 1 : 0),
+      0,
+    );
+
+    dto.userActive = document.users.length - userSuspendedCount;
+    dto.userSuspended = userSuspendedCount;
+
+    return dto;
+  }
+
+  public static async toGetDetailsDto(
+    document: OrganizationDocument,
+  ): Promise<GetOrganizationDetailsResponseDto> {
+    const dto = Object.assign(
+      new GetOrganizationDetailsResponseDto(),
+      await this.toGetDto(document),
+    );
+
+    dto.street = document.details.street;
+    dto.street2 = document.details.street2;
+    dto.zip = document.details.zip;
+    dto.city = document.details.city;
+    dto.country = document.details.country;
+    dto.logo = document.details.logo;
+
     dto.clearing = document.clearing;
-    dto.acitveUser = userActive;
-    dto.discativeUser = userSuspended;
 
     return dto;
   }

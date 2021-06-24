@@ -24,7 +24,7 @@ export const PermissionClearer = {
   organizationManagerRead: 'clearer.organization.manager.read',
   organizationManagerCreate: 'clearer.organization.manager.create',
   organizationManagerUpdate: 'clearer.organization.manager.update',
-  organizationManagerDisable: 'clearer.organization.manager.disable',
+  organizationManagerState: 'clearer.organization.manager.state',
 } as const;
 
 export const PermissionClearerGroup = [
@@ -136,8 +136,8 @@ export const PermissionClearerGroup = [
         code: PermissionClearer.organizationManagerUpdate,
       },
       {
-        name: 'Disable',
-        code: PermissionClearer.organizationManagerDisable,
+        name: 'Suspend/Resume',
+        code: PermissionClearer.organizationManagerState,
       },
     ],
   },

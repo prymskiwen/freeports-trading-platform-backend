@@ -17,6 +17,10 @@ export class OrganizationService {
     private organizationModel: Model<OrganizationDocument>,
   ) {}
 
+  hydrate(organization: any): OrganizationDocument {
+    return this.organizationModel.hydrate(organization);
+  }
+
   async getById(id: string): Promise<OrganizationDocument> {
     return await this.organizationModel.findById(id).exec();
   }
@@ -27,6 +31,7 @@ export class OrganizationService {
   ): Promise<OrganizationDocument> {
     const organization = new this.organizationModel();
 
+    organization.createdAt = new Date();
     organization.details = {
       name: request.name,
       street: request.street,
@@ -34,13 +39,12 @@ export class OrganizationService {
       zip: request.zip,
       city: request.city,
       country: request.country,
-      logofile: request.logofile,
-      createtime: request.createtime,
+      logo: request.logo,
     };
 
     organization.commissionRatio = {
-      organization: request.сommission,
-      clearer: request.clearer,
+      organization: request.commissionOrganization,
+      clearer: request.commissionClearer,
     };
 
     if (persist) {
@@ -55,21 +59,21 @@ export class OrganizationService {
     request: UpdateOrganizationRequestDto,
     persist = true,
   ): Promise<OrganizationDocument> {
-    organization.details = {
-      name: request.name,
-      street: request.street,
-      street2: request.street2,
-      logofile: request.logofile,
-      zip: request.zip,
-      city: request.city,
-      country: request.country,
-      createtime: request.createtime,
-    };
+    const {
+      commissionOrganization,
+      commissionClearer,
+      ...requestRest
+    } = request;
+    Object.keys(requestRest).forEach((key) => {
+      organization.details[key] = requestRest[key];
+    });
 
-    organization.commissionRatio = {
-      organization: request.сommission,
-      clearer: request.clearer,
-    };
+    if (commissionOrganization) {
+      organization.commissionRatio.organization = commissionOrganization;
+    }
+    if (commissionClearer) {
+      organization.commissionRatio.clearer = commissionClearer;
+    }
 
     if (persist) {
       await organization.save();

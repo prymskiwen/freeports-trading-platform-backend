@@ -36,37 +36,29 @@ import { CreateUserRequestDto } from '../user/dto/create-user-request.dto';
 import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
 import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
-import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
 import { UserService } from './user.service';
-import { OrganizationService } from '../organization/organization.service';
 import { RoleService } from '../role/role.service';
 import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
-import {
-  PermissionClearer,
-  PermissionOrganization,
-} from 'src/schema/role/permission.helper';
-import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
+import { PermissionClearer } from 'src/schema/role/permission.helper';
+import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
+import { OrganizationService } from '../organization/organization.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization/:organizationId')
-@ApiTags('user', 'organization')
+@Controller('api/v1/organization/:organizationId/manager')
+@ApiTags('user', 'clearer')
 @ApiBearerAuth()
-export class UserOrganizationController {
+export class UserClearerOrganizationManagerController {
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
 
-  @Get('user')
-  @Permissions(
-    PermissionOrganization.coworkerRead,
-    PermissionOrganization.organizationRead,
-    PermissionClearer.organizationRead,
-  )
-  @ApiOperation({ summary: 'Get organization user list' })
+  @Get()
+  @Permissions(PermissionClearer.organizationManagerRead)
+  @ApiOperation({ summary: 'Get organization manager list' })
   @ApiPaginationResponse(GetUserResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -76,7 +68,7 @@ export class UserOrganizationController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  async getOrganizationUserPaginated(
+  async getOrganizationManagerPaginated(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetUserResponseDto>> {
@@ -86,12 +78,17 @@ export class UserOrganizationController {
       throw new NotFoundException();
     }
 
+    const roleManager = await this.roleService.getRoleOrganizationManager(
+      organization,
+    );
+
+    if (!roleManager) {
+      throw new NotFoundException();
+    }
+
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getOrganizationUserPaginated(
-      organization,
-      pagination,
-    );
+    ] = await this.userService.getUserOfRolePaginated(roleManager, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -104,25 +101,25 @@ export class UserOrganizationController {
     );
   }
 
-  @Get('user/:userId')
-  @Permissions(PermissionOrganization.coworkerRead)
-  @ApiOperation({ summary: 'Get organization user' })
+  @Get(':managerId')
+  @Permissions(PermissionClearer.organizationManagerRead)
+  @ApiOperation({ summary: 'Get organization manager' })
   @ApiOkResponse({ type: GetUserDetailsResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization user has not been found',
+    description: 'Organization manager has not been found',
     type: ExceptionDto,
   })
   @ApiInternalServerErrorResponse({
     description: 'Server error',
     type: ExceptionDto,
   })
-  async getOrganizationUser(
+  async getOrganizationManager(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Param('managerId', ParseObjectIdPipe) managerId: string,
   ): Promise<GetUserDetailsResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
@@ -130,19 +127,35 @@ export class UserOrganizationController {
       throw new NotFoundException();
     }
 
-    const user = await this.userService.getOrganizationUserById(
-      userId,
+    const roleManager = await this.roleService.getRoleOrganizationManager(
       organization,
     );
 
-    return UserMapper.toGetDetailsDto(user);
+    if (!roleManager) {
+      throw new NotFoundException();
+    }
+
+    const manager = await this.userService.getOrganizationUserById(
+      managerId,
+      organization,
+    );
+
+    // ensure user is manager
+    const assigned = roleManager.users.some((userId) => {
+      return userId.toString() === manager.id;
+    });
+    if (!assigned) {
+      throw new NotFoundException();
+    }
+
+    return UserMapper.toGetDetailsDto(manager);
   }
 
-  @Post('user')
-  @Permissions(PermissionOrganization.coworkerCreate)
-  @ApiOperation({ summary: 'Create organization user' })
+  @Post()
+  @Permissions(PermissionClearer.organizationManagerCreate)
+  @ApiOperation({ summary: 'Create organization manager' })
   @ApiCreatedResponse({
-    description: 'Successfully registered organization user id',
+    description: 'Successfully registered organization manager id',
     type: CreateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -157,9 +170,10 @@ export class UserOrganizationController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  async createOrganizationUser(
+  async createOrganizationManager(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Body() request: CreateUserRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
@@ -167,22 +181,31 @@ export class UserOrganizationController {
       throw new NotFoundException();
     }
 
+    const roleManager = await this.roleService.getRoleOrganizationManager(
+      organization,
+    );
     const user = await this.userService.create(request, false);
 
     user.organization = organization;
     organization.users.push(user.id);
 
-    await user.save();
     await organization.save();
+
+    await this.roleService.assignRoleOrganization(
+      [roleManager.id],
+      organization,
+      user,
+      userCurrent,
+    );
 
     return UserMapper.toCreateDto(user);
   }
 
-  @Patch('user/:userId')
-  @Permissions(PermissionOrganization.coworkerUpdate)
-  @ApiOperation({ summary: 'Update organization user' })
+  @Patch(':managerId')
+  @Permissions(PermissionClearer.organizationManagerUpdate)
+  @ApiOperation({ summary: 'Update organization manager' })
   @ApiOkResponse({
-    description: 'Successfully updated organization user id',
+    description: 'Successfully updated organization manager id',
     type: UpdateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -194,12 +217,12 @@ export class UserOrganizationController {
     type: InvalidFormExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization user has not been found',
+    description: 'Organization manager has not been found',
     type: ExceptionDto,
   })
-  async updateOrganizationUser(
+  async updateOrganizationManager(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Param('managerId', ParseObjectIdPipe) managerId: string,
     @Body() request: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
@@ -208,25 +231,41 @@ export class UserOrganizationController {
       throw new NotFoundException();
     }
 
-    const user = await this.userService.getOrganizationUserById(
-      userId,
+    const roleManager = await this.roleService.getRoleOrganizationManager(
       organization,
     );
 
-    if (!user) {
+    if (!roleManager) {
       throw new NotFoundException();
     }
 
-    await this.userService.update(user, request);
+    const manager = await this.userService.getOrganizationUserById(
+      managerId,
+      organization,
+    );
 
-    return UserMapper.toUpdateDto(user);
+    if (!manager) {
+      throw new NotFoundException();
+    }
+
+    // ensure user is manager
+    const assigned = roleManager.users.some((userId) => {
+      return userId.toString() === manager.id;
+    });
+    if (!assigned) {
+      throw new NotFoundException();
+    }
+
+    await this.userService.update(manager, request);
+
+    return UserMapper.toUpdateDto(manager);
   }
 
-  @Put('user/:userId/suspend')
-  @Permissions(PermissionOrganization.coworkerState)
-  @ApiOperation({ summary: 'Suspend organization user' })
+  @Put(':managerId/suspend')
+  @Permissions(PermissionClearer.organizationManagerState)
+  @ApiOperation({ summary: 'Suspend organization manager' })
   @ApiOkResponse({
-    description: 'Successfully suspended organization user id',
+    description: 'Successfully suspended organization manager id',
     type: UpdateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -234,12 +273,12 @@ export class UserOrganizationController {
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization user has not been found',
+    description: 'Organization manager has not been found',
     type: ExceptionDto,
   })
-  async suspendOrganizationUser(
+  async suspendOrganizationManager(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Param('managerId', ParseObjectIdPipe) managerId: string,
   ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
@@ -247,26 +286,42 @@ export class UserOrganizationController {
       throw new NotFoundException();
     }
 
-    const user = await this.userService.getOrganizationUserById(
-      userId,
+    const roleManager = await this.roleService.getRoleOrganizationManager(
       organization,
     );
 
-    if (!user) {
+    if (!roleManager) {
       throw new NotFoundException();
     }
 
-    user.suspended = true;
-    await user.save();
+    const manager = await this.userService.getOrganizationUserById(
+      managerId,
+      organization,
+    );
 
-    return UserMapper.toUpdateDto(user);
+    if (!manager) {
+      throw new NotFoundException();
+    }
+
+    // ensure user is manager
+    const assigned = roleManager.users.some((userId) => {
+      return userId.toString() === manager.id;
+    });
+    if (!assigned) {
+      throw new NotFoundException();
+    }
+
+    manager.suspended = true;
+    await manager.save();
+
+    return UserMapper.toUpdateDto(manager);
   }
 
-  @Put('user/:userId/resume')
-  @Permissions(PermissionOrganization.coworkerState)
-  @ApiOperation({ summary: 'Resume organization user' })
+  @Put(':managerId/resume')
+  @Permissions(PermissionClearer.organizationManagerState)
+  @ApiOperation({ summary: 'Resume organization manager' })
   @ApiOkResponse({
-    description: 'Successfully resumed organization user id',
+    description: 'Successfully resumed organization manager id',
     type: UpdateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -274,12 +329,12 @@ export class UserOrganizationController {
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization user has not been found',
+    description: 'Organization manager has not been found',
     type: ExceptionDto,
   })
-  async resumeOrganizationUser(
+  async resumeOrganizationManager(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Param('managerId', ParseObjectIdPipe) managerId: string,
   ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
@@ -287,118 +342,34 @@ export class UserOrganizationController {
       throw new NotFoundException();
     }
 
-    const user = await this.userService.getOrganizationUserById(
-      userId,
+    const roleManager = await this.roleService.getRoleOrganizationManager(
       organization,
     );
 
-    if (!user) {
+    if (!roleManager) {
       throw new NotFoundException();
     }
 
-    user.suspended = false;
-    await user.save();
-
-    return UserMapper.toUpdateDto(user);
-  }
-
-  @Post('user/:userId/role/assign')
-  @Permissions(PermissionOrganization.roleAssign)
-  @ApiTags('role')
-  @ApiOperation({ summary: 'Assign organization role to user' })
-  @ApiCreatedResponse({
-    description: 'Successfully updated user id',
-    type: UpdateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-    type: ExceptionDto,
-  })
-  async assignRoleOrganization(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleOrganizationDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<UpdateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const user = await this.userService.getOrganizationUserById(
-      userId,
+    const manager = await this.userService.getOrganizationUserById(
+      managerId,
       organization,
     );
 
-    if (!user) {
+    if (!manager) {
       throw new NotFoundException();
     }
 
-    await this.roleService.assignRoleOrganization(
-      request.roles,
-      organization,
-      user,
-      userCurrent,
-    );
-
-    return UserMapper.toUpdateDto(user);
-  }
-
-  @Post('user/:userId/role/unassign')
-  @Permissions(PermissionOrganization.roleAssign)
-  @ApiTags('role')
-  @ApiOperation({ summary: 'Unassign organization role from user' })
-  @ApiCreatedResponse({
-    description: 'Successfully updated user id',
-    type: UpdateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-    type: ExceptionDto,
-  })
-  async unassignRoleOrganization(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleOrganizationDto,
-  ): Promise<UpdateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
+    // ensure user is manager
+    const assigned = roleManager.users.some((userId) => {
+      return userId.toString() === manager.id;
+    });
+    if (!assigned) {
       throw new NotFoundException();
     }
 
-    const user = await this.userService.getOrganizationUserById(
-      userId,
-      organization,
-    );
+    manager.suspended = false;
+    await manager.save();
 
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.unassignRoleOrganization(
-      request.roles,
-      organization,
-      user,
-    );
-
-    return UserMapper.toUpdateDto(user);
+    return UserMapper.toUpdateDto(manager);
   }
 }

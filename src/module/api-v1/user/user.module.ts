@@ -11,6 +11,7 @@ import { InitController } from './init.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UserClearerController } from './user-clearer.controller';
 import { UserOrganizationController } from './user-organization.controller';
+import { UserClearerOrganizationManagerController } from './user-clearer-organization-manager.controller';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UserOrganizationController } from './user-organization.controller';
     InitController,
     UserController,
     UserClearerController,
+    UserClearerOrganizationManagerController,
     UserOrganizationController,
   ],
   providers: [UserService, IsUniqueInDbConstraint],

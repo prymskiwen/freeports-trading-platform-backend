@@ -35,13 +35,15 @@ export class UserMapper {
     return dto;
   }
 
-  public static toGetDetailsDto(
+  public static async toGetDetailsDto(
     document: UserDocument,
-  ): GetUserDetailsResponseDto {
+  ): Promise<GetUserDetailsResponseDto> {
     const dto = Object.assign(
       new GetUserDetailsResponseDto(),
       this.toGetDto(document),
     );
+
+    await document.populate('roles.role').execPopulate();
 
     dto.avatar = document.personal.avatar;
 
