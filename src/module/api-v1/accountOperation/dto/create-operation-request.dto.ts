@@ -5,13 +5,13 @@ export class CreateOperationRequestDto {
   amount: number;
 
   @IsNotEmpty()
-  createAt: Date;
+  createAt?: Date;
 
   @IsNotEmpty()
   operationDate: Date;
 
   @IsNotEmpty()
-  operationLabel: string;
+  operationLabel?: string;
 
   @IsNotEmpty()
   thirdParty?: string;
