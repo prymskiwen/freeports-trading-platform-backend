@@ -44,6 +44,7 @@ import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionClearer } from 'src/schema/role/permission.helper';
 import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
 import { OrganizationService } from '../organization/organization.service';
+import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/manager')
@@ -175,30 +176,43 @@ export class UserClearerOrganizationManagerController {
     @Body() request: CreateUserRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
+    try {
+      const organization = await this.organizationService.getById(
+        organizationId,
+      );
 
-    if (!organization) {
-      throw new NotFoundException();
+      if (!organization) {
+        throw new NotFoundException();
+      }
+
+      const roleManager = await this.roleService.getRoleOrganizationManager(
+        organization,
+      );
+      const user = await this.userService.create(request, false);
+
+      user.organization = organization;
+      organization.users.push(user.id);
+
+      await organization.save();
+
+      await this.roleService.assignRoleOrganization(
+        [roleManager.id],
+        organization,
+        user,
+        userCurrent,
+      );
+
+      return UserMapper.toCreateDto(user);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException(
+          'email',
+          ex['keyValue']['personal.email'],
+        );
+      }
+
+      throw ex;
     }
-
-    const roleManager = await this.roleService.getRoleOrganizationManager(
-      organization,
-    );
-    const user = await this.userService.create(request, false);
-
-    user.organization = organization;
-    organization.users.push(user.id);
-
-    await organization.save();
-
-    await this.roleService.assignRoleOrganization(
-      [roleManager.id],
-      organization,
-      user,
-      userCurrent,
-    );
-
-    return UserMapper.toCreateDto(user);
   }
 
   @Patch(':managerId')
@@ -225,40 +239,53 @@ export class UserClearerOrganizationManagerController {
     @Param('managerId', ParseObjectIdPipe) managerId: string,
     @Body() request: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
+    try {
+      const organization = await this.organizationService.getById(
+        organizationId,
+      );
 
-    if (!organization) {
-      throw new NotFoundException();
+      if (!organization) {
+        throw new NotFoundException();
+      }
+
+      const roleManager = await this.roleService.getRoleOrganizationManager(
+        organization,
+      );
+
+      if (!roleManager) {
+        throw new NotFoundException();
+      }
+
+      const manager = await this.userService.getOrganizationUserById(
+        managerId,
+        organization,
+      );
+
+      if (!manager) {
+        throw new NotFoundException();
+      }
+
+      // ensure user is manager
+      const assigned = roleManager.users.some((userId) => {
+        return userId.toString() === manager.id;
+      });
+      if (!assigned) {
+        throw new NotFoundException();
+      }
+
+      await this.userService.update(manager, request);
+
+      return UserMapper.toUpdateDto(manager);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException(
+          'email',
+          ex['keyValue']['personal.email'],
+        );
+      }
+
+      throw ex;
     }
-
-    const roleManager = await this.roleService.getRoleOrganizationManager(
-      organization,
-    );
-
-    if (!roleManager) {
-      throw new NotFoundException();
-    }
-
-    const manager = await this.userService.getOrganizationUserById(
-      managerId,
-      organization,
-    );
-
-    if (!manager) {
-      throw new NotFoundException();
-    }
-
-    // ensure user is manager
-    const assigned = roleManager.users.some((userId) => {
-      return userId.toString() === manager.id;
-    });
-    if (!assigned) {
-      throw new NotFoundException();
-    }
-
-    await this.userService.update(manager, request);
-
-    return UserMapper.toUpdateDto(manager);
   }
 
   @Put(':managerId/suspend')

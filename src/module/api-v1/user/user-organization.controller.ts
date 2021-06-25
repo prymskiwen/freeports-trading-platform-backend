@@ -48,6 +48,7 @@ import {
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
 import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
+import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId')
@@ -161,21 +162,34 @@ export class UserOrganizationController {
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Body() request: CreateUserRequestDto,
   ): Promise<CreateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
+    try {
+      const organization = await this.organizationService.getById(
+        organizationId,
+      );
 
-    if (!organization) {
-      throw new NotFoundException();
+      if (!organization) {
+        throw new NotFoundException();
+      }
+
+      const user = await this.userService.create(request, false);
+
+      user.organization = organization;
+      organization.users.push(user.id);
+
+      await user.save();
+      await organization.save();
+
+      return UserMapper.toCreateDto(user);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException(
+          'email',
+          ex['keyValue']['personal.email'],
+        );
+      }
+
+      throw ex;
     }
-
-    const user = await this.userService.create(request, false);
-
-    user.organization = organization;
-    organization.users.push(user.id);
-
-    await user.save();
-    await organization.save();
-
-    return UserMapper.toCreateDto(user);
   }
 
   @Patch('user/:userId')
@@ -202,24 +216,37 @@ export class UserOrganizationController {
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
+    try {
+      const organization = await this.organizationService.getById(
+        organizationId,
+      );
 
-    if (!organization) {
-      throw new NotFoundException();
+      if (!organization) {
+        throw new NotFoundException();
+      }
+
+      const user = await this.userService.getOrganizationUserById(
+        userId,
+        organization,
+      );
+
+      if (!user) {
+        throw new NotFoundException();
+      }
+
+      await this.userService.update(user, request);
+
+      return UserMapper.toUpdateDto(user);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException(
+          'email',
+          ex['keyValue']['personal.email'],
+        );
+      }
+
+      throw ex;
     }
-
-    const user = await this.userService.getOrganizationUserById(
-      userId,
-      organization,
-    );
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.userService.update(user, request);
-
-    return UserMapper.toUpdateDto(user);
   }
 
   @Put('user/:userId/suspend')

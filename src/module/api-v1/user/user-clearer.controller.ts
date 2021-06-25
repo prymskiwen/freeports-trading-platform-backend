@@ -44,6 +44,7 @@ import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionClearer } from 'src/schema/role/permission.helper';
 import { AssignRoleClearerDto } from './dto/assign-role-clearer.dto';
 import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
+import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/user')
@@ -115,9 +116,20 @@ export class UserClearerController {
   async createClearerUser(
     @Body() request: CreateUserRequestDto,
   ): Promise<CreateUserResponseDto> {
-    const user = await this.userService.create(request);
+    try {
+      const user = await this.userService.create(request);
 
-    return UserMapper.toCreateDto(user);
+      return UserMapper.toCreateDto(user);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException(
+          'email',
+          ex['keyValue']['personal.email'],
+        );
+      }
+
+      throw ex;
+    }
   }
 
   @Patch(':userId')
@@ -143,15 +155,26 @@ export class UserClearerController {
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
+    try {
+      const user = await this.userService.getClearerUserById(userId);
 
-    if (!user) {
-      throw new NotFoundException();
+      if (!user) {
+        throw new NotFoundException();
+      }
+
+      await this.userService.update(user, request);
+
+      return UserMapper.toUpdateDto(user);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException(
+          'email',
+          ex['keyValue']['personal.email'],
+        );
+      }
+
+      throw ex;
     }
-
-    await this.userService.update(user, request);
-
-    return UserMapper.toUpdateDto(user);
   }
 
   @Put(':userId/suspend')
