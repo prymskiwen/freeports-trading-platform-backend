@@ -51,7 +51,7 @@ import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
 import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization/:organizationId')
+@Controller('api/v1/organization/:organizationId/user')
 @ApiTags('user', 'organization')
 @ApiBearerAuth()
 export class UserOrganizationController {
@@ -61,7 +61,7 @@ export class UserOrganizationController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('user')
+  @Get()
   @Permissions(
     PermissionOrganization.coworkerRead,
     PermissionOrganization.organizationRead,
@@ -105,7 +105,7 @@ export class UserOrganizationController {
     );
   }
 
-  @Get('user/:userId')
+  @Get(':userId')
   @Permissions(PermissionOrganization.coworkerRead)
   @ApiOperation({ summary: 'Get organization user' })
   @ApiOkResponse({ type: GetUserDetailsResponseDto })
@@ -139,7 +139,7 @@ export class UserOrganizationController {
     return UserMapper.toGetDetailsDto(user);
   }
 
-  @Post('user')
+  @Post()
   @Permissions(PermissionOrganization.coworkerCreate)
   @ApiOperation({ summary: 'Create organization user' })
   @ApiCreatedResponse({
@@ -192,7 +192,7 @@ export class UserOrganizationController {
     }
   }
 
-  @Patch('user/:userId')
+  @Patch(':userId')
   @Permissions(PermissionOrganization.coworkerUpdate)
   @ApiOperation({ summary: 'Update organization user' })
   @ApiOkResponse({
@@ -249,7 +249,7 @@ export class UserOrganizationController {
     }
   }
 
-  @Put('user/:userId/suspend')
+  @Put(':userId/suspend')
   @Permissions(PermissionOrganization.coworkerState)
   @ApiOperation({ summary: 'Suspend organization user' })
   @ApiOkResponse({
@@ -289,7 +289,7 @@ export class UserOrganizationController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Put('user/:userId/resume')
+  @Put(':userId/resume')
   @Permissions(PermissionOrganization.coworkerState)
   @ApiOperation({ summary: 'Resume organization user' })
   @ApiOkResponse({
@@ -329,7 +329,7 @@ export class UserOrganizationController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Post('user/:userId/role/assign')
+  @Post(':userId/role/assign')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('role')
   @ApiOperation({ summary: 'Assign organization role to user' })
@@ -380,7 +380,7 @@ export class UserOrganizationController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Post('user/:userId/role/unassign')
+  @Post(':userId/role/unassign')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('role')
   @ApiOperation({ summary: 'Unassign organization role from user' })
