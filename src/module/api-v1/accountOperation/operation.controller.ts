@@ -85,10 +85,6 @@ export class OperationController {
     description: 'Invalid Id',
     type: ExceptionDto,
   })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   async getAllOperations(
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @PaginationParams() pagination: PaginationRequest,
