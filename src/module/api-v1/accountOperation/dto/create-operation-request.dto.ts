@@ -1,17 +1,24 @@
 import { IsEnum, IsNotEmpty, ValidateIf } from "class-validator";
-import { Account } from "src/schema/account/account.schema";
 
 export class CreateOperationRequestDto {
   @IsNotEmpty()
-  reference: string;
+  amount: number;
 
   @IsNotEmpty()
-  createTime?: Date;
+  createAt: Date;
 
   @IsNotEmpty()
-  value: string;
+  operationDate: Date;
 
-  thirdParty?: Account;
+  @IsNotEmpty()
+  operationLabel: string;
 
+  @IsNotEmpty()
+  thirdParty?: string;
+
+  @IsNotEmpty()
+  lineId?: string;
+
+  accountFrom?: string;
 }
 
