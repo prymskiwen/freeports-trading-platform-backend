@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, SchemaTypes } from 'mongoose';
 import {
   OrganizationDetails,
   OrganizationDetailsSchema,
@@ -12,6 +12,7 @@ import {
   OrganizationCommissionRatio,
   OrganizationCommissionRatioSchema,
 } from './embedded/organization-commission-ratio.embedded';
+import { User } from '../user/user.schema';
 
 export type OrganizationDocument = Organization & Document;
 
@@ -25,6 +26,12 @@ export class Organization {
 
   @Prop({ type: OrganizationCommissionRatioSchema })
   commissionRatio?: OrganizationCommissionRatio;
+
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }] })
+  users?: User[];
+
+  @Prop()
+  createdAt?: Date;
 }
 
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);

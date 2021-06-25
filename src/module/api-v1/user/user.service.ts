@@ -192,28 +192,6 @@ export class UserService {
     ]);
   }
 
-  async getOrganizationUserActiveCount(
-    organization: OrganizationDocument,
-  ): Promise<number> {
-    return await this.userModel
-      .countDocuments({
-        organization: { $exists: true, $eq: organization._id },
-        $or: [{ suspended: { $exists: false } }, { suspended: false }],
-      })
-      .exec();
-  }
-
-  async getOrganizationUserSuspendedCount(
-    organization: OrganizationDocument,
-  ): Promise<number> {
-    return await this.userModel
-      .countDocuments({
-        organization: { $exists: true, $eq: organization._id },
-        $and: [{ suspended: { $exists: true } }, { suspended: true }],
-      })
-      .exec();
-  }
-
   async getDeskUserPaginated(
     desk: DeskDocument,
     pagination: PaginationRequest,

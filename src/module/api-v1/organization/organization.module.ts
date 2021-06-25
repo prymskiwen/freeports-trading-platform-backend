@@ -8,7 +8,6 @@ import {
 } from 'src/schema/organization/organization.schema';
 import { RoleModule } from '../role/role.module';
 import { UserModule } from '../user/user.module';
-import { IsUniqueInDbConstraint } from 'src/validation/is-unique-in-db.validation';
 
 @Module({
   imports: [
@@ -19,7 +18,7 @@ import { IsUniqueInDbConstraint } from 'src/validation/is-unique-in-db.validatio
     forwardRef(() => UserModule),
   ],
   controllers: [OrganizationController],
-  providers: [OrganizationService, IsUniqueInDbConstraint],
+  providers: [OrganizationService],
   exports: [OrganizationService],
 })
 export class OrganizationModule {}

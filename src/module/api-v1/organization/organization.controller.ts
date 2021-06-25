@@ -37,7 +37,6 @@ import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from '../role/role.service';
-import { UserService } from '../user/user.service';
 import { OrganizationMapper } from './mapper/organization.mapper';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
@@ -46,6 +45,7 @@ import {
   PermissionClearer,
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
+import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -54,8 +54,64 @@ export class OrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
-    private readonly userService: UserService,
   ) {}
+
+  @Get()
+  @Permissions(PermissionClearer.organizationRead)
+  @ApiTags('clearer')
+  @ApiOperation({ summary: 'Get organization list' })
+  @ApiPaginationResponse(GetOrganizationResponseDto)
+  async getOrganizations(
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetOrganizationResponseDto>> {
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.organizationService.getOrganizationsPaginated(pagination);
+    const organizationDtos: GetOrganizationResponseDto[] = await Promise.all(
+      paginatedResult.map(
+        async (
+          organization: OrganizationDocument,
+        ): Promise<GetOrganizationResponseDto> =>
+          OrganizationMapper.toGetDto(
+            this.organizationService.hydrate(organization),
+          ),
+      ),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      organizationDtos,
+    );
+  }
+
+  @Get(':organizationId')
+  @Permissions(
+    PermissionClearer.organizationRead,
+    PermissionOrganization.organizationRead,
+  )
+  @ApiTags('clearer', 'organization')
+  @ApiOperation({ summary: 'Get organization details' })
+  @ApiOkResponse({ type: GetOrganizationDetailsResponseDto })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
+  async getOrganization(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+  ): Promise<GetOrganizationDetailsResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    return OrganizationMapper.toGetDetailsDto(organization);
+  }
 
   @Post()
   @Permissions(PermissionClearer.organizationCreate)
@@ -73,14 +129,22 @@ export class OrganizationController {
     @Body() request: CreateOrganizationRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateOrganizationResponseDto> {
-    const organization = await this.organizationService.create(request);
+    try {
+      const organization = await this.organizationService.create(request);
 
-    await this.roleService.createRoleOrganizationManager(
-      organization,
-      userCurrent,
-    );
+      await this.roleService.createRoleOrganizationManager(
+        organization,
+        userCurrent,
+      );
 
-    return OrganizationMapper.toCreateDto(organization);
+      return OrganizationMapper.toCreateDto(organization);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException('name', ex['keyValue']['details.name']);
+      }
+
+      throw ex;
+    }
   }
 
   @Patch(':organizationId')
@@ -116,85 +180,16 @@ export class OrganizationController {
       throw new NotFoundException();
     }
 
-    await this.organizationService.update(organization, request);
+    try {
+      await this.organizationService.update(organization, request);
 
-    return OrganizationMapper.toUpdateDto(organization);
-  }
+      return OrganizationMapper.toUpdateDto(organization);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException('name', ex['keyValue']['details.name']);
+      }
 
-  @Get(':organizationId')
-  @Permissions(
-    PermissionClearer.organizationRead,
-    PermissionOrganization.organizationRead,
-  )
-  @ApiTags('clearer', 'organization')
-  @ApiOperation({ summary: 'Get organization details' })
-  @ApiOkResponse({ type: GetOrganizationDetailsResponseDto })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Organization has not been found',
-    type: ExceptionDto,
-  })
-  async getOrganization(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-  ): Promise<GetOrganizationDetailsResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
+      throw ex;
     }
-    const userActive = await this.userService.getOrganizationUserActiveCount(
-      organization,
-    );
-    const userSuspended = await this.userService.getOrganizationUserSuspendedCount(
-      organization,
-    );
-
-    return OrganizationMapper.toGetDetailsDto(
-      organization,
-      userActive,
-      userSuspended,
-    );
-  }
-
-  @Get()
-  @Permissions(PermissionClearer.organizationRead)
-  @ApiTags('clearer')
-  @ApiOperation({ summary: 'Get organization list' })
-  @ApiPaginationResponse(GetOrganizationResponseDto)
-  async getOrganizations(
-    @PaginationParams() pagination: PaginationRequest,
-  ): Promise<PaginationResponseDto<GetOrganizationResponseDto>> {
-    const [
-      { paginatedResult, totalResult },
-    ] = await this.organizationService.getOrganizationsPaginated(pagination);
-    const organizationDtos: GetOrganizationResponseDto[] = await Promise.all(
-      paginatedResult.map(
-        async (
-          organization: OrganizationDocument,
-        ): Promise<GetOrganizationResponseDto> => {
-          const userActive = await this.userService.getOrganizationUserActiveCount(
-            organization,
-          );
-          const userSuspended = await this.userService.getOrganizationUserSuspendedCount(
-            organization,
-          );
-
-          return OrganizationMapper.toGetDto(
-            organization,
-            userActive,
-            userSuspended,
-          );
-        },
-      ),
-    );
-
-    return PaginationHelper.of(
-      pagination,
-      totalResult[0]?.total || 0,
-      organizationDtos,
-    );
   }
 }

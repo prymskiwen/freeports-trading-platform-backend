@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({ versionKey: false, _id: false })
 export class OrganizationDetails {
-  @Prop()
+  @Prop({ unique: true })
   name: string;
 
   @Prop()
@@ -21,11 +21,7 @@ export class OrganizationDetails {
   country?: string;
 
   @Prop()
-  logofile?: string;
-
-  @Prop()
-  createtime?: Date;
-
+  logo?: string;
 }
 
 export const OrganizationDetailsSchema = SchemaFactory.createForClass(
