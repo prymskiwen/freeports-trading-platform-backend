@@ -23,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
+import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
@@ -79,7 +80,7 @@ export class OperationController {
 
   @Get()
   @ApiOperation({ summary: 'Get All operations' })
-  @ApiOkResponse({type: GetOperationResponseDto})
+  @ApiPaginationResponse(GetOperationResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,

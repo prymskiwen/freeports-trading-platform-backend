@@ -5,6 +5,9 @@ import {
   AccountOperationSchema
 } from 'src/schema/account-operation/account-operation.schema';
 import { AccountModule } from "../account/account.module";
+import { InvestorModule } from "../investor/investor.module";
+import { OrganizationModule } from "../organization/organization.module";
+import { InvestorAccountOperationController } from "./investor-operation.controller";
 import { OperationController } from "./operation.controller";
 import { OperationService } from "./operation.service";
 
@@ -14,8 +17,10 @@ import { OperationService } from "./operation.service";
       {name: AccountOperation.name, schema: AccountOperationSchema},
     ]),
     AccountModule,
+    OrganizationModule,
+    InvestorModule,
   ],
-  controllers: [OperationController],
+  controllers: [OperationController, InvestorAccountOperationController],
   providers: [OperationService],
   exports: [OperationService],
 })
