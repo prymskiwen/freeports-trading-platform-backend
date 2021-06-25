@@ -15,13 +15,14 @@ import {
   RoleDeskMultiSchema,
 } from 'src/schema/role/role-desk-multi.schema';
 import { RoleService } from './role.service';
-import { RoleController } from './role.controller';
+import { RoleDeskMultiController } from './role-desk-multi.controller';
 import { OrganizationModule } from '../organization/organization.module';
 import { DeskModule } from '../desk/desk.module';
 import { PermissionController } from './permission.controller';
 import { UserModule } from '../user/user.module';
 import { RoleClearerController } from './role-clearer.controller';
 import { RoleOrganizationController } from './role-organization.controller';
+import { RoleDeskController } from './role-desk.controller';
 
 @Module({
   imports: [
@@ -48,9 +49,10 @@ import { RoleOrganizationController } from './role-organization.controller';
     forwardRef(() => UserModule),
   ],
   controllers: [
-    RoleController,
     RoleClearerController,
     RoleOrganizationController,
+    RoleDeskMultiController,
+    RoleDeskController,
     PermissionController,
   ],
   providers: [RoleService],

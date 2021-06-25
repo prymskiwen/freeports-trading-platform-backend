@@ -48,9 +48,10 @@ import {
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
 import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
+import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization/:organizationId')
+@Controller('api/v1/organization/:organizationId/user')
 @ApiTags('user', 'organization')
 @ApiBearerAuth()
 export class UserOrganizationController {
@@ -60,7 +61,7 @@ export class UserOrganizationController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('user')
+  @Get()
   @Permissions(
     PermissionOrganization.coworkerRead,
     PermissionOrganization.organizationRead,
@@ -104,7 +105,7 @@ export class UserOrganizationController {
     );
   }
 
-  @Get('user/:userId')
+  @Get(':userId')
   @Permissions(PermissionOrganization.coworkerRead)
   @ApiOperation({ summary: 'Get organization user' })
   @ApiOkResponse({ type: GetUserDetailsResponseDto })
@@ -138,7 +139,7 @@ export class UserOrganizationController {
     return UserMapper.toGetDetailsDto(user);
   }
 
-  @Post('user')
+  @Post()
   @Permissions(PermissionOrganization.coworkerCreate)
   @ApiOperation({ summary: 'Create organization user' })
   @ApiCreatedResponse({
@@ -161,24 +162,37 @@ export class UserOrganizationController {
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Body() request: CreateUserRequestDto,
   ): Promise<CreateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
+    try {
+      const organization = await this.organizationService.getById(
+        organizationId,
+      );
 
-    if (!organization) {
-      throw new NotFoundException();
+      if (!organization) {
+        throw new NotFoundException();
+      }
+
+      const user = await this.userService.create(request, false);
+
+      user.organization = organization;
+      organization.users.push(user.id);
+
+      await user.save();
+      await organization.save();
+
+      return UserMapper.toCreateDto(user);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException(
+          'email',
+          ex['keyValue']['personal.email'],
+        );
+      }
+
+      throw ex;
     }
-
-    const user = await this.userService.create(request, false);
-
-    user.organization = organization;
-    organization.users.push(user.id);
-
-    await user.save();
-    await organization.save();
-
-    return UserMapper.toCreateDto(user);
   }
 
-  @Patch('user/:userId')
+  @Patch(':userId')
   @Permissions(PermissionOrganization.coworkerUpdate)
   @ApiOperation({ summary: 'Update organization user' })
   @ApiOkResponse({
@@ -202,27 +216,40 @@ export class UserOrganizationController {
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: UpdateUserRequestDto,
   ): Promise<UpdateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
+    try {
+      const organization = await this.organizationService.getById(
+        organizationId,
+      );
 
-    if (!organization) {
-      throw new NotFoundException();
+      if (!organization) {
+        throw new NotFoundException();
+      }
+
+      const user = await this.userService.getOrganizationUserById(
+        userId,
+        organization,
+      );
+
+      if (!user) {
+        throw new NotFoundException();
+      }
+
+      await this.userService.update(user, request);
+
+      return UserMapper.toUpdateDto(user);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException(
+          'email',
+          ex['keyValue']['personal.email'],
+        );
+      }
+
+      throw ex;
     }
-
-    const user = await this.userService.getOrganizationUserById(
-      userId,
-      organization,
-    );
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.userService.update(user, request);
-
-    return UserMapper.toUpdateDto(user);
   }
 
-  @Put('user/:userId/suspend')
+  @Put(':userId/suspend')
   @Permissions(PermissionOrganization.coworkerState)
   @ApiOperation({ summary: 'Suspend organization user' })
   @ApiOkResponse({
@@ -262,7 +289,7 @@ export class UserOrganizationController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Put('user/:userId/resume')
+  @Put(':userId/resume')
   @Permissions(PermissionOrganization.coworkerState)
   @ApiOperation({ summary: 'Resume organization user' })
   @ApiOkResponse({
@@ -302,7 +329,7 @@ export class UserOrganizationController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Post('user/:userId/role/assign')
+  @Post(':userId/role/assign')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('role')
   @ApiOperation({ summary: 'Assign organization role to user' })
@@ -353,7 +380,7 @@ export class UserOrganizationController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Post('user/:userId/role/unassign')
+  @Post(':userId/role/unassign')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('role')
   @ApiOperation({ summary: 'Unassign organization role from user' })

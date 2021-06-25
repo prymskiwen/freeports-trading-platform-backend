@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({ versionKey: false, _id: false })
 export class OrganizationDetails {
-  @Prop()
+  @Prop({ unique: true })
   name: string;
 
   @Prop()

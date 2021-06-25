@@ -2,8 +2,6 @@ import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/schema/user/user.schema';
 import { UserService } from './user.service';
-import { IsUniqueInDbConstraint } from 'src/validation/is-unique-in-db.validation';
-import { UserController } from './user.controller';
 import { OrganizationModule } from '../organization/organization.module';
 import { RoleModule } from '../role/role.module';
 import { DeskModule } from '../desk/desk.module';
@@ -12,6 +10,8 @@ import { AuthModule } from '../auth/auth.module';
 import { UserClearerController } from './user-clearer.controller';
 import { UserOrganizationController } from './user-organization.controller';
 import { UserClearerOrganizationManagerController } from './user-clearer-organization-manager.controller';
+import { UserDeskMultiController } from './user-desk-multi.controller';
+import { UserDeskController } from './user-desk.controller';
 
 @Module({
   imports: [
@@ -23,12 +23,13 @@ import { UserClearerOrganizationManagerController } from './user-clearer-organiz
   ],
   controllers: [
     InitController,
-    UserController,
     UserClearerController,
     UserClearerOrganizationManagerController,
     UserOrganizationController,
+    UserDeskController,
+    UserDeskMultiController,
   ],
-  providers: [UserService, IsUniqueInDbConstraint],
+  providers: [UserService],
   exports: [UserService],
 })
 export class UserModule {}

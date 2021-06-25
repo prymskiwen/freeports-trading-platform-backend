@@ -1,5 +1,4 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
-import { IsUniqueInDb } from 'src/validation/is-unique-in-db.validation';
 
 export class CreateUserRequestDto {
   /**
@@ -18,7 +17,6 @@ export class CreateUserRequestDto {
    */
   @IsNotEmpty()
   @IsEmail()
-  @IsUniqueInDb({ schema: 'users', path: 'personal.email' })
   email: string;
 
   phone: string;

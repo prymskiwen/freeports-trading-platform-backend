@@ -45,6 +45,7 @@ import {
   PermissionClearer,
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
+import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -128,14 +129,22 @@ export class OrganizationController {
     @Body() request: CreateOrganizationRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateOrganizationResponseDto> {
-    const organization = await this.organizationService.create(request);
+    try {
+      const organization = await this.organizationService.create(request);
 
-    await this.roleService.createRoleOrganizationManager(
-      organization,
-      userCurrent,
-    );
+      await this.roleService.createRoleOrganizationManager(
+        organization,
+        userCurrent,
+      );
 
-    return OrganizationMapper.toCreateDto(organization);
+      return OrganizationMapper.toCreateDto(organization);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException('name', ex['keyValue']['details.name']);
+      }
+
+      throw ex;
+    }
   }
 
   @Patch(':organizationId')
@@ -171,8 +180,16 @@ export class OrganizationController {
       throw new NotFoundException();
     }
 
-    await this.organizationService.update(organization, request);
+    try {
+      await this.organizationService.update(organization, request);
 
-    return OrganizationMapper.toUpdateDto(organization);
+      return OrganizationMapper.toUpdateDto(organization);
+    } catch (ex) {
+      if (ex.name === 'MongoError' && ex.code === 11000) {
+        throw new UniqueFieldException('name', ex['keyValue']['details.name']);
+      }
+
+      throw ex;
+    }
   }
 }
