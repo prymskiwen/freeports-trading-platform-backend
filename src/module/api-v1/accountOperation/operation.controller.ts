@@ -113,7 +113,7 @@ export class OperationController {
   @ApiOperation({
     summary: 'Get account operation'
   })
-  @ApiOkResponse({type: CreateOperationResponseDto})
+  @ApiOkResponse({type: GetOperationResponseDto})
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -131,7 +131,7 @@ export class OperationController {
     return OperationMapper.toGetDto(operation);
   }
 
-  @Put('/:operationId')
+  @Put(':operationId')
   @ApiOkResponse({type: UpdateOrganizationResponseDto})
   @ApiCreatedResponse({
     description: 'Succesfully created clearer account operation',
