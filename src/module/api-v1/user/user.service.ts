@@ -47,6 +47,18 @@ export class UserService {
       .exec();
   }
 
+  async getDeskUserById(id: string, desk: DeskDocument): Promise<UserDocument> {
+    return await this.userModel
+      .findOne({
+        _id: id,
+        $and: [
+          { organization: { $exists: true } },
+          { organization: desk.organization },
+        ],
+      })
+      .exec();
+  }
+
   async create(
     request: CreateUserRequestDto,
     persist = true,
@@ -266,7 +278,7 @@ export class UserService {
     ]);
   }
 
-  async getUserOfRolePaginated(
+  async getByRolePaginated(
     role: RoleDocument,
     pagination: PaginationRequest,
   ): Promise<any[]> {

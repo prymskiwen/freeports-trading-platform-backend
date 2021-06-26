@@ -98,7 +98,7 @@ export class RoleClearerController {
 
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+    ] = await this.userService.getByRolePaginated(role, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -264,8 +264,8 @@ export class RoleClearerController {
     @Param('roleId', ParseObjectIdPipe) roleId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
   ): Promise<UnassignUserResponseDto> {
-    const user = await this.userService.getById(userId);
     const role = await this.roleService.getRoleClearerById(roleId);
+    const user = await this.userService.getClearerUserById(userId);
 
     if (!role || !user) {
       throw new NotFoundException();

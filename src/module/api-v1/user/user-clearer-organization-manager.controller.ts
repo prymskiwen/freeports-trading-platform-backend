@@ -89,7 +89,7 @@ export class UserClearerOrganizationManagerController {
 
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(roleManager, pagination);
+    ] = await this.userService.getByRolePaginated(roleManager, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),

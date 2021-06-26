@@ -22,35 +22,34 @@ import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
-import { CreateUserResponseDto } from './dto/create-user-response.dto';
 import { UserService } from './user.service';
 import { OrganizationService } from '../organization/organization.service';
 import { RoleService } from '../role/role.service';
 import { UserMapper } from './mapper/user.mapper';
-import { DeskService } from '../desk/desk.service';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionOrganization } from 'src/schema/role/permission.helper';
 import { AssignRoleMultideskRequestDto } from './dto/assign-role-multidesk-request.dto';
+import { UpdateUserResponseDto } from './dto/update-user-response.dto';
+import { UnassignRoleMultideskRequestDto } from './dto/unassign-role-multidesk-request.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1')
-@ApiTags('user')
+@Controller('api/v1/organization/:organizationId/user')
+@ApiTags('user', 'organization', 'multidesk')
 @ApiBearerAuth()
 export class UserMultideskController {
   constructor(
-    private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
 
-  @Post('organization/:organizationId/user/:userId/role-multi')
+  @Post(':userId/role-multidesk/assign')
   @Permissions(PermissionOrganization.roleAssign)
-  @ApiTags('organization', 'role')
+  @ApiTags('role')
   @ApiOperation({ summary: 'Assign multi-desk roles to user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
-    type: CreateUserResponseDto,
+    type: UpdateUserResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -64,12 +63,12 @@ export class UserMultideskController {
     description: 'User has not been found',
     type: ExceptionDto,
   })
-  async assignOrganizationUserRoleMultidesk(
+  async assignRoleMultidesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: AssignRoleMultideskRequestDto,
     @CurrentUser() userCurrent: UserDocument,
-  ): Promise<CreateUserResponseDto> {
+  ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
     if (!organization) {
@@ -85,53 +84,63 @@ export class UserMultideskController {
       throw new NotFoundException();
     }
 
-    await Promise.all(
-      request.roles.map(async (roleId) => {
-        const effectiveDesks = [];
-        const role = await this.roleService.getRoleMultideskById(
-          roleId,
-          organization,
-        );
-
-        if (!role) {
-          return;
-        }
-
-        const hasRole = user.roles.some(
-          (userRole) => userRole.role.toString() === role.id,
-        );
-
-        if (hasRole) {
-          return;
-        }
-
-        await Promise.all(
-          request.desks.map(async (deskId) => {
-            const desk = await this.deskService.getById(deskId);
-
-            if (!desk) {
-              return;
-            }
-
-            if (desk.organization !== organization) {
-              return;
-            }
-
-            effectiveDesks.push(desk);
-          }),
-        );
-
-        user.roles.push({
-          effectiveDesks: [...effectiveDesks],
-          role: role,
-          assignedAt: new Date(),
-          assignedBy: userCurrent,
-        });
-      }),
+    await this.roleService.assignRoleMultidesk(
+      request.roles,
+      request.desks,
+      organization,
+      user,
+      userCurrent,
     );
 
-    await user.save();
+    return UserMapper.toUpdateDto(user);
+  }
 
-    return UserMapper.toCreateDto(user);
+  @Post(':userId/role-multidesk/unassign')
+  @Permissions(PermissionOrganization.roleAssign)
+  @ApiTags('role')
+  @ApiOperation({ summary: 'Unassign multi-desk roles from user' })
+  @ApiCreatedResponse({
+    description: 'Successfully updated user id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async unassignRoleMultidesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: UnassignRoleMultideskRequestDto,
+  ): Promise<UpdateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await this.roleService.unassignRoleMultidesk(
+      request.roles,
+      organization,
+      user,
+    );
+
+    return UserMapper.toUpdateDto(user);
   }
 }

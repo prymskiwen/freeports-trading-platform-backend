@@ -8,6 +8,8 @@ import {
   Patch,
   Get,
   Delete,
+  BadRequestException,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -50,6 +52,8 @@ import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { UserMapper } from '../user/mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
+import { AssignUserResponseDto } from './dto/assign-user-response.dto';
+import { UnassignUserResponseDto } from './dto/unassign-user-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/desk/:deskId/role')
@@ -124,7 +128,7 @@ export class RoleDeskController {
 
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+    ] = await this.userService.getByRolePaginated(role, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -222,7 +226,7 @@ export class RoleDeskController {
   }
 
   @Delete(':roleId')
-  @Permissions(PermissionOrganization.roleDelete)
+  @Permissions(PermissionOrganization.roleDelete, PermissionDesk.roleDelete)
   @ApiOperation({ summary: 'Delete desk role' })
   @ApiOkResponse({
     description: 'Successfully deleted desk role id',
@@ -258,9 +262,99 @@ export class RoleDeskController {
       throw new NotFoundException();
     }
 
+    if (role.users?.length) {
+      throw new BadRequestException(
+        'Impossible delete desk role with assigned users',
+      );
+    }
+
     await role.remove();
     await this.userService.deleteRole(role);
 
     return RoleMapper.toUpdateDto(role);
+  }
+
+  @Put(':roleId/:userId')
+  @Permissions(PermissionOrganization.roleAssign, PermissionDesk.roleAssign)
+  @ApiOperation({ summary: 'Assign desk role to user' })
+  @ApiCreatedResponse({
+    description: 'Successfully assigned to user desk role id',
+    type: AssignUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User or desk role has not been found',
+    type: ExceptionDto,
+  })
+  async assignRoleDeskToUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<AssignUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (!organization || !desk || desk.organization !== organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleDeskById(roleId, desk);
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
+
+    if (!role || !user) {
+      throw new NotFoundException();
+    }
+
+    await this.roleService.assignRoleDesk([role.id], desk, user, userCurrent);
+
+    return RoleMapper.toAssignDto(role);
+  }
+
+  @Delete(':roleId/:userId')
+  @Permissions(PermissionOrganization.roleAssign, PermissionDesk.roleAssign)
+  @ApiOperation({ summary: 'Unassign desk role from user' })
+  @ApiOkResponse({
+    description: 'Successfully unassigned desk role id',
+    type: UnassignUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User or desk role has not been found',
+    type: ExceptionDto,
+  })
+  async unassignRoleDeskFromUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('roleId', ParseObjectIdPipe) roleId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<UnassignUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (!organization || !desk || desk.organization !== organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleDeskById(roleId, desk);
+    const user = await this.userService.getDeskUserById(userId, desk);
+
+    if (!role || !user) {
+      throw new NotFoundException();
+    }
+
+    await this.roleService.unassignRoleDesk([role.id], desk, user);
+
+    return RoleMapper.toUnassignDto(role);
   }
 }

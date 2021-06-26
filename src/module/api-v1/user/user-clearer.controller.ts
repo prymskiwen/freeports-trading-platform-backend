@@ -339,7 +339,7 @@ export class UserClearerController {
       throw new NotFoundException();
     }
 
-    await this.roleService.updateClearerUserRoles(
+    await this.roleService.updateRoleClearerOfUser(
       request.roles,
       user,
       userCurrent,

@@ -122,7 +122,7 @@ export class RoleOrganizationController {
 
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+    ] = await this.userService.getByRolePaginated(role, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -176,7 +176,6 @@ export class RoleOrganizationController {
 
   @Patch(':roleId')
   @Permissions(PermissionOrganization.roleUpdate)
-  @ApiTags('organization')
   @ApiOperation({ summary: 'Update organization role' })
   @ApiOkResponse({
     description: 'Successfully updated organization role id',
@@ -345,9 +344,12 @@ export class RoleOrganizationController {
       throw new NotFoundException();
     }
 
-    const user = await this.userService.getById(userId);
     const role = await this.roleService.getRoleOrganizationById(
       roleId,
+      organization,
+    );
+    const user = await this.userService.getOrganizationUserById(
+      userId,
       organization,
     );
 

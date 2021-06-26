@@ -31,6 +31,7 @@ import {
 } from 'src/schema/role/permission.helper';
 import { UserService } from '../user/user.service';
 import { UpdateRoleOrganizationRequestDto } from './dto/organization/update-role-organization-request.dto';
+import { DeskService } from '../desk/desk.service';
 
 @Injectable()
 export class RoleService {
@@ -43,6 +44,7 @@ export class RoleService {
     private roleDeskModel: Model<RoleDeskDocument>,
     @InjectModel(RoleMultidesk.name)
     private roleMultideskModel: Model<RoleMultideskDocument>,
+    private deskService: DeskService,
     private userService: UserService,
   ) {}
 
@@ -362,12 +364,12 @@ export class RoleService {
     );
   }
 
-  async updateClearerUserRoles(
+  async updateRoleClearerOfUser(
     roles: string[],
     user: UserDocument,
     assignedBy: UserDocument,
   ) {
-    await this.resetClearerUserRoles(user);
+    await this.resetRoleClearerOfUser(user);
 
     if (roles.length) {
       return this.assignRoleClearer(roles, user, assignedBy);
@@ -376,7 +378,7 @@ export class RoleService {
     }
   }
 
-  async resetClearerUserRoles(user: UserDocument) {
+  async resetRoleClearerOfUser(user: UserDocument) {
     return this.unassignRoleClearer(
       user.roles.map((r) => {
         return r.role.toString();
@@ -446,6 +448,241 @@ export class RoleService {
 
         await this.userService.unassignRole(role, user);
       }),
+    );
+  }
+
+  async updateRoleOrganizationOfUser(
+    roles: string[],
+    organization: OrganizationDocument,
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    await this.resetRoleOrganizationOfUser(organization, user);
+
+    if (roles.length) {
+      return this.assignRoleOrganization(roles, organization, user, assignedBy);
+    } else {
+      await user.save();
+    }
+  }
+
+  async resetRoleOrganizationOfUser(
+    organization: OrganizationDocument,
+    user: UserDocument,
+  ) {
+    return this.unassignRoleOrganization(
+      user.roles.map((r) => {
+        return r.role.toString();
+      }),
+      organization,
+      user,
+    );
+  }
+
+  async assignRoleMultidesk(
+    roles: string[],
+    desks: string[],
+    organization: OrganizationDocument,
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const effectiveDesks = [];
+        const role = await this.getRoleMultideskById(roleId, organization);
+        if (!role) {
+          return;
+        }
+
+        const assigned = role.users.some((userId) => {
+          return userId.toString() === user.id;
+        });
+        if (assigned) {
+          return;
+        }
+
+        await Promise.all(
+          desks.map(async (deskId) => {
+            const desk = await this.deskService.getById(deskId);
+
+            if (!desk) {
+              return;
+            }
+
+            if (desk.organization !== organization) {
+              return;
+            }
+
+            effectiveDesks.push(desk);
+          }),
+        );
+
+        user.roles.push({
+          effectiveDesks: [...effectiveDesks],
+          role: role.id,
+          assignedAt: new Date(),
+          assignedBy: assignedBy.id,
+        });
+
+        role.users.push(user.id);
+
+        await role.save();
+      }),
+    );
+
+    await user.save();
+  }
+
+  async unassignRoleMultidesk(
+    roles: string[],
+    organization: OrganizationDocument,
+    user: UserDocument,
+  ) {
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const role = await this.getRoleMultideskById(roleId, organization);
+        if (!role) {
+          return;
+        }
+
+        const assigned = role.users.some((userId) => {
+          return userId.toString() === user.id;
+        });
+        if (!assigned) {
+          return;
+        }
+
+        await this.roleMultideskModel.updateOne(
+          { _id: role.id },
+          { $pull: { users: user._id } },
+        );
+
+        await this.userService.unassignRole(role, user);
+      }),
+    );
+  }
+
+  async updateRoleMultideskOfUser(
+    roles: string[],
+    desk: string[],
+    organization: OrganizationDocument,
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    await this.resetRoleMultideskOfUser(organization, user);
+
+    if (roles.length) {
+      return this.assignRoleMultidesk(
+        roles,
+        desk,
+        organization,
+        user,
+        assignedBy,
+      );
+    } else {
+      await user.save();
+    }
+  }
+
+  async resetRoleMultideskOfUser(
+    organization: OrganizationDocument,
+    user: UserDocument,
+  ) {
+    return this.unassignRoleMultidesk(
+      user.roles.map((r) => {
+        return r.role.toString();
+      }),
+      organization,
+      user,
+    );
+  }
+
+  async assignRoleDesk(
+    roles: string[],
+    desk: DeskDocument,
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const role = await this.getRoleDeskById(roleId, desk);
+        if (!role) {
+          return;
+        }
+
+        const assigned = role.users.some((userId) => {
+          return userId.toString() === user.id;
+        });
+        if (assigned) {
+          return;
+        }
+
+        user.roles.push({
+          role: role.id,
+          assignedAt: new Date(),
+          assignedBy: assignedBy.id,
+        });
+
+        role.users.push(user.id);
+
+        await role.save();
+      }),
+    );
+
+    await user.save();
+  }
+
+  async unassignRoleDesk(
+    roles: string[],
+    desk: DeskDocument,
+    user: UserDocument,
+  ) {
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const role = await this.getRoleDeskById(roleId, desk);
+        if (!role) {
+          return;
+        }
+
+        const assigned = role.users.some((userId) => {
+          return userId.toString() === user.id;
+        });
+        if (!assigned) {
+          return;
+        }
+
+        await this.roleDeskModel.updateOne(
+          { _id: role.id },
+          { $pull: { users: user._id } },
+        );
+
+        await this.userService.unassignRole(role, user);
+      }),
+    );
+  }
+
+  async updateRoleDeskOfUser(
+    roles: string[],
+    desk: DeskDocument,
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    await this.resetRoleDeskOfUser(desk, user);
+
+    if (roles.length) {
+      return this.assignRoleDesk(roles, desk, user, assignedBy);
+    } else {
+      await user.save();
+    }
+  }
+
+  async resetRoleDeskOfUser(desk: DeskDocument, user: UserDocument) {
+    return this.unassignRoleDesk(
+      user.roles.map((r) => {
+        return r.role.toString();
+      }),
+      desk,
+      user,
     );
   }
 }

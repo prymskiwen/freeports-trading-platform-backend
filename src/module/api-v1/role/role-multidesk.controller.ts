@@ -8,6 +8,7 @@ import {
   Patch,
   Get,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -85,13 +86,7 @@ export class RoleMultideskController {
 
     const roles = await this.roleService.getRoleMultideskList(organization);
 
-    return roles.map((role) => {
-      return {
-        id: role.id,
-        name: role.name,
-        permissions: role.permissions,
-      };
-    });
+    return roles.map((role) => RoleMapper.toGetRoleMultideskDto(role));
   }
 
   @Get(':roleId')
@@ -124,7 +119,7 @@ export class RoleMultideskController {
 
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+    ] = await this.userService.getByRolePaginated(role, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -258,9 +253,20 @@ export class RoleMultideskController {
       throw new NotFoundException();
     }
 
+    if (role.users?.length) {
+      throw new BadRequestException(
+        'Impossible delete multi-desk role with assigned users',
+      );
+    }
+
     await role.remove();
     await this.userService.deleteRole(role);
 
     return RoleMapper.toUpdateDto(role);
   }
+
+  // (Un)Assign multi-desk role directly to a user
+  // makes no sense as is should contains desk list
+  // @Put(':roleId/:userId')
+  // @Delete(':roleId/:userId')
 }

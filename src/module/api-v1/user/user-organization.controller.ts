@@ -424,4 +424,55 @@ export class UserOrganizationController {
 
     return UserMapper.toUpdateDto(user);
   }
+
+  @Patch(':userId/role')
+  @Permissions(PermissionOrganization.roleAssign)
+  @ApiTags('role')
+  @ApiOperation({ summary: 'Update organization roles of user' })
+  @ApiCreatedResponse({
+    description: 'Successfully updated user id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async updateRoleOrganization(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: AssignRoleOrganizationRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<UpdateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await this.roleService.updateRoleOrganizationOfUser(
+      request.roles,
+      organization,
+      user,
+      userCurrent,
+    );
+
+    return UserMapper.toUpdateDto(user);
+  }
 }
