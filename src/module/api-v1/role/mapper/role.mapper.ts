@@ -1,10 +1,14 @@
 import { RoleClearerDocument } from 'src/schema/role/role-clearer.schema';
+import { RoleMultideskDocument } from 'src/schema/role/role-multidesk.schema';
+import { RoleDeskDocument } from 'src/schema/role/role-desk.schema';
 import { RoleOrganizationDocument } from 'src/schema/role/role-organization.schema';
 import { RoleDocument } from 'src/schema/role/role.schema';
 import { AssignUserResponseDto } from '../dto/assign-user-response.dto';
 import { GetRoleClearerResponseDto } from '../dto/clearer/get-role-clearer-response.dto';
 import { CreateRoleResponseDto } from '../dto/create-role-response.dto';
 import { DeleteRoleResponseDto } from '../dto/delete-role-response.dto';
+import { GetRoleDeskResponseDto } from '../dto/desk/get-role-desk-response.dto';
+import { GetRoleMultideskResponseDto } from '../dto/multidesk/get-role-multidesk-response.dto';
 import { GetRoleOrganizationResponseDto } from '../dto/organization/get-role-organization-response.dto';
 import { UnassignUserResponseDto } from '../dto/unassign-user-response.dto';
 import { UpdateRoleResponseDto } from '../dto/update-role-response.dto';
@@ -66,6 +70,30 @@ export class RoleMapper {
     document: RoleOrganizationDocument,
   ): GetRoleOrganizationResponseDto {
     const dto = new GetRoleOrganizationResponseDto();
+
+    dto.id = document._id;
+    dto.name = document.name;
+    dto.permissions = document.permissions;
+
+    return dto;
+  }
+
+  public static toGetRoleMultideskDto(
+    document: RoleMultideskDocument,
+  ): GetRoleMultideskResponseDto {
+    const dto = new GetRoleMultideskResponseDto();
+
+    dto.id = document._id;
+    dto.name = document.name;
+    dto.permissions = document.permissions;
+
+    return dto;
+  }
+
+  public static toGetRoleDeskDto(
+    document: RoleDeskDocument,
+  ): GetRoleDeskResponseDto {
+    const dto = new GetRoleDeskResponseDto();
 
     dto.id = document._id;
     dto.name = document.name;

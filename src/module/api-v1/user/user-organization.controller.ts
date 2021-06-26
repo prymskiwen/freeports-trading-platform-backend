@@ -43,12 +43,9 @@ import { RoleService } from '../role/role.service';
 import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
-import {
-  PermissionClearer,
-  PermissionOrganization,
-} from 'src/schema/role/permission.helper';
-import { AssignRoleOrganizationDto } from './dto/assign-role-organization.dto';
+import { PermissionOrganization } from 'src/schema/role/permission.helper';
 import { UniqueFieldException } from 'src/exeption/unique-field.exception';
+import { AssignRoleOrganizationRequestDto } from './dto/assign-role-organization-request.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/user')
@@ -65,7 +62,6 @@ export class UserOrganizationController {
   @Permissions(
     PermissionOrganization.coworkerRead,
     PermissionOrganization.organizationRead,
-    PermissionClearer.organizationRead,
   )
   @ApiOperation({ summary: 'Get organization user list' })
   @ApiPaginationResponse(GetUserResponseDto)
@@ -332,7 +328,7 @@ export class UserOrganizationController {
   @Post(':userId/role/assign')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('role')
-  @ApiOperation({ summary: 'Assign organization role to user' })
+  @ApiOperation({ summary: 'Assign organization roles to user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -352,7 +348,7 @@ export class UserOrganizationController {
   async assignRoleOrganization(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleOrganizationDto,
+    @Body() request: AssignRoleOrganizationRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
@@ -383,7 +379,7 @@ export class UserOrganizationController {
   @Post(':userId/role/unassign')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('role')
-  @ApiOperation({ summary: 'Unassign organization role from user' })
+  @ApiOperation({ summary: 'Unassign organization roles from user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -403,7 +399,7 @@ export class UserOrganizationController {
   async unassignRoleOrganization(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleOrganizationDto,
+    @Body() request: AssignRoleOrganizationRequestDto,
   ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 

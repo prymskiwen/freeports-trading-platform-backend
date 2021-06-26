@@ -31,12 +31,12 @@ import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from './role.service';
 import { RoleMapper } from './mapper/role.mapper';
 import { OrganizationService } from '../organization/organization.service';
-import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
+import { CreateRoleDeskRequestDto } from './dto/desk/create-role-desk-request.dto';
 import { DeskService } from '../desk/desk.service';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { UpdateRoleResponseDto } from './dto/update-role-response.dto';
-import { GetRoleDeskResponseDto } from './dto/get-role-desk-response.dto';
-import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
+import { GetRoleDeskResponseDto } from './dto/desk/get-role-desk-response.dto';
+import { UpdateRoleDeskRequestDto } from './dto/desk/update-role-desk-request.dto';
 import {
   PermissionDesk,
   PermissionOrganization,
@@ -92,13 +92,7 @@ export class RoleDeskController {
 
     const roles = await this.roleService.getRoleDeskList(desk);
 
-    return roles.map((role) => {
-      return {
-        id: role.id,
-        name: role.name,
-        permissions: role.permissions,
-      };
-    });
+    return roles.map((role) => RoleMapper.toGetRoleDeskDto(role));
   }
 
   @Get(':roleId')

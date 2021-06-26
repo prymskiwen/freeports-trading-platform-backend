@@ -42,9 +42,9 @@ import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionClearer } from 'src/schema/role/permission.helper';
-import { AssignRoleClearerDto } from './dto/assign-role-clearer.dto';
 import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
 import { UniqueFieldException } from 'src/exeption/unique-field.exception';
+import { AssignRoleClearerRequestDto } from './dto/assign-role-clearer-request.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/user')
@@ -240,7 +240,7 @@ export class UserClearerController {
   @Post(':userId/role/assign')
   @Permissions(PermissionClearer.roleAssign)
   @ApiTags('role')
-  @ApiOperation({ summary: 'Assign clearer role to user' })
+  @ApiOperation({ summary: 'Assign clearer roles to user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -259,7 +259,7 @@ export class UserClearerController {
   })
   async assignRoleClearer(
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleClearerDto,
+    @Body() request: AssignRoleClearerRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<UpdateUserResponseDto> {
     const user = await this.userService.getClearerUserById(userId);
@@ -276,7 +276,7 @@ export class UserClearerController {
   @Post(':userId/role/unassign')
   @Permissions(PermissionClearer.roleAssign)
   @ApiTags('role')
-  @ApiOperation({ summary: 'Unassign clearer role from user' })
+  @ApiOperation({ summary: 'Unassign clearer roles from user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -295,7 +295,7 @@ export class UserClearerController {
   })
   async unassignRoleClearer(
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleClearerDto,
+    @Body() request: AssignRoleClearerRequestDto,
   ): Promise<UpdateUserResponseDto> {
     const user = await this.userService.getClearerUserById(userId);
 
@@ -311,7 +311,7 @@ export class UserClearerController {
   @Patch(':userId/role')
   @Permissions(PermissionClearer.roleAssign)
   @ApiTags('role')
-  @ApiOperation({ summary: 'Update clearer roles to user' })
+  @ApiOperation({ summary: 'Update clearer roles of user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -330,7 +330,7 @@ export class UserClearerController {
   })
   async updateRoleClearer(
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleClearerDto,
+    @Body() request: AssignRoleClearerRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<UpdateUserResponseDto> {
     const user = await this.userService.getClearerUserById(userId);

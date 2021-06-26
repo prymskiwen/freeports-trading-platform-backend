@@ -30,13 +30,13 @@ import { UserMapper } from './mapper/user.mapper';
 import { DeskService } from '../desk/desk.service';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionOrganization } from 'src/schema/role/permission.helper';
-import { AssignRoleDeskMultiDto } from './dto/assign-role-desk-multi.dto';
+import { AssignRoleMultideskRequestDto } from './dto/assign-role-multidesk-request.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1')
 @ApiTags('user')
 @ApiBearerAuth()
-export class UserDeskMultiController {
+export class UserMultideskController {
   constructor(
     private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
@@ -47,7 +47,7 @@ export class UserDeskMultiController {
   @Post('organization/:organizationId/user/:userId/role-multi')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiTags('organization', 'role')
-  @ApiOperation({ summary: 'Assign multi-desk role to user' })
+  @ApiOperation({ summary: 'Assign multi-desk roles to user' })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: CreateUserResponseDto,
@@ -64,10 +64,10 @@ export class UserDeskMultiController {
     description: 'User has not been found',
     type: ExceptionDto,
   })
-  async assignOrganizationUserRoleDeskMulti(
+  async assignOrganizationUserRoleMultidesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleDeskMultiDto,
+    @Body() request: AssignRoleMultideskRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
@@ -88,7 +88,7 @@ export class UserDeskMultiController {
     await Promise.all(
       request.roles.map(async (roleId) => {
         const effectiveDesks = [];
-        const role = await this.roleService.getRoleDeskMultiById(
+        const role = await this.roleService.getRoleMultideskById(
           roleId,
           organization,
         );

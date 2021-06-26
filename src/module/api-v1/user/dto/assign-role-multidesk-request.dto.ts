@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsArray, IsMongoId } from 'class-validator';
 
-export class AssignRoleDeskMultiDto {
+export class AssignRoleMultideskRequestDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsMongoId({ each: true })

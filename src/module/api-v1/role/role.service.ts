@@ -15,16 +15,16 @@ import { ROLE_MANAGER } from 'src/schema/role/role.schema';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk, RoleDeskDocument } from 'src/schema/role/role-desk.schema';
 import { CreateRoleOrganizationRequestDto } from './dto/organization/create-role-organization-request.dto';
-import { CreateRoleDeskRequestDto } from './dto/create-role-desk-request.dto';
+import { CreateRoleDeskRequestDto } from './dto/desk/create-role-desk-request.dto';
 import { CreateRoleClearerRequestDto } from './dto/clearer/create-role-clearer-request.dto';
-import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
+import { CreateRoleMultideskRequestDto } from './dto/multidesk/create-role-multidesk-request.dto';
 import {
-  RoleDeskMulti,
-  RoleDeskMultiDocument,
-} from 'src/schema/role/role-desk-multi.schema';
+  RoleMultidesk,
+  RoleMultideskDocument,
+} from 'src/schema/role/role-multidesk.schema';
 import { UpdateRoleClearerRequestDto } from './dto/clearer/update-role-clearer-request.dto';
-import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto';
-import { UpdateRoleDeskRequestDto } from './dto/update-role-desk.dto';
+import { UpdateRoleMultideskRequestDto } from './dto/multidesk/update-role-multidesk-request.dto';
+import { UpdateRoleDeskRequestDto } from './dto/desk/update-role-desk-request.dto';
 import {
   PermissionClearer,
   PermissionOrganization,
@@ -41,8 +41,8 @@ export class RoleService {
     private roleOrganizationModel: Model<RoleOrganizationDocument>,
     @InjectModel(RoleDesk.name)
     private roleDeskModel: Model<RoleDeskDocument>,
-    @InjectModel(RoleDeskMulti.name)
-    private roleDeskMultiModel: Model<RoleDeskMultiDocument>,
+    @InjectModel(RoleMultidesk.name)
+    private roleMultideskModel: Model<RoleMultideskDocument>,
     private userService: UserService,
   ) {}
 
@@ -248,12 +248,12 @@ export class RoleService {
     return role;
   }
 
-  async createRoleDeskMulti(
+  async createRoleMultidesk(
     organization: OrganizationDocument,
-    request: CreateRoleDeskMultiRequestDto,
+    request: CreateRoleMultideskRequestDto,
     user: UserDocument,
-  ): Promise<RoleDeskMultiDocument> {
-    const role = new this.roleDeskMultiModel();
+  ): Promise<RoleMultideskDocument> {
+    const role = new this.roleMultideskModel();
 
     role.name = request.name;
     role.system = false;
@@ -265,10 +265,10 @@ export class RoleService {
     return role;
   }
 
-  async getRoleDeskMultiList(
+  async getRoleMultideskList(
     organization: OrganizationDocument,
-  ): Promise<RoleDeskMultiDocument[]> {
-    return await this.roleDeskMultiModel
+  ): Promise<RoleMultideskDocument[]> {
+    return await this.roleMultideskModel
       .find({
         organization: organization,
         $or: [{ system: { $exists: false } }, { system: false }],
@@ -276,11 +276,11 @@ export class RoleService {
       .exec();
   }
 
-  async getRoleDeskMultiById(
+  async getRoleMultideskById(
     roleId: string,
     organization: OrganizationDocument,
-  ): Promise<RoleDeskMultiDocument> {
-    return await this.roleDeskMultiModel
+  ): Promise<RoleMultideskDocument> {
+    return await this.roleMultideskModel
       .findOne({
         _id: roleId,
         organization: organization,
@@ -288,11 +288,11 @@ export class RoleService {
       .exec();
   }
 
-  async updateRoleDeskMulti(
-    role: RoleDeskMultiDocument,
-    request: UpdateRoleDeskMultiRequestDto,
+  async updateRoleMultidesk(
+    role: RoleMultideskDocument,
+    request: UpdateRoleMultideskRequestDto,
     persist = true,
-  ): Promise<RoleDeskMultiDocument> {
+  ): Promise<RoleMultideskDocument> {
     role.name = request.name;
     role.permissions = request.permissions;
 
@@ -368,6 +368,7 @@ export class RoleService {
     assignedBy: UserDocument,
   ) {
     await this.resetClearerUserRoles(user);
+
     if (roles.length) {
       return this.assignRoleClearer(roles, user, assignedBy);
     } else {

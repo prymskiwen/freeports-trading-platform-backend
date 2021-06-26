@@ -4,10 +4,10 @@ import { Organization } from '../organization/organization.schema';
 import { User } from '../user/user.schema';
 import { PermissionDesk } from './permission.helper';
 
-export type RoleDeskMultiDocument = RoleDeskMulti & Document;
+export type RoleMultideskDocument = RoleMultidesk & Document;
 
 @Schema({ versionKey: false })
-export class RoleDeskMulti {
+export class RoleMultidesk {
   kind: string;
   name: string;
   owner: User;
@@ -22,13 +22,13 @@ export class RoleDeskMulti {
   organization: Organization;
 }
 
-export const RoleDeskMultiSchema = SchemaFactory.createForClass(RoleDeskMulti);
+export const RoleMultideskSchema = SchemaFactory.createForClass(RoleMultidesk);
 
-RoleDeskMultiSchema.pre('save', function () {
-  console.info('role desk multi presave');
+RoleMultideskSchema.pre('save', function () {
+  console.info('role multidesk presave');
 });
 
-RoleDeskMultiSchema.virtual('permissionsParsed').get(function () {
+RoleMultideskSchema.virtual('permissionsParsed').get(function () {
   // TODO: implement multi desk roles parsing
   return this.permissions.map((permission) => {
     return permission.replace('#id#', this.organization);
