@@ -23,6 +23,10 @@ import { UserModule } from '../user/user.module';
 import { RoleClearerController } from './role-clearer.controller';
 import { RoleOrganizationController } from './role-organization.controller';
 import { RoleDeskController } from './role-desk.controller';
+import { RoleClearerAssignController } from './role-clearer-assign.controller';
+import { RoleOrganizationAssignController } from './role-organization-assign.controller';
+import { RoleMultideskAssignController } from './role-multidesk-assign.controller';
+import { RoleDeskAssignController } from './role-desk-assign.controller';
 
 @Module({
   imports: [
@@ -50,9 +54,13 @@ import { RoleDeskController } from './role-desk.controller';
   ],
   controllers: [
     RoleClearerController,
+    RoleClearerAssignController,
     RoleOrganizationController,
+    RoleOrganizationAssignController,
     RoleMultideskController,
+    RoleMultideskAssignController,
     RoleDeskController,
+    RoleDeskAssignController,
     PermissionController,
   ],
   providers: [RoleService],

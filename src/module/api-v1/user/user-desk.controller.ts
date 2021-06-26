@@ -7,12 +7,10 @@ import {
   Patch,
   Body,
   Put,
-  Post,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -32,7 +30,6 @@ import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
 import { UserService } from './user.service';
 import { OrganizationService } from '../organization/organization.service';
-import { RoleService } from '../role/role.service';
 import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import { DeskService } from '../desk/desk.service';
@@ -46,8 +43,6 @@ import { UpdateUserResponseDto } from './dto/update-user-response.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 import { UniqueFieldException } from 'src/exeption/unique-field.exception';
-import { AssignRoleDeskRequestDto } from './dto/assign-role-desk-request.dto';
-import { CurrentUser } from '../auth/decorator/current-user.decorator';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/desk/:deskId/user')
@@ -57,7 +52,6 @@ export class UserDeskController {
   constructor(
     private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
-    private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
 
@@ -272,150 +266,6 @@ export class UserDeskController {
 
     user.suspended = false;
     await user.save();
-
-    return UserMapper.toUpdateDto(user);
-  }
-
-  @Post(':userId/role/assign')
-  @Permissions(PermissionOrganization.roleAssign, PermissionDesk.roleAssign)
-  @ApiTags('role')
-  @ApiOperation({ summary: 'Assign desk roles to user' })
-  @ApiCreatedResponse({
-    description: 'Successfully updated user id',
-    type: UpdateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-    type: ExceptionDto,
-  })
-  async assignRoleDesk(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('deskId', ParseObjectIdPipe) deskId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleDeskRequestDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<UpdateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-    const desk = await this.deskService.getById(deskId);
-
-    if (!organization || !desk || desk.organization !== organization) {
-      throw new NotFoundException();
-    }
-
-    const user = await this.userService.getDeskUserById(userId, desk);
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.assignRoleDesk(
-      request.roles,
-      desk,
-      user,
-      userCurrent,
-    );
-
-    return UserMapper.toUpdateDto(user);
-  }
-
-  @Post(':userId/role/unassign')
-  @Permissions(PermissionOrganization.roleAssign, PermissionDesk.roleAssign)
-  @ApiTags('role')
-  @ApiOperation({ summary: 'Unassign desk roles from user' })
-  @ApiCreatedResponse({
-    description: 'Successfully updated user id',
-    type: UpdateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-    type: ExceptionDto,
-  })
-  async unassignRoleDesk(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('deskId', ParseObjectIdPipe) deskId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleDeskRequestDto,
-  ): Promise<UpdateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-    const desk = await this.deskService.getById(deskId);
-
-    if (!organization || !desk || desk.organization !== organization) {
-      throw new NotFoundException();
-    }
-
-    const user = await this.userService.getDeskUserById(userId, desk);
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.unassignRoleDesk(request.roles, desk, user);
-
-    return UserMapper.toUpdateDto(user);
-  }
-
-  @Patch(':userId/role')
-  @Permissions(PermissionOrganization.roleAssign, PermissionDesk.roleAssign)
-  @ApiTags('role')
-  @ApiOperation({ summary: 'Update desk roles of user' })
-  @ApiCreatedResponse({
-    description: 'Successfully updated user id',
-    type: UpdateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-    type: ExceptionDto,
-  })
-  async updateRoleDesk(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('deskId', ParseObjectIdPipe) deskId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleDeskRequestDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<UpdateUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-    const desk = await this.deskService.getById(deskId);
-
-    if (!organization || !desk || desk.organization !== organization) {
-      throw new NotFoundException();
-    }
-
-    const user = await this.userService.getDeskUserById(userId, desk);
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.updateRoleDeskOfUser(
-      request.roles,
-      desk,
-      user,
-      userCurrent,
-    );
 
     return UserMapper.toUpdateDto(user);
   }

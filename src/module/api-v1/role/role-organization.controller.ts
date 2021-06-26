@@ -9,7 +9,6 @@ import {
   Get,
   Delete,
   BadRequestException,
-  Put,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -48,8 +47,6 @@ import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { UserMapper } from '../user/mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import { UpdateRoleOrganizationRequestDto } from './dto/organization/update-role-organization-request.dto';
-import { AssignUserResponseDto } from './dto/assign-user-response.dto';
-import { UnassignUserResponseDto } from './dto/unassign-user-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/role')
@@ -266,103 +263,5 @@ export class RoleOrganizationController {
     await this.userService.deleteRole(role);
 
     return RoleMapper.toUpdateDto(role);
-  }
-
-  @Put(':roleId/:userId')
-  @Permissions(PermissionOrganization.roleAssign)
-  @ApiOperation({ summary: 'Assign organization role to user' })
-  @ApiCreatedResponse({
-    description: 'Successfully assigned to user organization role id',
-    type: AssignUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User or organization role has not been found',
-    type: ExceptionDto,
-  })
-  async assignRoleOrganizationToUser(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<AssignUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const role = await this.roleService.getRoleOrganizationById(
-      roleId,
-      organization,
-    );
-    const user = await this.userService.getOrganizationUserById(
-      userId,
-      organization,
-    );
-
-    if (!role || !user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.assignRoleOrganization(
-      [role.id],
-      organization,
-      user,
-      userCurrent,
-    );
-
-    return RoleMapper.toAssignDto(role);
-  }
-
-  @Delete(':roleId/:userId')
-  @Permissions(PermissionOrganization.roleAssign)
-  @ApiOperation({ summary: 'Unassign organization role from user' })
-  @ApiOkResponse({
-    description: 'Successfully unassigned organization role id',
-    type: UnassignUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User or organization role has not been found',
-    type: ExceptionDto,
-  })
-  async unassignRoleOrganizationFromUser(
-    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-  ): Promise<UnassignUserResponseDto> {
-    const organization = await this.organizationService.getById(organizationId);
-
-    if (!organization) {
-      throw new NotFoundException();
-    }
-
-    const role = await this.roleService.getRoleOrganizationById(
-      roleId,
-      organization,
-    );
-    const user = await this.userService.getOrganizationUserById(
-      userId,
-      organization,
-    );
-
-    if (!role || !user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.unassignRoleOrganization(
-      [role.id],
-      organization,
-      user,
-    );
-
-    return RoleMapper.toUnassignDto(role);
   }
 }

@@ -10,7 +10,6 @@ import { AuthModule } from '../auth/auth.module';
 import { UserClearerController } from './user-clearer.controller';
 import { UserOrganizationController } from './user-organization.controller';
 import { UserClearerOrganizationManagerController } from './user-clearer-organization-manager.controller';
-import { UserMultideskController } from './user-multidesk.controller';
 import { UserDeskController } from './user-desk.controller';
 
 @Module({
@@ -27,7 +26,6 @@ import { UserDeskController } from './user-desk.controller';
     UserClearerOrganizationManagerController,
     UserOrganizationController,
     UserDeskController,
-    UserMultideskController,
   ],
   providers: [UserService],
   exports: [UserService],

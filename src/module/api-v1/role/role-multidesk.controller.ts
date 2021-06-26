@@ -264,9 +264,4 @@ export class RoleMultideskController {
 
     return RoleMapper.toUpdateDto(role);
   }
-
-  // (Un)Assign multi-desk role directly to a user
-  // makes no sense as is should contains desk list
-  // @Put(':roleId/:userId')
-  // @Delete(':roleId/:userId')
 }
