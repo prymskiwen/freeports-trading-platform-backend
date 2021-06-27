@@ -65,7 +65,6 @@ export class UserService {
     // TODO: could it be better to make it in query?
     // check the user belongs to the desk by have desk permission
     const permissions: string[] = await user.get('permissions');
-    console.info(permissions);
     const hasDesk = permissions.some((permission: string) =>
       permission.startsWith(`desk.${desk.id}`),
     );
