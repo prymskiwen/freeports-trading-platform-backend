@@ -5,6 +5,7 @@ import {
   Param,
   UseGuards,
   NotFoundException,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -142,6 +143,57 @@ export class RoleMultideskAssignController {
       request.roles,
       organization,
       user,
+    );
+
+    return UserMapper.toUpdateDto(user);
+  }
+
+  @Patch('user/:userId/role')
+  @Permissions(PermissionOrganization.roleAssign)
+  @ApiOperation({ summary: 'Update multi-desk roles of user' })
+  @ApiCreatedResponse({
+    description: 'Successfully updated user id',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async updateRoleOrganizationListOfUser(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: AssignRoleMultideskRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<UpdateUserResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.userService.getOrganizationUserById(
+      userId,
+      organization,
+    );
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await this.roleService.updateRoleMultideskOfUser(
+      request.roles,
+      request.desks,
+      organization,
+      user,
+      userCurrent,
     );
 
     return UserMapper.toUpdateDto(user);

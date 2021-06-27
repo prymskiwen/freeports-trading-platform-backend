@@ -50,6 +50,6 @@ RoleSchema.pre('save', function () {
   console.info('role presave');
 });
 
-RoleSchema.virtual('permissionsParsed').get(function () {
+RoleSchema.virtual('rolePermissions').get(function () {
   return this.permissions;
 });

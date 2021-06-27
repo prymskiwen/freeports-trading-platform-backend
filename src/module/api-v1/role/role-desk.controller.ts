@@ -87,7 +87,11 @@ export class RoleDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
@@ -113,7 +117,11 @@ export class RoleDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
@@ -166,7 +174,11 @@ export class RoleDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
@@ -207,7 +219,11 @@ export class RoleDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
@@ -249,7 +265,11 @@ export class RoleDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 

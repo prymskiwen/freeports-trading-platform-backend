@@ -24,6 +24,6 @@ RoleClearerSchema.pre('save', function () {
   console.info('role clearer presave');
 });
 
-RoleClearerSchema.virtual('permissionsParsed').get(function () {
+RoleClearerSchema.virtual('rolePermissions').get(function () {
   return this.permissions;
 });

@@ -93,6 +93,10 @@ export class UserClearerController {
   ): Promise<GetUserDetailsResponseDto> {
     const user = await this.userService.getClearerUserById(userId);
 
+    if (!user) {
+      throw new NotFoundException();
+    }
+
     return UserMapper.toGetDetailsDto(user);
   }
 

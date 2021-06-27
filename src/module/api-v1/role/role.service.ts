@@ -509,7 +509,7 @@ export class RoleService {
               return;
             }
 
-            if (desk.organization !== organization) {
+            if (desk.organization.toString() !== organization.id) {
               return;
             }
 
@@ -564,7 +564,7 @@ export class RoleService {
 
   async updateRoleMultideskOfUser(
     roles: string[],
-    desk: string[],
+    desks: string[],
     organization: OrganizationDocument,
     user: UserDocument,
     assignedBy: UserDocument,
@@ -574,7 +574,7 @@ export class RoleService {
     if (roles.length) {
       return this.assignRoleMultidesk(
         roles,
-        desk,
+        desks,
         organization,
         user,
         assignedBy,

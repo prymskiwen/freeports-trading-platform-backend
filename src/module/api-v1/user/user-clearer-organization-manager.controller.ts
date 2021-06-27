@@ -141,6 +141,10 @@ export class UserClearerOrganizationManagerController {
       organization,
     );
 
+    if (!manager) {
+      throw new NotFoundException();
+    }
+
     // ensure user is manager
     const assigned = roleManager.users.some((userId) => {
       return userId.toString() === manager.id;

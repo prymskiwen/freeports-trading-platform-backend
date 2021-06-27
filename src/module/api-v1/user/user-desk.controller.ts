@@ -75,7 +75,11 @@ export class UserDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
@@ -118,11 +122,19 @@ export class UserDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
     const user = await this.userService.getDeskUserById(userId, desk);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
 
     return UserMapper.toGetDetailsDto(user);
   }
@@ -161,7 +173,11 @@ export class UserDeskController {
       );
       const desk = await this.deskService.getById(deskId);
 
-      if (!organization || !desk || desk.organization !== organization) {
+      if (
+        !organization ||
+        !desk ||
+        desk.organization.toString() !== organization.id
+      ) {
         throw new NotFoundException();
       }
 
@@ -212,7 +228,11 @@ export class UserDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
@@ -254,7 +274,11 @@ export class UserDeskController {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
-    if (!organization || !desk || desk.organization !== organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 

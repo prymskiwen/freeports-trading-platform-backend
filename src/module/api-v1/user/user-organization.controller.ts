@@ -128,6 +128,10 @@ export class UserOrganizationController {
       organization,
     );
 
+    if (!user) {
+      throw new NotFoundException();
+    }
+
     return UserMapper.toGetDetailsDto(user);
   }
 

@@ -28,9 +28,6 @@ RoleMultideskSchema.pre('save', function () {
   console.info('role multidesk presave');
 });
 
-RoleMultideskSchema.virtual('permissionsParsed').get(function () {
-  // TODO: implement multi desk roles parsing
-  return this.permissions.map((permission) => {
-    return permission.replace('#id#', this.organization);
-  });
+RoleMultideskSchema.virtual('rolePermissions').get(function () {
+  return this.permissions;
 });
