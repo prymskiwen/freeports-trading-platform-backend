@@ -49,6 +49,7 @@ import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
+@ApiTags('organization', 'clearer')
 @ApiBearerAuth()
 export class OrganizationController {
   constructor(
@@ -58,7 +59,6 @@ export class OrganizationController {
 
   @Get()
   @Permissions(PermissionClearer.organizationRead)
-  @ApiTags('clearer')
   @ApiOperation({ summary: 'Get organization list' })
   @ApiPaginationResponse(GetOrganizationResponseDto)
   async getOrganizations(
@@ -90,7 +90,6 @@ export class OrganizationController {
     PermissionClearer.organizationRead,
     PermissionOrganization.organizationRead,
   )
-  @ApiTags('clearer', 'organization')
   @ApiOperation({ summary: 'Get organization details' })
   @ApiOkResponse({ type: GetOrganizationDetailsResponseDto })
   @ApiUnprocessableEntityResponse({
@@ -115,7 +114,6 @@ export class OrganizationController {
 
   @Post()
   @Permissions(PermissionClearer.organizationCreate)
-  @ApiTags('clearer')
   @ApiOperation({ summary: 'Create organization' })
   @ApiCreatedResponse({
     description: 'Successfully registered organization id',
@@ -152,7 +150,6 @@ export class OrganizationController {
     PermissionClearer.organizationUpdate,
     PermissionOrganization.organizationUpdate,
   )
-  @ApiTags('clearer', 'organization')
   @ApiOperation({ summary: 'Update organization' })
   @ApiOkResponse({
     description: 'Successfully updated organization id',

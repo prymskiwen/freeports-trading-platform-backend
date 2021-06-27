@@ -9,7 +9,6 @@ import {
   Get,
   Delete,
   BadRequestException,
-  Put,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -47,8 +46,6 @@ import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { UserMapper } from '../user/mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
-import { AssignUserResponseDto } from './dto/assign-user-response.dto';
-import { UnassignUserResponseDto } from './dto/unassign-user-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/role')
@@ -98,7 +95,7 @@ export class RoleClearerController {
 
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+    ] = await this.userService.getByRolePaginated(role, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -211,68 +208,5 @@ export class RoleClearerController {
     await this.userService.deleteRole(role);
 
     return RoleMapper.toUpdateDto(role);
-  }
-
-  @Put(':roleId/:userId')
-  @Permissions(PermissionClearer.roleAssign)
-  @ApiOperation({ summary: 'Assign clearer role to user' })
-  @ApiCreatedResponse({
-    description: 'Successfully assigned to user clearer role id',
-    type: AssignUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User or clearer role has not been found',
-    type: ExceptionDto,
-  })
-  async assignRoleClearerToUser(
-    @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<AssignUserResponseDto> {
-    const role = await this.roleService.getRoleClearerById(roleId);
-    const user = await this.userService.getClearerUserById(userId);
-
-    if (!role || !user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.assignRoleClearer([role.id], user, userCurrent);
-
-    return RoleMapper.toAssignDto(role);
-  }
-
-  @Delete(':roleId/:userId')
-  @Permissions(PermissionClearer.roleAssign)
-  @ApiOperation({ summary: 'Unassign clearer role from user' })
-  @ApiOkResponse({
-    description: 'Successfully unassigned clearer role id',
-    type: UnassignUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User or clearer role has not been found',
-    type: ExceptionDto,
-  })
-  async unassignRoleClearerFromUser(
-    @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Param('userId', ParseObjectIdPipe) userId: string,
-  ): Promise<UnassignUserResponseDto> {
-    const user = await this.userService.getById(userId);
-    const role = await this.roleService.getRoleClearerById(roleId);
-
-    if (!role || !user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.unassignRoleClearer([role.id], user);
-
-    return RoleMapper.toUnassignDto(role);
   }
 }

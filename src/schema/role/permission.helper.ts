@@ -166,7 +166,7 @@ export const PermissionOrganization = {
   deskUserRead: 'organization.#organizationId#.desk.user.read',
   deskUserCreate: 'organization.#organizationId#.desk.user.create',
   deskUserUpdate: 'organization.#organizationId#.desk.user.update',
-  deskUserDisable: 'organization.#organizationId#.desk.user.disable',
+  deskUserState: 'organization.#organizationId#.desk.user.state',
 
   investorRead: 'organization.#organizationId#.investor.read',
   investorCreate: 'organization.#organizationId#.investor.create',
@@ -276,8 +276,8 @@ export const PermissionOrganizationGroup = [
         code: PermissionOrganization.deskUserUpdate,
       },
       {
-        name: 'Disable',
-        code: PermissionOrganization.deskUserDisable,
+        name: 'Suspend/Resume',
+        code: PermissionOrganization.deskUserState,
       },
     ],
   },

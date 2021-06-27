@@ -89,7 +89,7 @@ export class UserClearerOrganizationManagerController {
 
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(roleManager, pagination);
+    ] = await this.userService.getByRolePaginated(roleManager, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -140,6 +140,10 @@ export class UserClearerOrganizationManagerController {
       managerId,
       organization,
     );
+
+    if (!manager) {
+      throw new NotFoundException();
+    }
 
     // ensure user is manager
     const assigned = roleManager.users.some((userId) => {

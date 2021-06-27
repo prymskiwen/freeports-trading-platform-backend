@@ -28,8 +28,8 @@ RoleDeskSchema.pre('save', function () {
   console.info('role desk presave');
 });
 
-RoleDeskSchema.virtual('permissionsParsed').get(function () {
-  return this.permissions.map((permission) => {
+RoleDeskSchema.virtual('rolePermissions').get(function () {
+  return this.permissions.map((permission: PermissionDesk) => {
     return permission.replace('#deskId#', this.desk);
   });
 });

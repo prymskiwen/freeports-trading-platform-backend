@@ -8,6 +8,7 @@ import {
   Patch,
   Get,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -31,11 +32,11 @@ import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from './role.service';
 import { RoleMapper } from './mapper/role.mapper';
 import { OrganizationService } from '../organization/organization.service';
-import { CreateRoleDeskMultiRequestDto } from './dto/create-role-desk-multi-request.dto';
+import { CreateRoleMultideskRequestDto } from './dto/multidesk/create-role-multidesk-request.dto';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { UpdateRoleResponseDto } from './dto/update-role-response.dto';
-import { UpdateRoleDeskMultiRequestDto } from './dto/update-role-desk-multi.dto';
-import { GetRoleDeskMultiResponseDto } from './dto/get-role-desk-multi-response.dto';
+import { UpdateRoleMultideskRequestDto } from './dto/multidesk/update-role-multidesk-request.dto';
+import { GetRoleMultideskResponseDto } from './dto/multidesk/get-role-multidesk-response.dto';
 import { PermissionOrganization } from 'src/schema/role/permission.helper';
 import { DeleteRoleResponseDto } from './dto/delete-role-response.dto';
 import { UserService } from '../user/user.service';
@@ -48,10 +49,10 @@ import { UserMapper } from '../user/mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization/:organizationId/role-multi')
-@ApiTags('role', 'organization')
+@Controller('api/v1/organization/:organizationId/multidesk/role')
+@ApiTags('role', 'organization', 'multidesk')
 @ApiBearerAuth()
-export class RoleDeskMultiController {
+export class RoleMultideskController {
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
@@ -61,7 +62,7 @@ export class RoleDeskMultiController {
   @Get()
   @Permissions(PermissionOrganization.roleRead)
   @ApiOperation({ summary: 'Get multi-desk role list' })
-  @ApiOkResponse({ type: [GetRoleDeskMultiResponseDto] })
+  @ApiOkResponse({ type: [GetRoleMultideskResponseDto] })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -74,24 +75,18 @@ export class RoleDeskMultiController {
     description: 'Server error',
     type: ExceptionDto,
   })
-  async getRoleDeskMultiList(
+  async getRoleMultideskList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-  ): Promise<GetRoleDeskMultiResponseDto[]> {
+  ): Promise<GetRoleMultideskResponseDto[]> {
     const organization = await this.organizationService.getById(organizationId);
 
     if (!organization) {
       throw new NotFoundException();
     }
 
-    const roles = await this.roleService.getRoleDeskMultiList(organization);
+    const roles = await this.roleService.getRoleMultideskList(organization);
 
-    return roles.map((role) => {
-      return {
-        id: role.id,
-        name: role.name,
-        permissions: role.permissions,
-      };
-    });
+    return roles.map((role) => RoleMapper.toGetRoleMultideskDto(role));
   }
 
   @Get(':roleId')
@@ -102,7 +97,7 @@ export class RoleDeskMultiController {
     description: 'Multi-desk role has not been found',
     type: ExceptionDto,
   })
-  async getRoleDeskMultiUserList(
+  async getRoleMultideskUserList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
     @PaginationParams() pagination: PaginationRequest,
@@ -113,7 +108,7 @@ export class RoleDeskMultiController {
       throw new NotFoundException();
     }
 
-    const role = await this.roleService.getRoleDeskMultiById(
+    const role = await this.roleService.getRoleMultideskById(
       roleId,
       organization,
     );
@@ -124,7 +119,7 @@ export class RoleDeskMultiController {
 
     const [
       { paginatedResult, totalResult },
-    ] = await this.userService.getUserOfRolePaginated(role, pagination);
+    ] = await this.userService.getByRolePaginated(role, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -156,9 +151,9 @@ export class RoleDeskMultiController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  async createRoleDeskMulti(
+  async createRoleMultidesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Body() request: CreateRoleDeskMultiRequestDto,
+    @Body() request: CreateRoleMultideskRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateRoleResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
@@ -167,7 +162,7 @@ export class RoleDeskMultiController {
       throw new NotFoundException();
     }
 
-    const role = await this.roleService.createRoleDeskMulti(
+    const role = await this.roleService.createRoleMultidesk(
       organization,
       request,
       userCurrent,
@@ -195,10 +190,10 @@ export class RoleDeskMultiController {
     description: 'Multi-desk role has not been found',
     type: ExceptionDto,
   })
-  async updateRoleDeskMulti(
+  async updateRoleMultidesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Body() request: UpdateRoleDeskMultiRequestDto,
+    @Body() request: UpdateRoleMultideskRequestDto,
   ): Promise<UpdateRoleResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
@@ -206,7 +201,7 @@ export class RoleDeskMultiController {
       throw new NotFoundException();
     }
 
-    const role = await this.roleService.getRoleDeskMultiById(
+    const role = await this.roleService.getRoleMultideskById(
       roleId,
       organization,
     );
@@ -215,7 +210,7 @@ export class RoleDeskMultiController {
       throw new NotFoundException();
     }
 
-    await this.roleService.updateRoleDeskMulti(role, request);
+    await this.roleService.updateRoleMultidesk(role, request);
 
     return RoleMapper.toUpdateDto(role);
   }
@@ -239,7 +234,7 @@ export class RoleDeskMultiController {
     description: 'Multi-desk role has not been found',
     type: ExceptionDto,
   })
-  async deleteRoleDeskMulti(
+  async deleteRoleMultidesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
   ): Promise<DeleteRoleResponseDto> {
@@ -249,13 +244,19 @@ export class RoleDeskMultiController {
       throw new NotFoundException();
     }
 
-    const role = await this.roleService.getRoleDeskMultiById(
+    const role = await this.roleService.getRoleMultideskById(
       roleId,
       organization,
     );
 
     if (!role) {
       throw new NotFoundException();
+    }
+
+    if (role.users?.length) {
+      throw new BadRequestException(
+        'Impossible delete multi-desk role with assigned users',
+      );
     }
 
     await role.remove();

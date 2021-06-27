@@ -4,7 +4,7 @@ import { User } from '../user/user.schema';
 import { RoleClearer } from './role-clearer.schema';
 import { RoleOrganization } from './role-organization.schema';
 import { RoleDesk } from './role-desk.schema';
-import { RoleDeskMulti } from './role-desk-multi.schema';
+import { RoleMultidesk } from './role-multidesk.schema';
 import { PermissionAny } from './permission.helper';
 
 export const ROLE_MANAGER = 'Manager';
@@ -19,7 +19,7 @@ export class Role {
     enum: [
       RoleClearer.name,
       RoleOrganization.name,
-      RoleDeskMulti.name,
+      RoleMultidesk.name,
       RoleDesk.name,
     ],
   })
@@ -50,6 +50,6 @@ RoleSchema.pre('save', function () {
   console.info('role presave');
 });
 
-RoleSchema.virtual('permissionsParsed').get(function () {
+RoleSchema.virtual('rolePermissions').get(function () {
   return this.permissions;
 });
