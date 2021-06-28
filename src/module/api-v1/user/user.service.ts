@@ -101,9 +101,8 @@ export class UserService {
     if (persist) {
       await user.save();
     }
-    const token_test = 'kiksidsiljfiosejflsjeif';
-    console.log(token_test);
-    // await this.mailService.sendUserConfirmation(user, token_test);
+    
+    await this.mailService.sendUserConfirmation(user, user._id);
 
     return user;
   }

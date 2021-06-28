@@ -10,23 +10,27 @@ import { join } from 'path';
       // transport: 'smtps://user@example.com:topsecret@smtp.example.com',
       // or
       transport: {
+        // host: process.env.MAIL_HOST,
         host: process.env.MAIL_HOST,
+        port: process.env.MAIL_PORT,
         secure: false,
+        ignoreTLS: true,
         auth: {
           user: process.env.MAIL_USER,
           pass: process.env.MAIL_PASSWORD,
         },
       },
       defaults: {
-        from: '"No Reply" <noreply@example.com>',
+        from: `"No Reply" <${process.env.MAIL_FROM}>`,
       },
-      // template: {
-      //   dir: join(__dirname, '/templates'),
-      //   adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
-      //   options: {
-      //     strict: true,
-      //   },
-      // },
+      preview: true,
+      template: {
+        dir: join(__dirname, '/templates'),
+        adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
+        options: {
+          strict: true,
+        },
+      },
     }),
   ],
   providers: [MailService],

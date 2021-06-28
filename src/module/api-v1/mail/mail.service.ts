@@ -1,5 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
+import { permittedCrossDomainPolicies } from 'helmet';
 import { UserDocument } from 'src/schema/user/user.schema';
 
 @Injectable()
@@ -7,20 +8,20 @@ export class MailService {
   constructor(private mailerService: MailerService) {}
 
   async sendUserConfirmation(user: UserDocument, token: string) {
-    const url = `example.com/auth/confirm?token=${token}`;
-
+    const url = `http://${process.env.HOST_NAME}/auth/${token}/password`;
+    const name = user.personal.nickname;
+    console.log(user.personal.email);
     await this.mailerService.sendMail({
       to: user.personal.email,
-      from: '"No Reply" <noreply@example.com>', // override default from
+      from: `"No Reply" <${process.env.MAIL_FROM}>`, // override default from
       subject: 'Welcome to Nice App! Confirm your Email',
-      // template: './confirmation', // `.hbs` extension is appended automatically
-      text: 'welcome',
-      html: `<b>${url}</b>`,
-      // context: { // ✏️ filling curly brackets with content
-      //   name: user.personal.nickname,
-      //   url,
-      // },
-    }).then(() => {})
-    .catch(() => {});
+      text: 'Email Verify',
+      html: `<p>Hey ${name},</p>
+      <p>Please click below to confirm your email</p>
+      <p>
+          <a href="${url}">Confirm</a>
+      </p>`,
+    }).then((res) => { console.log('ok perfact');console.log(res);})
+    .catch((err) => {console.log('ok errors'); console.log(err)});
   }
 }
