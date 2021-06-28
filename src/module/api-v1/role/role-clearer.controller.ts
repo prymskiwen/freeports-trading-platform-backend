@@ -14,7 +14,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -61,10 +60,6 @@ export class RoleClearerController {
   @Permissions(PermissionClearer.roleRead)
   @ApiOperation({ summary: 'Get clearer role list' })
   @ApiOkResponse({ type: [GetRoleClearerResponseDto] })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   async getRoleClearerList(): Promise<GetRoleClearerResponseDto[]> {
     const roles = await this.roleService.getRoleClearerList();
 

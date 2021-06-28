@@ -15,7 +15,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -58,10 +57,6 @@ export class AccountClearerController {
   @Permissions(PermissionClearer.accountRead)
   @ApiOperation({ summary: 'Get clearer account list' })
   @ApiOkResponse({ type: [GetAccountResponseDto] })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   async getAccountClearerList(): Promise<GetAccountResponseDto[]> {
     const accounts = await this.accountService.getAccountClearerList();
 
@@ -78,10 +73,6 @@ export class AccountClearerController {
   })
   @ApiNotFoundResponse({
     description: 'Account has not been found',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
     type: ExceptionDto,
   })
   async getAccountClearer(

@@ -13,7 +13,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -82,10 +81,6 @@ export class UserClearerController {
   })
   @ApiNotFoundResponse({
     description: 'Clearer user has not been found',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
     type: ExceptionDto,
   })
   async getClearerUser(

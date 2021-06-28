@@ -11,7 +11,6 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -108,10 +107,6 @@ export class UserDeskController {
   })
   @ApiNotFoundResponse({
     description: 'Desk user has not been found',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
     type: ExceptionDto,
   })
   async getOrganizationUser(

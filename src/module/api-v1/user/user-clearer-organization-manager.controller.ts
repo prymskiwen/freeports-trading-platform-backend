@@ -13,7 +13,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -112,10 +111,6 @@ export class UserClearerOrganizationManagerController {
   })
   @ApiNotFoundResponse({
     description: 'Organization manager has not been found',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
     type: ExceptionDto,
   })
   async getOrganizationManager(
