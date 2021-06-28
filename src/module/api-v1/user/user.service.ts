@@ -10,10 +10,14 @@ import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
 import { RoleDocument } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private mailService: MailService,
+  ) {}
 
   async getById(id: string): Promise<UserDocument> {
     return await this.userModel.findById(id).exec();
@@ -97,6 +101,8 @@ export class UserService {
     if (persist) {
       await user.save();
     }
+    
+    await this.mailService.sendUserConfirmation(user, user._id);
 
     return user;
   }

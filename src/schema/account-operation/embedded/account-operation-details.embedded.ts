@@ -12,7 +12,7 @@ export class AccountOperationDetails {
   accountFrom?: Account;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Account' })
-  accountTo?: Account;
+  accountId?: Account;
 
   @Prop()
   amount?: number;
@@ -25,6 +25,12 @@ export class AccountOperationDetails {
 
   @Prop()
   operationLabel?: string;
+
+  @Prop()
+  thirdParty?: string;
+
+  @Prop()
+  lineId?: string;
 }
 
 export const AccountOperationDetailsSchema = SchemaFactory.createForClass(
