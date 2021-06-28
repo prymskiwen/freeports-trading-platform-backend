@@ -12,6 +12,7 @@ import { UserOrganizationController } from './user-organization.controller';
 import { UserClearerOrganizationManagerController } from './user-clearer-organization-manager.controller';
 import { UserDeskController } from './user-desk.controller';
 import { MailModule } from '../mail/mail.module';
+import { UserPublicKeyController } from './user-public-key.controller';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MailModule } from '../mail/mail.module';
     UserClearerOrganizationManagerController,
     UserOrganizationController,
     UserDeskController,
+    UserPublicKeyController,
   ],
   providers: [UserService],
   exports: [UserService],

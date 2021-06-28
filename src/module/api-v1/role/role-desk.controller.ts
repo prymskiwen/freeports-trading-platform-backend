@@ -14,7 +14,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -74,10 +73,6 @@ export class RoleDeskController {
   })
   @ApiNotFoundResponse({
     description: 'Desk has not been found',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
     type: ExceptionDto,
   })
   async getRoleDeskList(
