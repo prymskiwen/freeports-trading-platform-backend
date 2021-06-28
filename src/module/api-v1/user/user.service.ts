@@ -47,6 +47,35 @@ export class UserService {
       .exec();
   }
 
+  async getDeskUserById(id: string, desk: DeskDocument): Promise<UserDocument> {
+    const user = await this.userModel
+      .findOne({
+        _id: id,
+        $and: [
+          { organization: { $exists: true } },
+          { organization: desk.organization },
+        ],
+      })
+      .exec();
+
+    if (!user) {
+      return null;
+    }
+
+    // TODO: could it be better to make it in query?
+    // check the user belongs to the desk by have desk permission
+    const permissions: string[] = await user.get('permissions');
+    const hasDesk = permissions.some((permission: string) =>
+      permission.startsWith(`desk.${desk.id}`),
+    );
+
+    if (!hasDesk) {
+      return null;
+    }
+
+    return user;
+  }
+
   async create(
     request: CreateUserRequestDto,
     persist = true,
@@ -217,7 +246,8 @@ export class UserService {
           $or: [
             {
               'roles.effectiveDesks': {
-                $and: [{ $exists: true }, { $elemMatch: desk._id }],
+                $exists: true,
+                $elemMatch: { $eq: desk._id },
               },
             },
             {
@@ -225,7 +255,6 @@ export class UserService {
                 $elemMatch: {
                   kind: RoleDesk.name,
                   desk: desk._id,
-                  system: true,
                 },
               },
             },
@@ -266,7 +295,7 @@ export class UserService {
     ]);
   }
 
-  async getUserOfRolePaginated(
+  async getByRolePaginated(
     role: RoleDocument,
     pagination: PaginationRequest,
   ): Promise<any[]> {

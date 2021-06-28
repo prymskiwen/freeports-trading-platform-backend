@@ -25,7 +25,6 @@ import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { Permissions } from '../auth/decorator/permissions.decorator';
-import { CreateRoleOrganizationRequestDto } from './dto/organization/create-role-organization-request.dto';
 import { CreateRoleResponseDto } from './dto/create-role-response.dto';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
@@ -33,12 +32,18 @@ import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from './role.service';
 import { RoleMapper } from './mapper/role.mapper';
 import { OrganizationService } from '../organization/organization.service';
+import { CreateRoleDeskRequestDto } from './dto/desk/create-role-desk-request.dto';
+import { DeskService } from '../desk/desk.service';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { UpdateRoleResponseDto } from './dto/update-role-response.dto';
-import { PermissionOrganization } from 'src/schema/role/permission.helper';
+import { GetRoleDeskResponseDto } from './dto/desk/get-role-desk-response.dto';
+import { UpdateRoleDeskRequestDto } from './dto/desk/update-role-desk-request.dto';
+import {
+  PermissionDesk,
+  PermissionOrganization,
+} from 'src/schema/role/permission.helper';
 import { DeleteRoleResponseDto } from './dto/delete-role-response.dto';
 import { UserService } from '../user/user.service';
-import { GetRoleOrganizationResponseDto } from './dto/organization/get-role-organization-response.dto';
 import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
@@ -46,72 +51,81 @@ import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { UserMapper } from '../user/mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
-import { UpdateRoleOrganizationRequestDto } from './dto/organization/update-role-organization-request.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization/:organizationId/role')
-@ApiTags('role', 'organization')
+@Controller('api/v1/organization/:organizationId/desk/:deskId/role')
+@ApiTags('role', 'organization', 'desk')
 @ApiBearerAuth()
-export class RoleOrganizationController {
+export class RoleDeskController {
   constructor(
+    private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
 
   @Get()
-  @Permissions(PermissionOrganization.roleRead)
-  @ApiOperation({ summary: 'Get organization role list' })
-  @ApiOkResponse({ type: [GetRoleOrganizationResponseDto] })
+  @Permissions(PermissionOrganization.roleRead, PermissionDesk.roleRead)
+  @ApiOperation({ summary: 'Get desk role list' })
+  @ApiOkResponse({ type: [GetRoleDeskResponseDto] })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization has not been found',
+    description: 'Desk has not been found',
     type: ExceptionDto,
   })
   @ApiInternalServerErrorResponse({
     description: 'Server error',
     type: ExceptionDto,
   })
-  async getRoleOrganizationList(
+  async getRoleDeskList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-  ): Promise<GetRoleOrganizationResponseDto[]> {
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+  ): Promise<GetRoleDeskResponseDto[]> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
-    const roles = await this.roleService.getRoleOrganizationList(organization);
+    const roles = await this.roleService.getRoleDeskList(desk);
 
-    return roles.map((role) => RoleMapper.toGetRoleOrganizationDto(role));
+    return roles.map((role) => RoleMapper.toGetRoleDeskDto(role));
   }
 
   @Get(':roleId')
-  @Permissions(PermissionOrganization.roleRead)
-  @ApiOperation({ summary: 'Get organization role user list' })
+  @Permissions(PermissionOrganization.roleRead, PermissionDesk.roleRead)
+  @ApiOperation({ summary: 'Get desk role user list' })
   @ApiPaginationResponse(GetUserResponseDto)
   @ApiNotFoundResponse({
-    description: 'Organization role has not been found',
+    description: 'Desk role has not been found',
     type: ExceptionDto,
   })
-  async getRoleOrganizationUserList(
+  async getRoleDeskUserList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetUserResponseDto>> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
-    const role = await this.roleService.getRoleOrganizationById(
-      roleId,
-      organization,
-    );
+    const role = await this.roleService.getRoleDeskById(roleId, desk);
 
     if (!role) {
       throw new NotFoundException();
@@ -133,10 +147,10 @@ export class RoleOrganizationController {
   }
 
   @Post()
-  @Permissions(PermissionOrganization.roleCreate)
-  @ApiOperation({ summary: 'Create organization role' })
+  @Permissions(PermissionOrganization.roleCreate, PermissionDesk.roleCreate)
+  @ApiOperation({ summary: 'Create desk role' })
   @ApiCreatedResponse({
-    description: 'Successfully created organization role id',
+    description: 'Successfully created desk role id',
     type: CreateRoleResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -148,22 +162,28 @@ export class RoleOrganizationController {
     type: InvalidFormExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization has not been found',
+    description: 'Desk has not been found',
     type: ExceptionDto,
   })
-  async createRoleOrganization(
+  async createRoleDesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
-    @Body() request: CreateRoleOrganizationRequestDto,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Body() request: CreateRoleDeskRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateRoleResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
-    const role = await this.roleService.createRoleOrganization(
-      organization,
+    const role = await this.roleService.createRoleDesk(
+      desk,
       request,
       userCurrent,
     );
@@ -172,10 +192,10 @@ export class RoleOrganizationController {
   }
 
   @Patch(':roleId')
-  @Permissions(PermissionOrganization.roleUpdate)
-  @ApiOperation({ summary: 'Update organization role' })
+  @Permissions(PermissionOrganization.roleUpdate, PermissionDesk.roleUpdate)
+  @ApiOperation({ summary: 'Update desk role' })
   @ApiOkResponse({
-    description: 'Successfully updated organization role id',
+    description: 'Successfully updated desk role id',
     type: UpdateRoleResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -187,39 +207,42 @@ export class RoleOrganizationController {
     type: InvalidFormExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization role has not been found',
+    description: 'Desk role has not been found',
     type: ExceptionDto,
   })
-  async updateRoleOrganization(
+  async updateRoleDesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Body() request: UpdateRoleOrganizationRequestDto,
+    @Body() request: UpdateRoleDeskRequestDto,
   ): Promise<UpdateRoleResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
-    const role = await this.roleService.getRoleOrganizationById(
-      roleId,
-      organization,
-    );
+    const role = await this.roleService.getRoleDeskById(roleId, desk);
 
     if (!role) {
       throw new NotFoundException();
     }
 
-    await this.roleService.updateRoleOrganization(role, request);
+    await this.roleService.updateRoleDesk(role, request);
 
     return RoleMapper.toUpdateDto(role);
   }
 
   @Delete(':roleId')
-  @Permissions(PermissionOrganization.roleDelete)
-  @ApiOperation({ summary: 'Delete organization role' })
+  @Permissions(PermissionOrganization.roleDelete, PermissionDesk.roleDelete)
+  @ApiOperation({ summary: 'Delete desk role' })
   @ApiOkResponse({
-    description: 'Successfully deleted organization role id',
+    description: 'Successfully deleted desk role id',
     type: DeleteRoleResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -231,23 +254,26 @@ export class RoleOrganizationController {
     type: InvalidFormExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization role has not been found',
+    description: 'Desk role has not been found',
     type: ExceptionDto,
   })
-  async deleteRoleOrganization(
+  async deleteRoleDesk(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
   ): Promise<DeleteRoleResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
-    const role = await this.roleService.getRoleOrganizationById(
-      roleId,
-      organization,
-    );
+    const role = await this.roleService.getRoleDeskById(roleId, desk);
 
     if (!role) {
       throw new NotFoundException();
@@ -255,7 +281,7 @@ export class RoleOrganizationController {
 
     if (role.users?.length) {
       throw new BadRequestException(
-        'Impossible delete organization role with assigned users',
+        'Impossible delete desk role with assigned users',
       );
     }
 

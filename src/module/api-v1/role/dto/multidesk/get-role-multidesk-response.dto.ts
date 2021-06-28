@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PermissionDesk } from 'src/schema/role/permission.helper';
 
-export class GetRoleDeskMultiResponseDto {
+export class GetRoleMultideskResponseDto {
   id: string;
   name: string;
 

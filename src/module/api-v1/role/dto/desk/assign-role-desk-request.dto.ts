@@ -1,13 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsArray, IsMongoId } from 'class-validator';
 
-export class AssignRoleOrganizationDto {
+export class AssignRoleDeskRequestDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsMongoId({ each: true })
-  @ApiProperty({
-    type: [String],
-    description: 'Array of organization role Id-s',
-  })
+  @ApiProperty({ type: [String], description: 'Array of desk role Id-s' })
   roles: string[];
 }

@@ -11,17 +11,22 @@ import {
 } from 'src/schema/role/role-organization.schema';
 import { RoleDesk, RoleDeskSchema } from 'src/schema/role/role-desk.schema';
 import {
-  RoleDeskMulti,
-  RoleDeskMultiSchema,
-} from 'src/schema/role/role-desk-multi.schema';
+  RoleMultidesk,
+  RoleMultideskSchema,
+} from 'src/schema/role/role-multidesk.schema';
 import { RoleService } from './role.service';
-import { RoleController } from './role.controller';
+import { RoleMultideskController } from './role-multidesk.controller';
 import { OrganizationModule } from '../organization/organization.module';
 import { DeskModule } from '../desk/desk.module';
 import { PermissionController } from './permission.controller';
 import { UserModule } from '../user/user.module';
 import { RoleClearerController } from './role-clearer.controller';
 import { RoleOrganizationController } from './role-organization.controller';
+import { RoleDeskController } from './role-desk.controller';
+import { RoleClearerAssignController } from './role-clearer-assign.controller';
+import { RoleOrganizationAssignController } from './role-organization-assign.controller';
+import { RoleMultideskAssignController } from './role-multidesk-assign.controller';
+import { RoleDeskAssignController } from './role-desk-assign.controller';
 
 @Module({
   imports: [
@@ -36,8 +41,8 @@ import { RoleOrganizationController } from './role-organization.controller';
             schema: RoleOrganizationSchema,
           },
           {
-            name: RoleDeskMulti.name,
-            schema: RoleDeskMultiSchema,
+            name: RoleMultidesk.name,
+            schema: RoleMultideskSchema,
           },
           { name: RoleDesk.name, schema: RoleDeskSchema },
         ],
@@ -48,9 +53,14 @@ import { RoleOrganizationController } from './role-organization.controller';
     forwardRef(() => UserModule),
   ],
   controllers: [
-    RoleController,
     RoleClearerController,
+    RoleClearerAssignController,
     RoleOrganizationController,
+    RoleOrganizationAssignController,
+    RoleMultideskController,
+    RoleMultideskAssignController,
+    RoleDeskController,
+    RoleDeskAssignController,
     PermissionController,
   ],
   providers: [RoleService],

@@ -28,7 +28,6 @@ import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { UserDocument } from 'src/schema/user/user.schema';
-import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { CreateUserResponseDto } from '../user/dto/create-user-response.dto';
@@ -37,12 +36,10 @@ import { UpdateUserResponseDto } from '../user/dto/update-user-response.dto';
 import { UpdateUserRequestDto } from '../user/dto/update-user-request.dto';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
 import { UserService } from './user.service';
-import { RoleService } from '../role/role.service';
 import { UserMapper } from './mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionClearer } from 'src/schema/role/permission.helper';
-import { AssignRoleClearerDto } from './dto/assign-role-clearer.dto';
 import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
 import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
@@ -51,10 +48,7 @@ import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 @ApiTags('user', 'clearer')
 @ApiBearerAuth()
 export class UserClearerController {
-  constructor(
-    private readonly roleService: RoleService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get()
   @Permissions(PermissionClearer.coworkerRead)
@@ -98,6 +92,10 @@ export class UserClearerController {
     @Param('userId', ParseObjectIdPipe) userId: string,
   ): Promise<GetUserDetailsResponseDto> {
     const user = await this.userService.getClearerUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
 
     return UserMapper.toGetDetailsDto(user);
   }
@@ -233,117 +231,6 @@ export class UserClearerController {
 
     user.suspended = false;
     await user.save();
-
-    return UserMapper.toUpdateDto(user);
-  }
-
-  @Post(':userId/role/assign')
-  @Permissions(PermissionClearer.roleAssign)
-  @ApiTags('role')
-  @ApiOperation({ summary: 'Assign clearer role to user' })
-  @ApiCreatedResponse({
-    description: 'Successfully updated user id',
-    type: UpdateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-    type: ExceptionDto,
-  })
-  async assignRoleClearer(
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleClearerDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.assignRoleClearer(request.roles, user, userCurrent);
-
-    return UserMapper.toUpdateDto(user);
-  }
-
-  @Post(':userId/role/unassign')
-  @Permissions(PermissionClearer.roleAssign)
-  @ApiTags('role')
-  @ApiOperation({ summary: 'Unassign clearer role from user' })
-  @ApiCreatedResponse({
-    description: 'Successfully updated user id',
-    type: UpdateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-    type: ExceptionDto,
-  })
-  async unassignRoleClearer(
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleClearerDto,
-  ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.unassignRoleClearer(request.roles, user);
-
-    return UserMapper.toUpdateDto(user);
-  }
-
-  @Patch(':userId/role')
-  @Permissions(PermissionClearer.roleAssign)
-  @ApiTags('role')
-  @ApiOperation({ summary: 'Update clearer roles to user' })
-  @ApiCreatedResponse({
-    description: 'Successfully updated user id',
-    type: UpdateUserResponseDto,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Invalid Id',
-    type: ExceptionDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid form',
-    type: InvalidFormExceptionDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'User has not been found',
-    type: ExceptionDto,
-  })
-  async updateRoleClearer(
-    @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleClearerDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<UpdateUserResponseDto> {
-    const user = await this.userService.getClearerUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    await this.roleService.updateClearerUserRoles(
-      request.roles,
-      user,
-      userCurrent,
-    );
 
     return UserMapper.toUpdateDto(user);
   }

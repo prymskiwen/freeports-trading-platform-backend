@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty } from 'class-validator';
 import { PermissionDesk } from 'src/schema/role/permission.helper';
 
-export class CreateRoleDeskMultiRequestDto {
+export class CreateRoleMultideskRequestDto {
   @IsNotEmpty()
   name: string;
 

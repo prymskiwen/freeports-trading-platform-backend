@@ -31,63 +31,87 @@ import { UserDocument } from 'src/schema/user/user.schema';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { RoleService } from './role.service';
 import { RoleMapper } from './mapper/role.mapper';
-import { CreateRoleClearerRequestDto } from './dto/clearer/create-role-clearer-request.dto';
+import { OrganizationService } from '../organization/organization.service';
+import { CreateRoleMultideskRequestDto } from './dto/multidesk/create-role-multidesk-request.dto';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
-import { UpdateRoleClearerRequestDto } from './dto/clearer/update-role-clearer-request.dto';
 import { UpdateRoleResponseDto } from './dto/update-role-response.dto';
-import { GetRoleClearerResponseDto } from './dto/clearer/get-role-clearer-response.dto';
-import { PermissionClearer } from 'src/schema/role/permission.helper';
+import { UpdateRoleMultideskRequestDto } from './dto/multidesk/update-role-multidesk-request.dto';
+import { GetRoleMultideskResponseDto } from './dto/multidesk/get-role-multidesk-response.dto';
+import { PermissionOrganization } from 'src/schema/role/permission.helper';
 import { DeleteRoleResponseDto } from './dto/delete-role-response.dto';
 import { UserService } from '../user/user.service';
 import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
 import { GetUserResponseDto } from '../user/dto/get-user-response.dto';
-import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { UserMapper } from '../user/mapper/user.mapper';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/role')
-@ApiTags('role', 'clearer')
+@Controller('api/v1/organization/:organizationId/multidesk/role')
+@ApiTags('role', 'organization', 'multidesk')
 @ApiBearerAuth()
-export class RoleClearerController {
+export class RoleMultideskController {
   constructor(
+    private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
 
   @Get()
-  @Permissions(PermissionClearer.roleRead)
-  @ApiOperation({ summary: 'Get clearer role list' })
-  @ApiOkResponse({ type: [GetRoleClearerResponseDto] })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
-  async getRoleClearerList(): Promise<GetRoleClearerResponseDto[]> {
-    const roles = await this.roleService.getRoleClearerList();
-
-    return roles.map((role) => RoleMapper.toGetRoleClearerDto(role));
-  }
-
-  @Get(':roleId')
-  @Permissions(PermissionClearer.roleRead)
-  @ApiOperation({ summary: 'Get clearer role user list' })
-  @ApiPaginationResponse(GetUserResponseDto)
+  @Permissions(PermissionOrganization.roleRead)
+  @ApiOperation({ summary: 'Get multi-desk role list' })
+  @ApiOkResponse({ type: [GetRoleMultideskResponseDto] })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Clearer role has not been found',
+    description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  async getRoleClearerUserList(
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  async getRoleMultideskList(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+  ): Promise<GetRoleMultideskResponseDto[]> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const roles = await this.roleService.getRoleMultideskList(organization);
+
+    return roles.map((role) => RoleMapper.toGetRoleMultideskDto(role));
+  }
+
+  @Get(':roleId')
+  @Permissions(PermissionOrganization.roleRead)
+  @ApiOperation({ summary: 'Get multi-desk role user list' })
+  @ApiPaginationResponse(GetUserResponseDto)
+  @ApiNotFoundResponse({
+    description: 'Multi-desk role has not been found',
+    type: ExceptionDto,
+  })
+  async getRoleMultideskUserList(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetUserResponseDto>> {
-    const role = await this.roleService.getRoleClearerById(roleId);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleMultideskById(
+      roleId,
+      organization,
+    );
 
     if (!role) {
       throw new NotFoundException();
@@ -109,10 +133,10 @@ export class RoleClearerController {
   }
 
   @Post()
-  @Permissions(PermissionClearer.roleCreate)
-  @ApiOperation({ summary: 'Create clearer role' })
+  @Permissions(PermissionOrganization.roleCreate)
+  @ApiOperation({ summary: 'Create multi-desk role' })
   @ApiCreatedResponse({
-    description: 'Successfully created clearer role id',
+    description: 'Successfully created multi-desk role id',
     type: CreateRoleResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -127,20 +151,31 @@ export class RoleClearerController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  async createRoleClearer(
-    @Body() request: CreateRoleClearerRequestDto,
+  async createRoleMultidesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Body() request: CreateRoleMultideskRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateRoleResponseDto> {
-    const role = await this.roleService.createRoleClearer(request, userCurrent);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.createRoleMultidesk(
+      organization,
+      request,
+      userCurrent,
+    );
 
     return RoleMapper.toCreateDto(role);
   }
 
   @Patch(':roleId')
-  @Permissions(PermissionClearer.roleUpdate)
-  @ApiOperation({ summary: 'Update clearer role' })
+  @Permissions(PermissionOrganization.roleUpdate)
+  @ApiOperation({ summary: 'Update multi-desk role' })
   @ApiOkResponse({
-    description: 'Successfully updated clearer role id',
+    description: 'Successfully updated multi-desk role id',
     type: UpdateRoleResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -152,47 +187,67 @@ export class RoleClearerController {
     type: InvalidFormExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Clearer role has not been found',
+    description: 'Multi-desk role has not been found',
     type: ExceptionDto,
   })
-  async updateRoleClearer(
+  async updateRoleMultidesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
-    @Body() request: UpdateRoleClearerRequestDto,
+    @Body() request: UpdateRoleMultideskRequestDto,
   ): Promise<UpdateRoleResponseDto> {
-    const role = await this.roleService.getRoleClearerById(roleId);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleMultideskById(
+      roleId,
+      organization,
+    );
 
     if (!role) {
       throw new NotFoundException();
     }
 
-    await this.roleService.updateRoleClearer(role, request);
+    await this.roleService.updateRoleMultidesk(role, request);
 
     return RoleMapper.toUpdateDto(role);
   }
 
   @Delete(':roleId')
-  @Permissions(PermissionClearer.roleDelete)
-  @ApiOperation({ summary: 'Delete clearer role' })
+  @Permissions(PermissionOrganization.roleDelete)
+  @ApiOperation({ summary: 'Delete multi-desk role' })
   @ApiOkResponse({
-    description: 'Successfully deleted clearer role id',
+    description: 'Successfully deleted multi-desk role id',
     type: DeleteRoleResponseDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Impossible delete clearer role with assigned users',
-    type: InvalidFormExceptionDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
   })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
   @ApiNotFoundResponse({
-    description: 'Clearer role has not been found',
+    description: 'Multi-desk role has not been found',
     type: ExceptionDto,
   })
-  async deleteRoleClearer(
+  async deleteRoleMultidesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('roleId', ParseObjectIdPipe) roleId: string,
   ): Promise<DeleteRoleResponseDto> {
-    const role = await this.roleService.getRoleClearerById(roleId);
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const role = await this.roleService.getRoleMultideskById(
+      roleId,
+      organization,
+    );
 
     if (!role) {
       throw new NotFoundException();
@@ -200,7 +255,7 @@ export class RoleClearerController {
 
     if (role.users?.length) {
       throw new BadRequestException(
-        'Impossible delete clearer role with assigned users',
+        'Impossible delete multi-desk role with assigned users',
       );
     }
 
