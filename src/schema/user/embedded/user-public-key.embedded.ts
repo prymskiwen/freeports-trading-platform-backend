@@ -1,17 +1,28 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { SchemaTypes } from 'mongoose';
+import { SchemaTypes, Document } from 'mongoose';
 import { User } from '../user.schema';
-import {
-  UserPublicKeyData,
-  UserPublicKeyDataSchema,
-} from './user-public-key-data.embedded';
 
-@Schema({ versionKey: false, _id: false })
+export enum UserPublicKeyStatus {
+  'requested',
+  'confirmed',
+  'revocation_request',
+  'revocation_done',
+}
+
+export type UserPublicKeyDocument = UserPublicKey & Document;
+
+@Schema({ versionKey: false })
 export class UserPublicKey {
-  @Prop({ type: UserPublicKeyDataSchema })
-  data?: UserPublicKeyData;
+  @Prop()
+  key?: string;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'User' }) // <= 'User' instead of User.name because it refers a parent class
+  @Prop()
+  current?: boolean;
+
+  @Prop({ type: String, enum: UserPublicKeyStatus })
+  status?: UserPublicKeyStatus;
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   approvedBy?: User;
 }
 
