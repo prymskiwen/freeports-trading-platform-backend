@@ -11,6 +11,7 @@ import { UserClearerController } from './user-clearer.controller';
 import { UserOrganizationController } from './user-organization.controller';
 import { UserClearerOrganizationManagerController } from './user-clearer-organization-manager.controller';
 import { UserDeskController } from './user-desk.controller';
+import { UserPublicKeyController } from './user-public-key.controller';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UserDeskController } from './user-desk.controller';
     UserClearerOrganizationManagerController,
     UserOrganizationController,
     UserDeskController,
+    UserPublicKeyController,
   ],
   providers: [UserService],
   exports: [UserService],
