@@ -9,9 +9,24 @@ import databaseConfig from 'src/config/database.config';
 import openapiConfig from 'src/config/openapi.config';
 import { APIV1Module } from './api-v1/api.v1.module';
 import corsConfig from 'src/config/cors.config';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
+    MailerModule.forRoot({
+      transport: 'smtp://e2388c36aeb821:e90053b80f0b55@smtp.mailtrap.io:2525',
+      defaults: {
+        from: '"nest-modules" <modules@nestjs.com>',
+      },
+      template: {
+        dir: __dirname + '/templates',
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
     ConfigModule.forRoot({
       // cache: true,
       isGlobal: true,

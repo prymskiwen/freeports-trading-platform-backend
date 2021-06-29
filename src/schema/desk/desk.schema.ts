@@ -11,6 +11,9 @@ export class Desk {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Organization' })
   organization: Organization;
+
+  @Prop()
+  createdAt?: Date;
 }
 
 export const DeskSchema = SchemaFactory.createForClass(Desk);

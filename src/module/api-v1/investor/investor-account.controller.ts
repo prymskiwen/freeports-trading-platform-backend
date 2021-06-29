@@ -12,7 +12,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -60,11 +59,7 @@ export class InvestorAccountController {
     description: 'Investor has not been found',
     type: ExceptionDto,
   })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
-  async getInvestorList(
+  async getInvestorAccountList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
   ): Promise<GetAccountResponseDto[]> {
@@ -107,7 +102,7 @@ export class InvestorAccountController {
     description: 'Investor has not been found',
     type: ExceptionDto,
   })
-  async assignInvestorToOrganization(
+  async assignAccountToInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Body() request: CreateAccountRequestDto,
@@ -155,7 +150,7 @@ export class InvestorAccountController {
     description: 'Account has not been found',
     type: ExceptionDto,
   })
-  async unassignInvestorFromOrganization(
+  async unassignAccountFromInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,

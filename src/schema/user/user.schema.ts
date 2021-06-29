@@ -22,7 +22,7 @@ export class User {
   organization?: Organization;
 
   @Prop()
-  vault_user_id?: string;
+  vaultUserId?: string;
 
   @Prop({ type: UserPersonalSchema })
   personal?: UserPersonal;
@@ -34,7 +34,7 @@ export class User {
   roles?: UserRole[];
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
-  relationhipManager?: User;
+  relationshipManager?: User;
 
   @Prop()
   commission?: number;

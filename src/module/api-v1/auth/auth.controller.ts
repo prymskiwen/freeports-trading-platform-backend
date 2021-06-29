@@ -2,7 +2,17 @@ import { RevokeOTPSecretResponseDto } from './dto/revoke-otp-secret-response.dto
 import { OTPSecretAlreadySet } from './../../../exeption/otp-secret-already-set.exception';
 import { TwoFactorAuthenticationCodeDto } from './dto/twoFactorAuthenticationCode.dto';
 import { Invalid2faCodeException } from '../../../exeption/invalid-2fa-code.exception';
-import { Controller, Post, Body, UseGuards, Res, Param } from '@nestjs/common';
+import JwtTwoFactorGuard from './guard/jwt-two-factor.guard';
+import { PermissionsGuard } from './guard/permissions.guard';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Res,
+  Param,
+  Get,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
@@ -28,6 +38,8 @@ import { CurrentUser } from './decorator/current-user.decorator';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { Response } from 'express';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
+import { NewPasswordRequestDto } from './dto/new-password-request.dto';
+import { NewPasswordResponseDto } from './dto/new-password-response.dto';
 
 @Controller('api/v1/auth')
 @ApiTags('auth')
@@ -60,6 +72,34 @@ export class AuthController {
     @CurrentUser() user: UserDocument,
   ): Promise<LoginResponseDto> {
     return this.authService.login(user);
+  }
+
+  @Post('/:userId/password')
+  @ApiCreatedResponse({
+    description: 'New Password is saved successfully',
+    type: NewPasswordResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentials',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  async updateNewPassword(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: NewPasswordRequestDto,
+  ): Promise<NewPasswordResponseDto> {
+    const updatedUser = await this.authService.updatePassword(
+      userId,
+      request.password,
+    );
+    return { id: updatedUser._id };
   }
 
   @Post('/2fa/generate')
@@ -95,11 +135,8 @@ export class AuthController {
       throw new OTPSecretAlreadySet();
     }
 
-    const {
-      otpauthUrl,
-    } = await this.authService.generateTwoFactorAuthenticationSecret(
-      userCurrent,
-    );
+    const { otpauthUrl } =
+      await this.authService.generateTwoFactorAuthenticationSecret(userCurrent);
 
     response.set({ 'Content-Type': 'image/png' });
 

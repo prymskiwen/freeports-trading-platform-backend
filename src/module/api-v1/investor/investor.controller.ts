@@ -14,7 +14,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -63,10 +62,6 @@ export class InvestorController {
     description: 'Organization has not been found',
     type: ExceptionDto,
   })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
-    type: ExceptionDto,
-  })
   async getInvestorList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
   ): Promise<GetInvestorResponseDto[]> {
@@ -91,10 +86,6 @@ export class InvestorController {
   })
   @ApiNotFoundResponse({
     description: 'Investor has not been found',
-    type: ExceptionDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Server error',
     type: ExceptionDto,
   })
   async getInvestor(

@@ -6,11 +6,13 @@ import { OrganizationModule } from './organization/organization.module';
 import { RoleModule } from './role/role.module';
 import { UserModule } from './user/user.module';
 import { InvestorModule } from './investor/investor.module';
+import { OperationModule } from './account-operation/operation.module';
 
 @Module({
   imports: [
     AuthModule,
     AccountModule,
+    OperationModule,
     DeskModule,
     InvestorModule,
     OrganizationModule,
