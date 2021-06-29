@@ -5,6 +5,7 @@ export class GetAccountClearerDetailsResponseDto {
   id: string;
   name: string;
   currency: string;
+  balence: number;
   type: string;
   iban?: string;
   publicAddress?: string;

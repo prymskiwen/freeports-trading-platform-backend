@@ -44,6 +44,7 @@ export class AccountService {
     account.details = {
       name: request.name,
       currency: request.currency,
+      balance: request.balance,
       type: request.type,
     };
     if (request.type === AccountDetailsType.fiat) {
@@ -72,6 +73,7 @@ export class AccountService {
     account.details = {
       name: request.name,
       currency: request.currency,
+      balance: request.balance,
       type: request.type,
     };
     if (request.type === AccountDetailsType.fiat) {
@@ -137,6 +139,7 @@ export class AccountService {
     account.details = {
       name: request.name,
       currency: request.currency,
+      balance: request.balance,
       type: request.type,
     };
     if (request.type === AccountDetailsType.fiat) {
