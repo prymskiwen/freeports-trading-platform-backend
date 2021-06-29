@@ -5,12 +5,15 @@ import {
   Param,
   UseGuards,
   NotFoundException,
+  Patch,
+  Get,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnprocessableEntityResponse,
@@ -27,9 +30,20 @@ import { OrganizationService } from '../organization/organization.service';
 import { DeskMapper } from './mapper/desk.mapper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionOrganization } from 'src/schema/role/permission.helper';
+import { UpdateDeskRequestDto } from './dto/update-desk-request.dto';
+import { UpdateDeskResponseDto } from './dto/update-desk-response.dto';
+import { GetDeskDetailsResponseDto } from './dto/get-desk-details-response.dto';
+import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
+import { GetDeskResponseDto } from './dto/get-desk-response.dto';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
+import { PaginationParams } from 'src/pagination/pagination-params.decorator';
+import { DeskDocument } from 'src/schema/desk/desk.schema';
+import { PaginationHelper } from 'src/pagination/pagination.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization')
+@Controller('api/v1/organization/:organizationId/desk')
+@ApiTags('organization', 'desk')
 @ApiBearerAuth()
 export class DeskController {
   constructor(
@@ -37,12 +51,72 @@ export class DeskController {
     private readonly organizationService: OrganizationService,
   ) {}
 
-  @Post(':organizationId/desk')
+  @Get()
+  @Permissions(PermissionOrganization.deskRead)
+  @ApiOperation({ summary: 'Get desk list' })
+  @ApiPaginationResponse(GetDeskResponseDto)
+  async getDesks(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetDeskResponseDto>> {
+    const organization = await this.organizationService.getById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException();
+    }
+
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.deskService.getDesksPaginated(organization, pagination);
+    const deskDtos: GetDeskResponseDto[] = await Promise.all(
+      paginatedResult.map(
+        async (desk: DeskDocument): Promise<GetDeskResponseDto> =>
+          DeskMapper.toGetDto(this.deskService.hydrate(desk)),
+      ),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      deskDtos,
+    );
+  }
+
+  @Get(':deskId')
+  @Permissions(PermissionOrganization.deskRead)
+  @ApiOperation({ summary: 'Get desk details' })
+  @ApiOkResponse({ type: GetDeskDetailsResponseDto })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Desk has not been found',
+    type: ExceptionDto,
+  })
+  async getDesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+  ): Promise<GetDeskDetailsResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
+    return DeskMapper.toGetDetailsDto(desk);
+  }
+
+  @Post()
   @Permissions(PermissionOrganization.deskCreate)
-  @ApiTags('organization')
   @ApiOperation({ summary: 'Create desk' })
   @ApiCreatedResponse({
-    description: 'Successfully registered desk id',
+    description: 'Successfully created desk id',
     type: CreateDeskResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -70,5 +144,45 @@ export class DeskController {
     const desk = await this.deskService.create(organization, request);
 
     return DeskMapper.toCreateDto(desk);
+  }
+
+  @Patch(':deskId')
+  @Permissions(PermissionOrganization.deskUpdate)
+  @ApiOperation({ summary: 'Update desk' })
+  @ApiOkResponse({
+    description: 'Successfully updated desk id',
+    type: CreateDeskResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Desk has not been found',
+    type: ExceptionDto,
+  })
+  async updateDesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Body() request: UpdateDeskRequestDto,
+  ): Promise<UpdateDeskResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
+    await this.deskService.update(desk, request);
+
+    return DeskMapper.toUpdateDto(desk);
   }
 }

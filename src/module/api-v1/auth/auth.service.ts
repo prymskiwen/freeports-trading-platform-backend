@@ -6,7 +6,6 @@ import { JwtPayload } from './dto/jwt-payload';
 import authenticationConfig from 'src/config/auth.config';
 import { ConfigType } from '@nestjs/config';
 import { TokenDto } from './dto/token.dto';
-import { PublicKeyDto } from './dto/publickey-response.dto';
 import { ValidateTokenResponseDto } from './dto/validate-token-response.dto';
 import { InvalidTokenException } from 'src/exeption/invalid-token.exception';
 import { ExpiredTokenException } from 'src/exeption/expired-token.exception';
@@ -63,11 +62,6 @@ export class AuthService {
       }),
       isOTPDefined: user.twoFactorAuthenticationSecret ? true : false,
     };
-  }
-
-  async publicKey(user: UserDocument): Promise<PublicKeyDto> {
-    const publickey = user.publicKeys;
-    return { publickey };
   }
 
   public generateAuthToken(payload: JwtPayload): TokenDto {

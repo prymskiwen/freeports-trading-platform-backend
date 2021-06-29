@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { OrganizationClearing } from 'src/schema/organization/embedded/organization-clearing.embedded';
-import { GetUserResponseDto } from '../../user/dto/get-user-response.dto';
+import { GetOrganizationResponseDto } from './get-organization-response.dto';
 
-export class GetOrganizationDetailsResponseDto extends GetUserResponseDto {
+export class GetOrganizationDetailsResponseDto extends GetOrganizationResponseDto {
   street?: string;
   street2?: string;
   zip?: string;

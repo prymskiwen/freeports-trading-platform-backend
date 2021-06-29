@@ -51,9 +51,9 @@ export class UserPublicKeyController {
   async getUserPublicKeyList(
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<GetUserPublicKeyResponseDto[]> {
-    return userCurrent.publicKeys.map((publicKey) => {
+    return userCurrent.publicKeys.map((publicKey: UserPublicKeyDocument) => {
       return {
-        id: publicKey['id'],
+        id: publicKey.id,
         key: publicKey.key,
       };
     });
