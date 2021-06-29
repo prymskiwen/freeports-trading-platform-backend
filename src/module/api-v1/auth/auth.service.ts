@@ -41,6 +41,16 @@ export class AuthService {
     };
   }
 
+  async updatePassword(
+    userId: string,
+    newPassword: string,
+  ): Promise<UserDocument> {
+    const user = await this.userService.getById(userId);
+    user.personal.password = newPassword;
+    await user.save();
+    return user;
+  }
+
   async login2FA(user: UserDocument): Promise<LoginResponseDto> {
     return {
       user: UserMapper.toGetDto(user),
@@ -56,7 +66,7 @@ export class AuthService {
   }
 
   async publicKey(user: UserDocument): Promise<PublicKeyDto> {
-    const publickey = user.publicKeys
+    const publickey = user.publicKeys;
     return { publickey };
   }
 
