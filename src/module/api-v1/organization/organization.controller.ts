@@ -64,8 +64,9 @@ export class OrganizationController {
   async getOrganizations(
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetOrganizationResponseDto>> {
-    const [{ paginatedResult, totalResult }] =
-      await this.organizationService.getOrganizationsPaginated(pagination);
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.organizationService.getOrganizationsPaginated(pagination);
     const organizationDtos: GetOrganizationResponseDto[] = await Promise.all(
       paginatedResult.map(
         async (
