@@ -1,6 +1,24 @@
-import { Controller, Param, Post, UseGuards, Body, Delete, Get, NotFoundException, Put } from '@nestjs/common';
 import {
-  ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnprocessableEntityResponse,
+  Controller,
+  Param,
+  Post,
+  UseGuards,
+  Body,
+  Delete,
+  Get,
+  NotFoundException,
+  Put,
+} from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
@@ -29,16 +47,18 @@ import { OperationMapper } from './mapper/operation.mapper';
 import { OperationService } from './operation.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization/:organizationId/investor/:investorId/account/:accountId/operation')
+@Controller(
+  'api/v1/organization/:organizationId/investor/:investorId/account/:accountId/operation',
+)
 @ApiTags('investor')
 @ApiBearerAuth()
-export class InvestorAccountOperationController {
+export class OperationInvestorController {
   constructor(
     private readonly oranizationServce: OrganizationService,
     private readonly operationService: OperationService,
     private readonly accountService: AccountService,
     private readonly investorService: InvestorService,
-  ){}
+  ) {}
   @Post()
   @ApiOperation({ summary: 'Create Investor Account Operation' })
   @ApiCreatedResponse({
@@ -63,14 +83,27 @@ export class InvestorAccountOperationController {
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Body() request: CreateOperationRequestDto,
     @CurrentUser() userCurrent: UserDocument,
-  ): Promise<CreateOperationResponseDto>{
+  ): Promise<CreateOperationResponseDto> {
     const organization = await this.oranizationServce.getById(organizationId);
-    const investor = await this.investorService.getInvestorById(investorId, organization);
-    const account = await this.accountService.getAccountInvestorById(accountId, investor);
-    const accountfrom = await this.accountService.getAccountClearerById(request.accountFrom);
+    const investor = await this.investorService.getInvestorById(
+      investorId,
+      organization,
+    );
+    const account = await this.accountService.getAccountInvestorById(
+      accountId,
+      investor,
+    );
+    const accountfrom = await this.accountService.getAccountClearerById(
+      request.accountFrom,
+    );
 
-    const operation = await this.operationService.createOperation(request, account, accountfrom, userCurrent);
-    
+    const operation = await this.operationService.createOperation(
+      request,
+      account,
+      accountfrom,
+      userCurrent,
+    );
+
     return OperationMapper.toCreateDto(operation);
   }
 
@@ -84,26 +117,34 @@ export class InvestorAccountOperationController {
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetOperationResponseDto>> {
     const organization = await this.oranizationServce.getById(organizationId);
-    const investor = await this.investorService.getInvestorById(investorId, organization);
-    const account = await this.accountService.getAccountInvestorById(accountId, investor);
-    const [{
-      paginatedResult, totalResult
-    },] = await this.operationService.getOperationPaginated(account, pagination);
+    const investor = await this.investorService.getInvestorById(
+      investorId,
+      organization,
+    );
+    const account = await this.accountService.getAccountInvestorById(
+      accountId,
+      investor,
+    );
+    const [{ paginatedResult, totalResult }] =
+      await this.operationService.getOperationPaginated(account, pagination);
     const operationDtos: GetOperationResponseDto[] = await Promise.all(
       paginatedResult.map(
-        async (operation: AccountOperationDocument): Promise<GetOperationResponseDto> => OperationMapper.toGetDto(operation),
+        async (
+          operation: AccountOperationDocument,
+        ): Promise<GetOperationResponseDto> =>
+          OperationMapper.toGetDto(operation),
       ),
     );
     return PaginationHelper.of(
       pagination,
       totalResult[0].total || 0,
       operationDtos,
-    )
+    );
   }
 
   @Get(':operationId')
   @ApiOperation({ summary: 'Get Operation' })
-  @ApiOkResponse({type: GetOperationResponseDto})
+  @ApiOkResponse({ type: GetOperationResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalide Id',
     type: ExceptionDto,
@@ -123,16 +164,25 @@ export class InvestorAccountOperationController {
     @Param('operationId', ParseObjectIdPipe) operationId: string,
   ): Promise<any> {
     const organization = await this.oranizationServce.getById(organizationId);
-    const investor = await this.investorService.getInvestorById(investorId, organization);
-    const account = await this.accountService.getAccountInvestorById(accountId, investor);
-    const operation = await this.operationService.getOperationWithAccount(account, operationId);
+    const investor = await this.investorService.getInvestorById(
+      investorId,
+      organization,
+    );
+    const account = await this.accountService.getAccountInvestorById(
+      accountId,
+      investor,
+    );
+    const operation = await this.operationService.getOperationWithAccount(
+      account,
+      operationId,
+    );
     return OperationMapper.toGetDto(operation);
   }
 
   @Put(':operationId')
-  @ApiOkResponse({type: UpdateOperationResponseDto})
+  @ApiOkResponse({ type: UpdateOperationResponseDto })
   @ApiCreatedResponse({
-    description: "SuccessFully updated account",
+    description: 'SuccessFully updated account',
     type: UpdateOperationResponseDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -155,15 +205,27 @@ export class InvestorAccountOperationController {
     @Body() request: UpdateOperationRequestDto,
   ): Promise<UpdateOperationResponseDto> {
     const organization = await this.oranizationServce.getById(organizationId);
-    const investor = await this.investorService.getInvestorById(investorId, organization);
-    const account = await this.accountService.getAccountInvestorById(accountId, investor);
-    const operation = await this.operationService.getOperationWithAccount(account, operationId);
-    const updatedOperation = await this.operationService.updateOperation(operation, request);
+    const investor = await this.investorService.getInvestorById(
+      investorId,
+      organization,
+    );
+    const account = await this.accountService.getAccountInvestorById(
+      accountId,
+      investor,
+    );
+    const operation = await this.operationService.getOperationWithAccount(
+      account,
+      operationId,
+    );
+    const updatedOperation = await this.operationService.updateOperation(
+      operation,
+      request,
+    );
     return OperationMapper.toUpdateDto(updatedOperation);
   }
 
   @Delete(':operationId')
-  @ApiOperation({summary: 'Delete Operatioin'})
+  @ApiOperation({ summary: 'Delete Operatioin' })
   @ApiOkResponse({
     description: 'Successfully deleted investor Id',
     type: DeleteOperationResponseDto,
@@ -187,14 +249,22 @@ export class InvestorAccountOperationController {
     @Param('operationId', ParseObjectIdPipe) operationId: string,
   ): Promise<any> {
     const organization = await this.oranizationServce.getById(organizationId);
-    const investor = await this.investorService.getInvestorById(investorId, organization);
-    const account = await this.accountService.getAccountInvestorById(accountId, investor);
-    const operation = await this.operationService.getOperationWithAccount(account._id, operationId);
-    if(!operation){
+    const investor = await this.investorService.getInvestorById(
+      investorId,
+      organization,
+    );
+    const account = await this.accountService.getAccountInvestorById(
+      accountId,
+      investor,
+    );
+    const operation = await this.operationService.getOperationWithAccount(
+      account._id,
+      operationId,
+    );
+    if (!operation) {
       throw new NotFoundException();
     }
     await operation.remove();
     return OperationMapper.toDeleteDto(operation);
   }
-
 }
