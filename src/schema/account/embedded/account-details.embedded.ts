@@ -20,5 +20,6 @@ export class AccountDetails {
   balance?: number;
 }
 
-export const AccountDetailsSchema =
-  SchemaFactory.createForClass(AccountDetails);
+export const AccountDetailsSchema = SchemaFactory.createForClass(
+  AccountDetails,
+);
