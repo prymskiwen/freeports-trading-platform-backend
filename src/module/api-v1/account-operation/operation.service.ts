@@ -36,6 +36,7 @@ export class OperationService {
       operationLabel: request.operationLabel,
       thirdParty: request.thirdParty,
       lineId: request.lineId,
+      reconciledId: request.reconciledId,
     };
     await operation.save();
     console.log(request);
@@ -88,6 +89,16 @@ export class OperationService {
         },
       },
     ]);
+  }
+
+  async getOperationsWithAccount(
+    account: AccountDocument,
+  ): Promise<AccountOperation[]> {
+    return this.accountOperationModel
+      .find({
+        $or: [{ 'details.accountId': account._id }],
+      })
+      .exec();
   }
 
   async getOperationWithAccount(

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Account, AccountSchema } from 'src/schema/account/account.schema';
 import { OrganizationModule } from '../organization/organization.module';
@@ -12,6 +12,7 @@ import {
   AccountInvestor,
   AccountInvestorSchema,
 } from 'src/schema/account/account-investor.schema';
+import { OperationModule } from '../account-operation/operation.module';
 
 @Module({
   imports: [

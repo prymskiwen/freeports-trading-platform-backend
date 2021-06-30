@@ -16,9 +16,9 @@ import { OperationService } from './operation.service';
     MongooseModule.forFeature([
       { name: AccountOperation.name, schema: AccountOperationSchema },
     ]),
-    AccountModule,
     OrganizationModule,
     InvestorModule,
+    AccountModule,
   ],
   controllers: [OperationController, OperationInvestorController],
   providers: [OperationService],

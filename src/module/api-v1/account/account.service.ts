@@ -15,6 +15,10 @@ import {
 import { UpdateAccountRequestDto } from './dto/update-account-request.dto';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { InvestorDocument } from 'src/schema/investor/investor.schema';
+import {
+  AccountOperation,
+  AccountOperationDocument,
+} from 'src/schema/account-operation/account-operation.schema';
 
 @Injectable()
 export class AccountService {
@@ -22,14 +26,22 @@ export class AccountService {
     @InjectModel(AccountClearer.name)
     private accountClearerModel: Model<AccountClearerDocument>,
     @InjectModel(AccountInvestor.name)
-    private accountInvestorModel: Model<AccountInvestorDocument>,
-  ) {}
+    private accountInvestorModel: Model<AccountInvestorDocument>, // @InjectModel(AccountOperation.name)
+  ) // private accountOperationModel: Model<AccountOperationDocument>,
+  {}
 
   async getAccountClearerList(): Promise<AccountClearerDocument[]> {
     return await this.accountClearerModel.find().exec();
   }
 
   async getAccountClearerById(id: string): Promise<AccountClearerDocument> {
+    const account = await this.accountClearerModel.findById(id).exec();
+    // const operations = await this.accountOperationModel
+    //   .find({
+    //     $or: [{ 'details.accountId': account._id }],
+    //   })
+    //   .exec();
+    // console.log(operations);
     return await this.accountClearerModel.findById(id).exec();
   }
 
