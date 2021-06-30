@@ -29,12 +29,12 @@ import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { OrganizationService } from '../organization/organization.service';
 import { PermissionOrganization } from 'src/schema/role/permission.helper';
-import { CreateAccountRequestDto } from '../account/dto/create-account-request.dto';
 import { AssignAccountResponseDto } from '../account/dto/assign-account-response.dto';
 import { AccountService } from '../account/account.service';
 import { AccountMapper } from '../account/mapper/account.mapper';
 import { UnassignAccountResponseDto } from '../account/dto/unassign-account-response.dto';
 import { GetAccountResponseDto } from '../account/dto/get-account-response.dto';
+import { CreateAccountCryptoRequestDto } from '../account/dto/create-account-crypto-request.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/investor/:investorId/account')
@@ -105,7 +105,7 @@ export class InvestorAccountController {
   async assignAccountToInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
-    @Body() request: CreateAccountRequestDto,
+    @Body() request: CreateAccountCryptoRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<AssignAccountResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
