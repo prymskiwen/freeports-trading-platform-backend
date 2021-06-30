@@ -135,6 +135,7 @@ export class OperationController {
       account,
       operationId,
     );
+
     return OperationMapper.toGetDto(operation);
   }
 
