@@ -1,4 +1,4 @@
-import { Account } from "src/schema/account/account.schema";
+import { Account } from 'src/schema/account/account.schema';
 
 export class GetOperationResponseDto {
   id: string;

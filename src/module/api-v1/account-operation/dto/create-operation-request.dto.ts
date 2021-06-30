@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, ValidateIf } from "class-validator";
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateOperationRequestDto {
   @IsNotEmpty()
@@ -21,4 +21,3 @@ export class CreateOperationRequestDto {
 
   accountFrom?: string;
 }
-

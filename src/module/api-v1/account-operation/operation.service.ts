@@ -1,19 +1,22 @@
-import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { PaginationRequest } from "src/pagination/pagination-request.interface";
-import { AccountOperation, AccountOperationDocument } from "src/schema/account-operation/account-operation.schema";
-import { AccountDocument } from "src/schema/account/account.schema";
-import { UserDocument } from "src/schema/user/user.schema";
-import { CreateOperationRequestDto } from "./dto/create-operation-request.dto";
-import { UpdateOperationRequestDto } from "./dto/update-operation-request.dto";
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import {
+  AccountOperation,
+  AccountOperationDocument,
+} from 'src/schema/account-operation/account-operation.schema';
+import { AccountDocument } from 'src/schema/account/account.schema';
+import { UserDocument } from 'src/schema/user/user.schema';
+import { CreateOperationRequestDto } from './dto/create-operation-request.dto';
+import { UpdateOperationRequestDto } from './dto/update-operation-request.dto';
 
 @Injectable()
 export class OperationService {
   constructor(
     @InjectModel(AccountOperation.name)
     private accountOperationModel: Model<AccountOperationDocument>,
-  ){}
+  ) {}
 
   async createOperation(
     request: CreateOperationRequestDto,
@@ -21,7 +24,7 @@ export class OperationService {
     accountFrom: AccountDocument,
     inituser: UserDocument,
   ): Promise<AccountOperationDocument> {
-    const operation = new this.accountOperationModel()
+    const operation = new this.accountOperationModel();
 
     operation.details = {
       initiator: inituser,
@@ -33,10 +36,11 @@ export class OperationService {
       operationLabel: request.operationLabel,
       thirdParty: request.thirdParty,
       lineId: request.lineId,
-    }
+    };
+
     await operation.save();
-    console.log(request);
-    return operation
+
+    return operation;
   }
 
   async getOperationPaginated(
@@ -53,17 +57,22 @@ export class OperationService {
     const query: any[] = [
       {
         $match: {
-          $and: [{
-            'details.accountId':  account._id,
-          }]
-        }
-      }
+          $and: [
+            {
+              'details.accountId': account._id,
+            },
+          ],
+        },
+      },
     ];
 
     if (search) {
       query.push({
         $match: {
-          'details.operationLabel': { $regex: '.*' + search + '.*', $options: 'i' },
+          'details.operationLabel': {
+            $regex: '.*' + search + '.*',
+            $options: 'i',
+          },
         },
       });
     }
@@ -93,16 +102,18 @@ export class OperationService {
           { 'details.accountId': { $exists: true } },
           { 'details.accountId': account._id },
         ],
-      }).exec();
+      })
+      .exec();
   }
 
   async getOperationById(
     operationId: string,
   ): Promise<AccountOperationDocument> {
     return this.accountOperationModel
-    .findOne({
-      _id: operationId,
-    }).exec();
+      .findOne({
+        _id: operationId,
+      })
+      .exec();
   }
 
   async updateOperation(
@@ -111,14 +122,15 @@ export class OperationService {
     persist = true,
   ): Promise<AccountOperationDocument> {
     const { ...requestSet } = request;
+
     Object.keys(requestSet).forEach((key) => {
       operation.details[key] = requestSet[key];
     });
-    
-    if(persist){
+
+    if (persist) {
       await operation.save();
     }
+
     return operation;
   }
-
 }
