@@ -1,7 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import axios, { AxiosError, AxiosInstance, AxiosResponse, Method } from 'axios';
-import crypto, { KeyObject } from 'crypto';
+import {
+  KeyObject,
+  createPrivateKey,
+  createPublicKey,
+  createSign,
+  generateKeyPairSync,
+} from 'crypto';
 import VaultConfig from 'src/config/vault.config';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -55,8 +61,8 @@ export class VaultService {
 
     const pemPrivate = fs.readFileSync(vaultConfig.privateKey, 'utf8');
     const pemPublic = fs.readFileSync(vaultConfig.publicKey, 'utf8');
-    this.privateKey = crypto.createPrivateKey(pemPrivate);
-    this.publicKey = crypto.createPublicKey(pemPublic);
+    this.privateKey = createPrivateKey(pemPrivate);
+    this.publicKey = createPublicKey(pemPublic);
     this.authenticate().then();
   }
 
@@ -124,7 +130,7 @@ export class VaultService {
   private joinFirstUser() {
     const publicKeyDER = this.publicKey.export({ type: 'spki', format: 'der' });
     const publicKeyBase64 = Buffer.from(publicKeyDER).toString('base64');
-    const sign = crypto.createSign(this.hashingAlgorithm);
+    const sign = createSign(this.hashingAlgorithm);
     sign.update('1234');
     sign.update(publicKeyDER);
     const signature = sign.sign(this.privateKey, 'base64');
@@ -148,7 +154,7 @@ export class VaultService {
   }
 
   private hashRequest(method, path, body) {
-    const sign = crypto.createSign(this.hashingAlgorithm);
+    const sign = createSign(this.hashingAlgorithm);
     sign.update(method.toUpperCase());
     sign.update(this.API_PREFIX + path);
     if (body) {
@@ -186,7 +192,7 @@ export class VaultService {
     });
   }
   private generateKeyCrypto() {
-    const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
+    const { publicKey, privateKey } = generateKeyPairSync('ec', {
       namedCurve: 'prime256v1',
       publicKeyEncoding: {
         type: 'spki',
