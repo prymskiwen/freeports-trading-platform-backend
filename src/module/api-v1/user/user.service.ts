@@ -101,7 +101,7 @@ export class UserService {
     if (persist) {
       await user.save();
     }
-    
+
     await this.mailService.sendUserConfirmation(user, user._id);
 
     return user;
