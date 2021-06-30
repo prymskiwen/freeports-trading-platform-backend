@@ -15,10 +15,7 @@ import {
 import { UpdateAccountRequestDto } from './dto/update-account-request.dto';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { InvestorDocument } from 'src/schema/investor/investor.schema';
-import {
-  AccountOperation,
-  AccountOperationDocument,
-} from 'src/schema/account-operation/account-operation.schema';
+import { CreateAccountCryptoRequestDto } from './dto/create-account-crypto-request.dto';
 
 @Injectable()
 export class AccountService {
@@ -140,7 +137,7 @@ export class AccountService {
 
   async createAccountInvestor(
     investor: InvestorDocument,
-    request: CreateAccountRequestDto,
+    request: CreateAccountCryptoRequestDto,
     user: UserDocument,
     persist = true,
   ): Promise<AccountInvestorDocument> {
@@ -151,19 +148,12 @@ export class AccountService {
     account.details = {
       name: request.name,
       currency: request.currency,
-      balance: request.balance,
-      type: request.type,
+      type: AccountDetailsType.crypto,
     };
-    if (request.type === AccountDetailsType.fiat) {
-      account.fiatDetails = {
-        iban: request.iban,
-      };
-    } else if (request.type === AccountDetailsType.crypto) {
-      account.cryptotDetails = {
-        publicAddress: request.publicAddress,
-        vaultWalletId: request.vaultWalletId,
-      };
-    }
+    account.cryptotDetails = {
+      publicAddress: request.publicAddress,
+      vaultWalletId: request.vaultWalletId,
+    };
 
     if (persist) {
       await account.save();
