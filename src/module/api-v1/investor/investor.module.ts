@@ -6,6 +6,7 @@ import { InvestorService } from './investor.service';
 import { InvestorController } from './investor.controller';
 import { InvestorAccountController } from './investor-account.controller';
 import { AccountModule } from '../account/account.module';
+import { DeskModule } from '../desk/desk.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AccountModule } from '../account/account.module';
       { name: Investor.name, schema: InvestorSchema },
     ]),
     AccountModule,
+    DeskModule,
     OrganizationModule,
   ],
   controllers: [InvestorController, InvestorAccountController],

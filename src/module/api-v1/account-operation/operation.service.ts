@@ -36,10 +36,10 @@ export class OperationService {
       operationLabel: request.operationLabel,
       thirdParty: request.thirdParty,
       lineId: request.lineId,
-      reconciledId: request.reconciledId,
     };
+
     await operation.save();
-    console.log(request);
+
     return operation;
   }
 
@@ -132,6 +132,7 @@ export class OperationService {
     persist = true,
   ): Promise<AccountOperationDocument> {
     const { ...requestSet } = request;
+
     Object.keys(requestSet).forEach((key) => {
       operation.details[key] = requestSet[key];
     });
@@ -139,6 +140,7 @@ export class OperationService {
     if (persist) {
       await operation.save();
     }
+
     return operation;
   }
 }

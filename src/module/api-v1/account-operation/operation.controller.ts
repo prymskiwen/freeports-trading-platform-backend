@@ -7,7 +7,6 @@ import {
   UseGuards,
   NotFoundException,
   Get,
-  BadRequestException,
   Put,
 } from '@nestjs/common';
 import {
@@ -73,14 +72,13 @@ export class OperationController {
     const account_from = await this.accountService.getAccountClearerById(
       request.accountFrom,
     );
-
     const operation = await this.operationService.createOperation(
       request,
       account,
       account_from,
       userCurrent,
     );
-    console.log(operation);
+
     return OperationMapper.toCreateDto(operation);
   }
 
@@ -96,8 +94,9 @@ export class OperationController {
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetOperationResponseDto>> {
     const account = await this.accountService.getAccountClearerById(accountId);
-    const [{ paginatedResult, totalResult }] =
-      await this.operationService.getOperationPaginated(account, pagination);
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.operationService.getOperationPaginated(account, pagination);
     const operationDtos: GetOperationResponseDto[] = await Promise.all(
       paginatedResult.map(
         async (
@@ -106,6 +105,7 @@ export class OperationController {
           OperationMapper.toGetDto(operation),
       ),
     );
+
     return PaginationHelper.of(
       pagination,
       totalResult[0].total || 0,
@@ -135,6 +135,7 @@ export class OperationController {
       account,
       operationId,
     );
+
     return OperationMapper.toGetDto(operation);
   }
 
@@ -165,6 +166,7 @@ export class OperationController {
       operation,
       request,
     );
+
     return OperationMapper.toUpdateDto(updatedOperation);
   }
 
@@ -190,10 +192,13 @@ export class OperationController {
     @Param('operationId', ParseObjectIdPipe) operationId: string,
   ): Promise<DeleteOperationResponseDto> {
     const operation = await this.operationService.getOperationById(operationId);
+
     if (!operation) {
       throw new NotFoundException();
     }
+
     await operation.remove();
+
     return OperationMapper.toDeleteDto(operation);
   }
 }

@@ -34,6 +34,7 @@ import { AccountService } from '../account/account.service';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
+import { DeskService } from '../desk/desk.service';
 import { InvestorService } from '../investor/investor.service';
 import { CreateOrganizationRequestDto } from '../organization/dto/create-organization-request.dto';
 import { OrganizationService } from '../organization/organization.service';
@@ -48,17 +49,19 @@ import { OperationService } from './operation.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
-  'api/v1/organization/:organizationId/investor/:investorId/account/:accountId/operation',
+  'api/v1/organization/:organizationId/desk/:deskId/investor/:investorId/account/:accountId/operation',
 )
 @ApiTags('investor')
 @ApiBearerAuth()
 export class OperationInvestorController {
   constructor(
-    private readonly oranizationServce: OrganizationService,
+    private readonly deskService: DeskService,
+    private readonly organizationService: OrganizationService,
     private readonly operationService: OperationService,
     private readonly accountService: AccountService,
     private readonly investorService: InvestorService,
   ) {}
+
   @Post()
   @ApiOperation({ summary: 'Create Investor Account Operation' })
   @ApiCreatedResponse({
@@ -79,15 +82,26 @@ export class OperationInvestorController {
   })
   async createOperation(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Body() request: CreateOperationRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateOperationResponseDto> {
-    const organization = await this.oranizationServce.getById(organizationId);
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
     const account = await this.accountService.getAccountInvestorById(
       accountId,
@@ -112,21 +126,33 @@ export class OperationInvestorController {
   @ApiPaginationResponse(GetOperationResponseDto)
   async getOperations(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetOperationResponseDto>> {
-    const organization = await this.oranizationServce.getById(organizationId);
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
     const account = await this.accountService.getAccountInvestorById(
       accountId,
       investor,
     );
-    const [{ paginatedResult, totalResult }] =
-      await this.operationService.getOperationPaginated(account, pagination);
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.operationService.getOperationPaginated(account, pagination);
     const operationDtos: GetOperationResponseDto[] = await Promise.all(
       paginatedResult.map(
         async (
@@ -135,6 +161,7 @@ export class OperationInvestorController {
           OperationMapper.toGetDto(operation),
       ),
     );
+
     return PaginationHelper.of(
       pagination,
       totalResult[0].total || 0,
@@ -159,14 +186,25 @@ export class OperationInvestorController {
   })
   async getOperation(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('operationId', ParseObjectIdPipe) operationId: string,
   ): Promise<any> {
-    const organization = await this.oranizationServce.getById(organizationId);
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
     const account = await this.accountService.getAccountInvestorById(
       accountId,
@@ -176,6 +214,7 @@ export class OperationInvestorController {
       account,
       operationId,
     );
+
     return OperationMapper.toGetDto(operation);
   }
 
@@ -199,15 +238,26 @@ export class OperationInvestorController {
   })
   async updateOperation(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('operationId', ParseObjectIdPipe) operationId: string,
     @Body() request: UpdateOperationRequestDto,
   ): Promise<UpdateOperationResponseDto> {
-    const organization = await this.oranizationServce.getById(organizationId);
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
     const account = await this.accountService.getAccountInvestorById(
       accountId,
@@ -221,6 +271,7 @@ export class OperationInvestorController {
       operation,
       request,
     );
+
     return OperationMapper.toUpdateDto(updatedOperation);
   }
 
@@ -244,14 +295,25 @@ export class OperationInvestorController {
   })
   async deleteOperation(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('operationId', ParseObjectIdPipe) operationId: string,
   ): Promise<any> {
-    const organization = await this.oranizationServce.getById(organizationId);
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
     const account = await this.accountService.getAccountInvestorById(
       accountId,
@@ -264,7 +326,9 @@ export class OperationInvestorController {
     if (!operation) {
       throw new NotFoundException();
     }
+
     await operation.remove();
+
     return OperationMapper.toDeleteDto(operation);
   }
 }
