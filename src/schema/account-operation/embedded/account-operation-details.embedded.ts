@@ -31,6 +31,9 @@ export class AccountOperationDetails {
 
   @Prop()
   lineId?: string;
+
+  @Prop()
+  reconciledId?: string;
 }
 
 export const AccountOperationDetailsSchema = SchemaFactory.createForClass(

@@ -167,16 +167,6 @@ export const PermissionOrganization = {
   deskUserCreate: 'organization.#organizationId#.desk.user.create',
   deskUserUpdate: 'organization.#organizationId#.desk.user.update',
   deskUserState: 'organization.#organizationId#.desk.user.state',
-
-  investorRead: 'organization.#organizationId#.investor.read',
-  investorCreate: 'organization.#organizationId#.investor.create',
-  investorUpdate: 'organization.#organizationId#.investor.update',
-  investorDelete: 'organization.#organizationId#.investor.delete',
-  investorDisable: 'organization.#organizationId#.investor.disable',
-
-  accountRead: 'organization.#organizationId#.account.read',
-  accountCreate: 'organization.#organizationId#.account.create',
-  accountDelete: 'organization.#organizationId#.account.delete',
 } as const;
 
 export const PermissionOrganizationGroup = [
@@ -281,48 +271,6 @@ export const PermissionOrganizationGroup = [
       },
     ],
   },
-  {
-    name: 'Investor',
-    permissions: [
-      {
-        name: 'Read',
-        code: PermissionOrganization.investorRead,
-      },
-      {
-        name: 'Create',
-        code: PermissionOrganization.investorCreate,
-      },
-      {
-        name: 'Update',
-        code: PermissionOrganization.investorUpdate,
-      },
-      {
-        name: 'Delete',
-        code: PermissionOrganization.investorDelete,
-      },
-      {
-        name: 'Disable',
-        code: PermissionOrganization.investorDisable,
-      },
-    ],
-  },
-  {
-    name: 'Investor account',
-    permissions: [
-      {
-        name: 'Read',
-        code: PermissionOrganization.accountRead,
-      },
-      {
-        name: 'Create',
-        code: PermissionOrganization.accountCreate,
-      },
-      {
-        name: 'Delete',
-        code: PermissionOrganization.accountDelete,
-      },
-    ],
-  },
 ];
 
 export const PermissionDesk = {
@@ -336,6 +284,16 @@ export const PermissionDesk = {
   roleUpdate: 'desk.#deskId#.role.update',
   roleDelete: 'desk.#deskId#.role.delete',
   roleAssign: 'desk.#deskId#.role.assign',
+
+  investorRead: 'desk.#deskId#.investor.read',
+  investorCreate: 'desk.#deskId#.investor.create',
+  investorUpdate: 'desk.#deskId#.investor.update',
+  investorDelete: 'desk.#deskId#.investor.delete',
+  investorDisable: 'desk.#deskId#.investor.disable',
+
+  accountRead: 'desk.#deskId#.account.read',
+  accountCreate: 'desk.#deskId#.account.create',
+  accountDelete: 'desk.#deskId#.account.delete',
 } as const;
 
 export const PermissionDeskGroup = [
@@ -382,6 +340,48 @@ export const PermissionDeskGroup = [
       {
         name: 'Assign',
         code: PermissionDesk.roleAssign,
+      },
+    ],
+  },
+  {
+    name: 'Investor',
+    permissions: [
+      {
+        name: 'Read',
+        code: PermissionDesk.investorRead,
+      },
+      {
+        name: 'Create',
+        code: PermissionDesk.investorCreate,
+      },
+      {
+        name: 'Update',
+        code: PermissionDesk.investorUpdate,
+      },
+      {
+        name: 'Delete',
+        code: PermissionDesk.investorDelete,
+      },
+      {
+        name: 'Disable',
+        code: PermissionDesk.investorDisable,
+      },
+    ],
+  },
+  {
+    name: 'Investor account',
+    permissions: [
+      {
+        name: 'Read',
+        code: PermissionDesk.accountRead,
+      },
+      {
+        name: 'Create',
+        code: PermissionDesk.accountCreate,
+      },
+      {
+        name: 'Delete',
+        code: PermissionDesk.accountDelete,
       },
     ],
   },

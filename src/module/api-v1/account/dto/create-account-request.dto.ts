@@ -12,6 +12,9 @@ export class CreateAccountRequestDto {
   @IsEnum(AccountDetailsType)
   type: AccountDetailsType;
 
+  @IsNotEmpty()
+  balance?: number;
+
   @ValidateIf((o) => o.type === AccountDetailsType.fiat)
   @IsNotEmpty()
   @IsIBAN()

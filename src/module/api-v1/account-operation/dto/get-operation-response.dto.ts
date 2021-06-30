@@ -1,4 +1,4 @@
-import { Account } from "src/schema/account/account.schema";
+import { Account } from 'src/schema/account/account.schema';
 
 export class GetOperationResponseDto {
   id: string;
@@ -6,6 +6,7 @@ export class GetOperationResponseDto {
   accountFrom: Account;
   amount: number;
   createdAt: Date;
+  reconciledId: string;
   operationDate: Date;
   operationLabel: string;
 }

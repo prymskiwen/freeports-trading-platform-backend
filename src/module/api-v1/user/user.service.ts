@@ -102,7 +102,7 @@ export class UserService {
       await user.save();
     }
 
-    await this.mailService.sendUserConfirmation(user, user._id);
+    // await this.mailService.sendUserConfirmation(user, user._id);
 
     return user;
   }

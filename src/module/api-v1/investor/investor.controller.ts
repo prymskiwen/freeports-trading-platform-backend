@@ -31,7 +31,7 @@ import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { OrganizationService } from '../organization/organization.service';
 import { InvestorMapper } from './mapper/investor.mapper';
-import { PermissionOrganization } from 'src/schema/role/permission.helper';
+import { PermissionDesk } from 'src/schema/role/permission.helper';
 import { GetInvestorResponseDto } from './dto/get-investor-response.dto';
 import { GetInvestorDetailsResponseDto } from './dto/get-investor-details-response.dto';
 import { CreateInvestorResponseDto } from './dto/create-investor-response.dto';
@@ -39,19 +39,21 @@ import { CreateInvestorRequestDto } from './dto/create-investor-request.dto';
 import { UpdateInvestorResponseDto } from './dto/update-investor-response.dto';
 import { UpdateInvestorRequestDto } from './dto/update-investor-request.dto';
 import { DeleteInvestorResponseDto } from './dto/delete-investor-response.dto';
+import { DeskService } from '../desk/desk.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization/:organizationId/investor')
+@Controller('api/v1/organization/:organizationId/desk/:deskId/investor')
 @ApiTags('investor')
 @ApiBearerAuth()
 export class InvestorController {
   constructor(
+    private readonly deskService: DeskService,
     private readonly investorService: InvestorService,
     private readonly organizationService: OrganizationService,
   ) {}
 
   @Get()
-  @Permissions(PermissionOrganization.investorRead)
+  @Permissions(PermissionDesk.investorRead)
   @ApiOperation({ summary: 'Get investor list' })
   @ApiOkResponse({ type: [GetInvestorResponseDto] })
   @ApiUnprocessableEntityResponse({
@@ -64,20 +66,26 @@ export class InvestorController {
   })
   async getInvestorList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
   ): Promise<GetInvestorResponseDto[]> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
-    const investors = await this.investorService.getInvestorList(organization);
+    const investors = await this.investorService.getInvestorList(desk);
 
     return investors.map((investor) => InvestorMapper.toGetDto(investor));
   }
 
   @Get(':investorId')
-  @Permissions(PermissionOrganization.investorRead)
+  @Permissions(PermissionDesk.investorRead)
   @ApiOperation({ summary: 'Get investor' })
   @ApiOkResponse({ type: GetInvestorDetailsResponseDto })
   @ApiUnprocessableEntityResponse({
@@ -90,24 +98,30 @@ export class InvestorController {
   })
   async getInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
   ): Promise<GetInvestorDetailsResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
 
     return InvestorMapper.toGetDetailsDto(investor);
   }
 
   @Post()
-  @Permissions(PermissionOrganization.investorCreate)
+  @Permissions(PermissionDesk.investorCreate)
   @ApiOperation({ summary: 'Create investor' })
   @ApiCreatedResponse({
     description: 'Successfully created investor id',
@@ -127,17 +141,23 @@ export class InvestorController {
   })
   async createInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Body() request: CreateInvestorRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateInvestorResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
     const investor = await this.investorService.createInvestor(
-      organization,
+      desk,
       request,
       userCurrent,
     );
@@ -146,7 +166,7 @@ export class InvestorController {
   }
 
   @Patch(':investorId')
-  @Permissions(PermissionOrganization.investorUpdate)
+  @Permissions(PermissionDesk.investorUpdate)
   @ApiOperation({ summary: 'Update investor' })
   @ApiOkResponse({
     description: 'Successfully updated investor id',
@@ -166,18 +186,24 @@ export class InvestorController {
   })
   async updateInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Body() request: UpdateInvestorRequestDto,
   ): Promise<UpdateInvestorResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
 
     if (!investor) {
@@ -190,7 +216,7 @@ export class InvestorController {
   }
 
   @Delete(':investorId')
-  @Permissions(PermissionOrganization.investorDelete)
+  @Permissions(PermissionDesk.investorDelete)
   @ApiOperation({ summary: 'Delete investor' })
   @ApiOkResponse({
     description: 'Successfully deleted investor id',
@@ -210,17 +236,23 @@ export class InvestorController {
   })
   async deleteInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
   ): Promise<DeleteInvestorResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
 
     if (!investor) {

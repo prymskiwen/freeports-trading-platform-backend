@@ -3,13 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { AccountInvestorDocument } from 'src/schema/account/account-investor.schema';
-import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import {
   Investor,
   InvestorDocument,
 } from 'src/schema/investor/investor.schema';
 import { CreateInvestorRequestDto } from './dto/create-investor-request.dto';
 import { UpdateInvestorRequestDto } from './dto/update-investor-request.dto';
+import { DeskDocument } from 'src/schema/desk/desk.schema';
 
 @Injectable()
 export class InvestorService {
@@ -18,43 +18,26 @@ export class InvestorService {
     private investorModel: Model<InvestorDocument>,
   ) {}
 
-  async getInvestorList(
-    organization: OrganizationDocument,
-  ): Promise<InvestorDocument[]> {
-    return await this.investorModel
-      .find({
-        $and: [
-          { organization: { $exists: true } },
-          { organization: organization._id },
-        ],
-      })
-      .exec();
+  async getInvestorList(desk: DeskDocument): Promise<InvestorDocument[]> {
+    return await this.investorModel.find({ desk: desk._id }).exec();
   }
 
   async getInvestorById(
     id: string,
-    organization: OrganizationDocument,
+    desk: DeskDocument,
   ): Promise<InvestorDocument> {
-    return await this.investorModel
-      .findOne({
-        _id: id,
-        $and: [
-          { organization: { $exists: true } },
-          { organization: organization._id },
-        ],
-      })
-      .exec();
+    return await this.investorModel.findOne({ _id: id, desk: desk._id }).exec();
   }
 
   async createInvestor(
-    organization: OrganizationDocument,
+    desk: DeskDocument,
     request: CreateInvestorRequestDto,
     user: UserDocument,
     persist = true,
   ): Promise<InvestorDocument> {
     const investor = new this.investorModel();
 
-    investor.organization = organization;
+    investor.desk = desk;
     investor.owner = user;
     investor.name = request.name;
 
