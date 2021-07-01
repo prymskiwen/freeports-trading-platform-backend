@@ -7,7 +7,6 @@ import {
   UseGuards,
   NotFoundException,
   Get,
-  BadRequestException,
   Put,
 } from '@nestjs/common';
 import {
@@ -52,11 +51,10 @@ export class OperationController {
   constructor(
     private readonly operationService: OperationService,
     private readonly accountService: AccountService,
-  ){}
+  ) {}
 
-  
   @Post()
-  @ApiOperation({ summary: 'Create new operation'})
+  @ApiOperation({ summary: 'Create new operation' })
   @ApiCreatedResponse({
     description: 'Succesfully created clearer account operation',
     type: CreateOperationResponseDto,
@@ -71,10 +69,16 @@ export class OperationController {
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateOperationResponseDto> {
     const account = await this.accountService.getAccountClearerById(accountId);
-    const account_from = await this.accountService.getAccountClearerById(request.accountFrom);
-    
-    const operation = await this.operationService.createOperation(request, account, account_from, userCurrent);
-    console.log(operation);
+    const account_from = await this.accountService.getAccountClearerById(
+      request.accountFrom,
+    );
+    const operation = await this.operationService.createOperation(
+      request,
+      account,
+      account_from,
+      userCurrent,
+    );
+
     return OperationMapper.toCreateDto(operation);
   }
 
@@ -90,15 +94,18 @@ export class OperationController {
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetOperationResponseDto>> {
     const account = await this.accountService.getAccountClearerById(accountId);
-    const [{
-      paginatedResult, totalResult
-    },] = await this.operationService.getOperationPaginated(account, pagination);
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.operationService.getOperationPaginated(account, pagination);
     const operationDtos: GetOperationResponseDto[] = await Promise.all(
       paginatedResult.map(
-        async (operation: AccountOperationDocument): Promise<GetOperationResponseDto> => 
+        async (
+          operation: AccountOperationDocument,
+        ): Promise<GetOperationResponseDto> =>
           OperationMapper.toGetDto(operation),
       ),
     );
+
     return PaginationHelper.of(
       pagination,
       totalResult[0].total || 0,
@@ -108,9 +115,9 @@ export class OperationController {
 
   @Get(':operationId')
   @ApiOperation({
-    summary: 'Get account operation'
+    summary: 'Get account operation',
   })
-  @ApiOkResponse({type: GetOperationResponseDto})
+  @ApiOkResponse({ type: GetOperationResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -120,16 +127,20 @@ export class OperationController {
     type: ExceptionDto,
   })
   async getOperation(
-    @Param('accountId' , ParseObjectIdPipe) accountId: string,
+    @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('operationId', ParseObjectIdPipe) operationId: string,
   ): Promise<GetOperationResponseDto> {
     const account = await this.accountService.getAccountClearerById(accountId);
-    const operation = await this.operationService.getOperationWithAccount(account, operationId,);
+    const operation = await this.operationService.getOperationWithAccount(
+      account,
+      operationId,
+    );
+
     return OperationMapper.toGetDto(operation);
   }
 
   @Put(':operationId')
-  @ApiOkResponse({type: UpdateOrganizationResponseDto})
+  @ApiOkResponse({ type: UpdateOrganizationResponseDto })
   @ApiCreatedResponse({
     description: 'Succesfully created clearer account operation',
     type: UpdateOrganizationResponseDto,
@@ -151,12 +162,16 @@ export class OperationController {
     @Body() request: UpdateOperationRequestDto,
   ): Promise<UpdateOrganizationResponseDto> {
     const operation = await this.operationService.getOperationById(operationId);
-    const updatedOperation = await this.operationService.updateOperation(operation, request);
+    const updatedOperation = await this.operationService.updateOperation(
+      operation,
+      request,
+    );
+
     return OperationMapper.toUpdateDto(updatedOperation);
   }
 
   @Delete(':operationId')
-  @ApiOperation({summary: 'Delete Operatioin'})
+  @ApiOperation({ summary: 'Delete Operatioin' })
   @ApiOkResponse({
     description: 'Successfully deleted investor Id',
     type: DeleteOperationResponseDto,
@@ -175,13 +190,15 @@ export class OperationController {
   })
   async deletOperation(
     @Param('operationId', ParseObjectIdPipe) operationId: string,
-  ): Promise<DeleteOperationResponseDto>{
+  ): Promise<DeleteOperationResponseDto> {
     const operation = await this.operationService.getOperationById(operationId);
-    if(!operation){
+
+    if (!operation) {
       throw new NotFoundException();
     }
+
     await operation.remove();
+
     return OperationMapper.toDeleteDto(operation);
   }
-
 }

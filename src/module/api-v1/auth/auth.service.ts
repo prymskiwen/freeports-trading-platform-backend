@@ -44,10 +44,7 @@ export class AuthService {
     userId: string,
     newPassword: string,
   ): Promise<UserDocument> {
-    const user = await this.userService.getById(userId);
-    user.personal.password = newPassword;
-    await user.save();
-    return user;
+    return await this.userService.updatePassword(userId, newPassword);
   }
 
   async login2FA(user: UserDocument): Promise<LoginResponseDto> {

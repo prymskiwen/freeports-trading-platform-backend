@@ -101,9 +101,19 @@ export class UserService {
     if (persist) {
       await user.save();
     }
-    
+
     await this.mailService.sendUserConfirmation(user, user._id);
 
+    return user;
+  }
+
+  async updatePassword(
+    userId: string,
+    newPassword: string,
+  ): Promise<UserDocument> {
+    const user = await this.userModel.findById(userId);
+    user.personal.password = await bcrypt.hash(newPassword, 13);
+    user.save();
     return user;
   }
 

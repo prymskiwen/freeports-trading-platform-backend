@@ -15,6 +15,9 @@ export class AccountDetails {
 
   @Prop()
   currency?: string;
+
+  @Prop()
+  balance?: number;
 }
 
 export const AccountDetailsSchema = SchemaFactory.createForClass(

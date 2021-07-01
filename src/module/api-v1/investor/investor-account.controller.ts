@@ -28,27 +28,31 @@ import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { OrganizationService } from '../organization/organization.service';
-import { PermissionOrganization } from 'src/schema/role/permission.helper';
-import { CreateAccountRequestDto } from '../account/dto/create-account-request.dto';
+import { PermissionDesk } from 'src/schema/role/permission.helper';
 import { AssignAccountResponseDto } from '../account/dto/assign-account-response.dto';
 import { AccountService } from '../account/account.service';
 import { AccountMapper } from '../account/mapper/account.mapper';
 import { UnassignAccountResponseDto } from '../account/dto/unassign-account-response.dto';
 import { GetAccountResponseDto } from '../account/dto/get-account-response.dto';
+import { CreateAccountCryptoRequestDto } from '../account/dto/create-account-crypto-request.dto';
+import { DeskService } from '../desk/desk.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
-@Controller('api/v1/organization/:organizationId/investor/:investorId/account')
+@Controller(
+  'api/v1/organization/:organizationId/desk/:deskId/investor/:investorId/account',
+)
 @ApiTags('investor')
 @ApiBearerAuth()
 export class InvestorAccountController {
   constructor(
+    private readonly deskService: DeskService,
     private readonly investorService: InvestorService,
     private readonly organizationService: OrganizationService,
     private readonly accountService: AccountService,
   ) {}
 
   @Get()
-  @Permissions(PermissionOrganization.accountRead)
+  @Permissions(PermissionDesk.accountRead)
   @ApiOperation({ summary: 'Get investor account list' })
   @ApiOkResponse({ type: [GetAccountResponseDto] })
   @ApiUnprocessableEntityResponse({
@@ -61,17 +65,23 @@ export class InvestorAccountController {
   })
   async getInvestorAccountList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
   ): Promise<GetAccountResponseDto[]> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
 
     if (!investor) {
@@ -84,7 +94,7 @@ export class InvestorAccountController {
   }
 
   @Post()
-  @Permissions(PermissionOrganization.accountCreate)
+  @Permissions(PermissionDesk.accountCreate)
   @ApiOperation({ summary: 'Create account and assign it to investor' })
   @ApiCreatedResponse({
     description: 'Successfully assigned to investor account id',
@@ -104,19 +114,25 @@ export class InvestorAccountController {
   })
   async assignAccountToInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
-    @Body() request: CreateAccountRequestDto,
+    @Body() request: CreateAccountCryptoRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<AssignAccountResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
 
     if (!investor) {
@@ -136,7 +152,7 @@ export class InvestorAccountController {
   }
 
   @Delete(':accountId')
-  @Permissions(PermissionOrganization.accountDelete)
+  @Permissions(PermissionDesk.accountDelete)
   @ApiOperation({ summary: 'Delete account and unassign it from investor' })
   @ApiOkResponse({
     description: 'Successfully unassigned account id',
@@ -152,18 +168,24 @@ export class InvestorAccountController {
   })
   async unassignAccountFromInvestor(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,
   ): Promise<UnassignAccountResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
 
-    if (!organization) {
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
       throw new NotFoundException();
     }
 
     const investor = await this.investorService.getInvestorById(
       investorId,
-      organization,
+      desk,
     );
 
     if (!investor) {

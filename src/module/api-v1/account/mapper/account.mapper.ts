@@ -66,6 +66,7 @@ export class AccountMapper {
     dto.id = document.id;
     dto.name = document.details.name;
     dto.currency = document.details.currency;
+    dto.balance = document.details.balance;
     dto.type = document.details.type;
 
     if (document.details.type === AccountDetailsType.fiat) {
@@ -86,6 +87,7 @@ export class AccountMapper {
     dto.id = document.id;
     dto.name = document.details.name;
     dto.currency = document.details.currency;
+    dto.balance = document.details.balance;
     dto.type = document.details.type;
 
     if (document.details.type === AccountDetailsType.fiat) {
