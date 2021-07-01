@@ -59,7 +59,7 @@ export class VaultService {
     @Inject(VaultConfig.KEY)
     private vaultConfig: ConfigType<typeof VaultConfig>,
   ) {
-    if (vaultConfig.privateKey) {
+    try {
       this.vaultAxios = axios.create({
         baseURL: vaultConfig.baseURL + this.API_PREFIX,
       });
@@ -71,8 +71,9 @@ export class VaultService {
       this.privateKey = createPrivateKey(pemPrivate);
       this.publicKey = createPublicKey(pemPublic);
       this.authenticate().then();
-    } else {
-      console.warn('vault private key not set');
+    } catch (error) {
+      console.warn("Couldn't start vault");
+      console.error(error);
     }
   }
 
