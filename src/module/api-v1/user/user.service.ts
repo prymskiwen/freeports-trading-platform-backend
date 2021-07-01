@@ -107,6 +107,16 @@ export class UserService {
     return user;
   }
 
+  async updatePassword(
+    userId: string,
+    newPassword: string,
+  ): Promise<UserDocument> {
+    const user = await this.userModel.findById(userId);
+    user.personal.password = await bcrypt.hash(newPassword, 13);
+    user.save();
+    return user;
+  }
+
   async update(
     user: UserDocument,
     request: UpdateUserRequestDto,

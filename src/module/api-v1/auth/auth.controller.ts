@@ -40,6 +40,7 @@ import { Response } from 'express';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { NewPasswordRequestDto } from './dto/new-password-request.dto';
 import { NewPasswordResponseDto } from './dto/new-password-response.dto';
+import { ResetPasswordRequestDto } from './dto/reset-password-request.dto';
 
 @Controller('api/v1/auth')
 @ApiTags('auth')
@@ -74,7 +75,7 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @Post('/:userId/password')
+  @Post(':userId/setpassword')
   @ApiCreatedResponse({
     description: 'New Password is saved successfully',
     type: NewPasswordResponseDto,
@@ -91,7 +92,31 @@ export class AuthController {
     description: 'Server error',
     type: ExceptionDto,
   })
-  async updateNewPassword(
+  async resetNewPassword(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: ResetPasswordRequestDto,
+  ): Promise<any> {
+    return userId;
+  }
+
+  @Post(':userId/password')
+  @ApiCreatedResponse({
+    description: 'New Password is saved successfully',
+    type: NewPasswordResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentials',
+    type: ExceptionDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid form',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  async updatePassword(
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: NewPasswordRequestDto,
   ): Promise<NewPasswordResponseDto> {
