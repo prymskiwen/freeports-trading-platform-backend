@@ -21,7 +21,6 @@ import { OperationService } from './operation.service';
     DeskModule,
     OrganizationModule,
     InvestorModule,
-    AccountModule,
   ],
   controllers: [OperationController, OperationInvestorController],
   providers: [OperationService],
