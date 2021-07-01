@@ -7,6 +7,7 @@ import authConfig from 'src/config/auth.config';
 import commonConfig from 'src/config/common.config';
 import databaseConfig from 'src/config/database.config';
 import openapiConfig from 'src/config/openapi.config';
+import vaultConfig from 'src/config/vault.config';
 import { APIV1Module } from './api-v1/api.v1.module';
 import corsConfig from 'src/config/cors.config';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -38,6 +39,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         corsConfig,
         databaseConfig,
         openapiConfig,
+        vaultConfig,
       ],
     }),
     MongooseModule.forRootAsync({

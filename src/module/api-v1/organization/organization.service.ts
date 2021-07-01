@@ -9,12 +9,14 @@ import { CreateOrganizationRequestDto } from './dto/create-organization-request.
 import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { AccountDocument } from 'src/schema/account/account.schema';
+import { VaultService } from '../vault/vault.service';
 
 @Injectable()
 export class OrganizationService {
   constructor(
     @InjectModel(Organization.name)
     private organizationModel: Model<OrganizationDocument>,
+    private vaultService: VaultService,
   ) {}
 
   hydrate(organization: any): OrganizationDocument {
@@ -31,6 +33,8 @@ export class OrganizationService {
   ): Promise<OrganizationDocument> {
     const organization = new this.organizationModel();
 
+    const { id } = await this.vaultService.createOrganization();
+    organization.vaultOrganizationId = id;
     organization.createdAt = new Date();
     organization.details = {
       name: request.name,

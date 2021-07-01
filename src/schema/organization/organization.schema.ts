@@ -30,6 +30,9 @@ export class Organization {
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }] })
   users?: User[];
 
+  @Prop({ unique: true })
+  vaultOrganizationId?: string;
+
   @Prop()
   createdAt?: Date;
 }

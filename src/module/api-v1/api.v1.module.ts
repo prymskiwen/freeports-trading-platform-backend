@@ -7,6 +7,7 @@ import { OrganizationModule } from './organization/organization.module';
 import { RoleModule } from './role/role.module';
 import { UserModule } from './user/user.module';
 import { InvestorModule } from './investor/investor.module';
+import { VaultModule } from './vault/vault.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { InvestorModule } from './investor/investor.module';
     OrganizationModule,
     RoleModule,
     UserModule,
+    VaultModule,
   ],
 })
 export class APIV1Module {}
