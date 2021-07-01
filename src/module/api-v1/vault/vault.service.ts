@@ -15,6 +15,7 @@ import { VaultResourceCreatedResponseDto } from './dto/vault-resource-created.dt
 import { GetVaultOrganizationResponseDto } from './dto/get-vault-organizations.dto';
 import { GetVaultUsersResponseDto } from './dto/get-vault-users.dto';
 import { VaultAccountType } from './enum/vault-account-type';
+import { PermissionOwnerType } from './enum/permission-owner-type';
 
 interface AuthenticateResponse {
   tokenString: string;
@@ -73,7 +74,7 @@ export class VaultService {
   public async createOrganization(): Promise<VaultResourceCreatedResponseDto> {
     await this.grantPermission(
       VaultPermissions.CreateDeleteOrganization,
-      'user',
+      PermissionOwnerType.user,
       '1',
     );
     const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
@@ -86,7 +87,11 @@ export class VaultService {
   public async createVaultUser(
     publicKey: string,
   ): Promise<VaultResourceCreatedResponseDto> {
-    await this.grantPermission(VaultPermissions.CreateDeleteUser, 'user', '1');
+    await this.grantPermission(
+      VaultPermissions.CreateDeleteUser,
+      PermissionOwnerType.user,
+      '1',
+    );
     const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
       'POST',
       '/vault/user',
@@ -99,7 +104,11 @@ export class VaultService {
   public async createOrganizationUser(
     publicKey: string,
   ): Promise<VaultResourceCreatedResponseDto> {
-    await this.grantPermission(VaultPermissions.CreateDeleteUser, 'user', '1');
+    await this.grantPermission(
+      VaultPermissions.CreateDeleteUser,
+      PermissionOwnerType.user,
+      '1',
+    );
     const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
       'POST',
       '/organization/user',
@@ -109,8 +118,56 @@ export class VaultService {
     return data;
   }
 
+  public async deleteVaultUser(id: string): Promise<any> {
+    await this.grantPermission(
+      VaultPermissions.CreateDeleteUser,
+      PermissionOwnerType.user,
+      '1',
+    );
+    const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
+      'POST',
+      `/vault/user/${id}`,
+      true,
+    );
+    return data;
+  }
+  public async deleteOrganizationUser(id: string): Promise<any> {
+    await this.grantPermission(
+      VaultPermissions.CreateDeleteUser,
+      PermissionOwnerType.user,
+      '1',
+    );
+    const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
+      'POST',
+      `/organization/user/${id}`,
+      true,
+    );
+    return data;
+  }
+
+  public async grantAllPermissions(
+    ownerType: PermissionOwnerType,
+    ownerId,
+  ): Promise<any> {
+    return Promise.all(
+      Object.keys(VaultPermissions)
+        .filter((key) => !isNaN(Number(VaultPermissions[key])))
+        .map((permission) => {
+          return this.grantPermission(
+            permission as VaultPermissions,
+            ownerType,
+            ownerId,
+          );
+        }),
+    );
+  }
+
   public async getAllOrganizations(): Promise<GetVaultOrganizationResponseDto> {
-    await this.grantPermission(VaultPermissions.GetOrganizations, 'user', '1');
+    await this.grantPermission(
+      VaultPermissions.GetOrganizations,
+      PermissionOwnerType.user,
+      '1',
+    );
     const { data } = await this.sendRequest<GetVaultOrganizationResponseDto>(
       'GET',
       '/vault/organization',
@@ -120,7 +177,11 @@ export class VaultService {
   }
 
   public async getAllVaultUsers(): Promise<GetVaultUsersResponseDto> {
-    await this.grantPermission(VaultPermissions.GetUsers, 'user', '1');
+    await this.grantPermission(
+      VaultPermissions.GetUsers,
+      PermissionOwnerType.user,
+      '1',
+    );
     const { data } = await this.sendRequest<GetVaultUsersResponseDto>(
       'GET',
       '/vault/user',
@@ -130,7 +191,11 @@ export class VaultService {
   }
 
   public async getAllOrganizationUsers(): Promise<GetVaultUsersResponseDto> {
-    await this.grantPermission(VaultPermissions.GetUsers, 'user', '1');
+    await this.grantPermission(
+      VaultPermissions.GetUsers,
+      PermissionOwnerType.user,
+      '1',
+    );
     const { data } = await this.sendRequest<GetVaultUsersResponseDto>(
       'GET',
       `/organization/user`,
@@ -145,7 +210,7 @@ export class VaultService {
   ): Promise<VaultResourceCreatedResponseDto> {
     await this.grantPermission(
       VaultPermissions.JoinOrganizationUser,
-      'user',
+      PermissionOwnerType.user,
       '1',
     );
     const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
@@ -160,7 +225,11 @@ export class VaultService {
   public async createAccount(
     type: VaultAccountType,
   ): Promise<VaultResourceCreatedResponseDto> {
-    await this.grantPermission(VaultPermissions.CreateAccount, 'user', '1');
+    await this.grantPermission(
+      VaultPermissions.CreateAccount,
+      PermissionOwnerType.user,
+      '1',
+    );
     const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
       'POST',
       '/vault/organization/account',
@@ -272,7 +341,7 @@ export class VaultService {
 
   private grantPermission(
     permissionType: VaultPermissions,
-    ownerType,
+    ownerType: PermissionOwnerType,
     ownerId,
   ) {
     return this.sendRequest('POST', '/vault/permission', true, {
@@ -281,6 +350,7 @@ export class VaultService {
       ownerId,
     });
   }
+
   private generateKeyCrypto() {
     const { publicKey, privateKey } = generateKeyPairSync('ec', {
       namedCurve: 'prime256v1',
