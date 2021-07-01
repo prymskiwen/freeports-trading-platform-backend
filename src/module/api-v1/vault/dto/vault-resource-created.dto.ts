@@ -1,3 +1,3 @@
-export interface VaultResourceCreatedResponseDto {
+export class VaultResourceCreatedResponseDto {
   id: string;
 }

@@ -12,6 +12,9 @@ import VaultConfig from 'src/config/vault.config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { VaultResourceCreatedResponseDto } from './dto/vault-resource-created.dto';
+import { GetVaultOrganizationResponseDto } from './dto/get-vault-organizations.dto';
+import { GetVaultUsersResponseDto } from './dto/get-vault-users.dto';
+import { VaultAccountType } from './enum/vault-account-type';
 
 interface AuthenticateResponse {
   tokenString: string;
@@ -30,13 +33,14 @@ export enum VaultPermissions {
   'CreateOrganizationUser' = 'CreateOrganizationUser',
   'CreateDeleteOrganization' = 'CreateDeleteOrganization',
   'CreateDeleteUser' = 'CreateDeleteUser',
-  // 'Wipe' = 'Wipe',
   'GetUserPermissions' = 'GetUserPermissions',
   'JoinOrganizationUser' = 'JoinOrganizationUser',
   'GetUsers' = 'GetUsers',
   'GetOrganizations' = 'GetOrganizations',
   'CreateDeleteGroup' = 'CreateDeleteGroup',
   'GetGroups' = 'GetGroups',
+  'CreateAccount' = 'CreateAccount',
+  // 'Wipe' = 'Wipe',
 }
 
 @Injectable()
@@ -79,7 +83,92 @@ export class VaultService {
     );
     return data;
   }
+  public async createVaultUser(
+    publicKey: string,
+  ): Promise<VaultResourceCreatedResponseDto> {
+    await this.grantPermission(VaultPermissions.CreateDeleteUser, 'user', '1');
+    const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
+      'POST',
+      '/vault/user',
+      true,
+      { publicKey },
+    );
+    return data;
+  }
 
+  public async createOrganizationUser(
+    publicKey: string,
+  ): Promise<VaultResourceCreatedResponseDto> {
+    await this.grantPermission(VaultPermissions.CreateDeleteUser, 'user', '1');
+    const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
+      'POST',
+      '/organization/user',
+      true,
+      { publicKey },
+    );
+    return data;
+  }
+
+  public async getAllOrganizations(): Promise<GetVaultOrganizationResponseDto> {
+    await this.grantPermission(VaultPermissions.GetOrganizations, 'user', '1');
+    const { data } = await this.sendRequest<GetVaultOrganizationResponseDto>(
+      'GET',
+      '/vault/organization',
+      true,
+    );
+    return data;
+  }
+
+  public async getAllVaultUsers(): Promise<GetVaultUsersResponseDto> {
+    await this.grantPermission(VaultPermissions.GetUsers, 'user', '1');
+    const { data } = await this.sendRequest<GetVaultUsersResponseDto>(
+      'GET',
+      '/vault/user',
+      true,
+    );
+    return data;
+  }
+
+  public async getAllOrganizationUsers(): Promise<GetVaultUsersResponseDto> {
+    await this.grantPermission(VaultPermissions.GetUsers, 'user', '1');
+    const { data } = await this.sendRequest<GetVaultUsersResponseDto>(
+      'GET',
+      `/organization/user`,
+      true,
+    );
+    return data;
+  }
+
+  public async joinOrganizationUser(
+    organization: string,
+    publicKey: string,
+  ): Promise<VaultResourceCreatedResponseDto> {
+    await this.grantPermission(
+      VaultPermissions.JoinOrganizationUser,
+      'user',
+      '1',
+    );
+    const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
+      'POST',
+      `/vault/organization/${organization}/user`,
+      true,
+      { publicKey },
+    );
+    return data;
+  }
+
+  public async createAccount(
+    type: VaultAccountType,
+  ): Promise<VaultResourceCreatedResponseDto> {
+    await this.grantPermission(VaultPermissions.CreateAccount, 'user', '1');
+    const { data } = await this.sendRequest<VaultResourceCreatedResponseDto>(
+      'POST',
+      '/vault/organization/account',
+      true,
+      { type },
+    );
+    return data;
+  }
   private async authenticate() {
     const {
       data: { tokenString },
@@ -114,6 +203,7 @@ export class VaultService {
       });
       return response;
     } catch (error) {
+      console.error(error);
       if (axios.isAxiosError(error)) {
         if (error.response.data.message === 'ExpiredToken') {
           try {
