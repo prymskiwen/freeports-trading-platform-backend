@@ -8,6 +8,7 @@ import {
 } from 'src/schema/organization/organization.schema';
 import { RoleModule } from '../role/role.module';
 import { UserModule } from '../user/user.module';
+import { VaultModule } from '../vault/vault.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UserModule } from '../user/user.module';
     ]),
     forwardRef(() => RoleModule),
     forwardRef(() => UserModule),
+    VaultModule,
   ],
   controllers: [OrganizationController],
   providers: [OrganizationService],

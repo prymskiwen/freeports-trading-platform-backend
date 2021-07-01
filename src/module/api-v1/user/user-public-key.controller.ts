@@ -83,6 +83,12 @@ export class UserPublicKeyController {
     userCurrent.publicKeys.push(publicKey);
     await userCurrent.save();
 
+    await userCurrent.get('organization');
+    // create vault user
+    if (userCurrent.organization) {
+      console.log('user current ');
+    }
+    //
     return {
       id: publicKey['id'],
       key: publicKey.key,
