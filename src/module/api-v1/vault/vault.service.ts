@@ -59,16 +59,21 @@ export class VaultService {
     @Inject(VaultConfig.KEY)
     private vaultConfig: ConfigType<typeof VaultConfig>,
   ) {
-    this.vaultAxios = axios.create({
-      baseURL: vaultConfig.baseURL + this.API_PREFIX,
-    });
-    this.vaultAxios.defaults.headers.post['Content-Type'] = 'application/json';
+    if (vaultConfig.privateKey) {
+      this.vaultAxios = axios.create({
+        baseURL: vaultConfig.baseURL + this.API_PREFIX,
+      });
+      this.vaultAxios.defaults.headers.post['Content-Type'] =
+        'application/json';
 
-    const pemPrivate = fs.readFileSync(vaultConfig.privateKey, 'utf8');
-    const pemPublic = fs.readFileSync(vaultConfig.publicKey, 'utf8');
-    this.privateKey = createPrivateKey(pemPrivate);
-    this.publicKey = createPublicKey(pemPublic);
-    this.authenticate().then();
+      const pemPrivate = fs.readFileSync(vaultConfig.privateKey, 'utf8');
+      const pemPublic = fs.readFileSync(vaultConfig.publicKey, 'utf8');
+      this.privateKey = createPrivateKey(pemPrivate);
+      this.publicKey = createPublicKey(pemPublic);
+      this.authenticate().then();
+    } else {
+      console.warn('vault private key not set');
+    }
   }
 
   public async createOrganization(): Promise<VaultResourceCreatedResponseDto> {
