@@ -21,12 +21,11 @@ export class MailService {
         to: 'forethink888@gmail.com',
         from: `"No Reply" <${process.env.MAIL_FROM}>`, // override default from
         subject: 'Welcome to Nice App! Confirm your Email',
-        text: 'Email Verify',
-        html: `<p>Hey ${name},</p>
-      <p>Please click below to confirm your email</p>
-      <p>
-          <a href="${url}">Confirm</a>
-      </p>`,
+        template: './confirmation',
+        context: {
+          name: name,
+          url: url,
+        },
       })
       .then((res) => {
         console.log('ok perfact');

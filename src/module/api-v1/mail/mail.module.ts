@@ -23,7 +23,6 @@ import { join } from 'path';
       defaults: {
         from: `"No Reply" <${process.env.MAIL_FROM}>`,
       },
-      preview: true,
       template: {
         dir: join(__dirname, '/templates'),
         adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()

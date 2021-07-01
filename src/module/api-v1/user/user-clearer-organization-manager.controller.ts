@@ -86,9 +86,8 @@ export class UserClearerOrganizationManagerController {
       throw new NotFoundException();
     }
 
-    const [
-      { paginatedResult, totalResult },
-    ] = await this.userService.getByRolePaginated(roleManager, pagination);
+    const [{ paginatedResult, totalResult }] =
+      await this.userService.getByRolePaginated(roleManager, pagination);
 
     const userDtos = paginatedResult.map((user: UserDocument) =>
       UserMapper.toGetDto(user),
@@ -200,7 +199,6 @@ export class UserClearerOrganizationManagerController {
         user,
         userCurrent,
       );
-
       return UserMapper.toCreateDto(user);
     } catch (ex) {
       if (ex.name === 'MongoError' && ex.code === 11000) {
