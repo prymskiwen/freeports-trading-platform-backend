@@ -23,22 +23,14 @@ export class AccountService {
     @InjectModel(AccountClearer.name)
     private accountClearerModel: Model<AccountClearerDocument>,
     @InjectModel(AccountInvestor.name)
-    private accountInvestorModel: Model<AccountInvestorDocument>, // @InjectModel(AccountOperation.name)
-  ) // private accountOperationModel: Model<AccountOperationDocument>,
-  {}
+    private accountInvestorModel: Model<AccountInvestorDocument>,
+  ) {}
 
   async getAccountClearerList(): Promise<AccountClearerDocument[]> {
     return await this.accountClearerModel.find().exec();
   }
 
   async getAccountClearerById(id: string): Promise<AccountClearerDocument> {
-    const account = await this.accountClearerModel.findById(id).exec();
-    // const operations = await this.accountOperationModel
-    //   .find({
-    //     $or: [{ 'details.accountId': account._id }],
-    //   })
-    //   .exec();
-    // console.log(operations);
     return await this.accountClearerModel.findById(id).exec();
   }
 
