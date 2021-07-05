@@ -31,6 +31,8 @@ export class OrganizationService {
   ): Promise<OrganizationDocument> {
     const organization = new this.organizationModel();
 
+    organization.vaultOrganizationId = request.vaultOrganizationId;
+
     organization.createdAt = new Date();
     organization.details = {
       name: request.name,

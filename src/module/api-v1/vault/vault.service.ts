@@ -3,6 +3,7 @@ import { ConfigType } from '@nestjs/config';
 import axios, { AxiosError, AxiosInstance, AxiosResponse, Method } from 'axios';
 
 import VaultConfig from 'src/config/vault.config';
+import { VaultRequestDto } from './dto/vault-request.dto';
 
 interface VaultError {
   name: 'ValidationError' | 'VaultError' | 'VaultUnreachable';
@@ -29,26 +30,19 @@ export class VaultService {
   }
 
   public async sendRequest<T>(
-    method: Method,
-    path: string,
-    signature?: string,
-    body?: any,
-    headers = {},
+    request: VaultRequestDto,
   ): Promise<AxiosResponse<T>> {
-    if (signature) {
-      return this.vaultAxios.request<T>({
-        method: method,
-        url: path,
-        data: this.orderObject(body),
-        headers: { ...headers, signature: signature },
-      });
+    const axiosRequest: any = {
+      method: request.method,
+      url: request.path,
+    };
+    if (request.body) {
+      axiosRequest.data = this.orderObject(request.body);
     }
-    return this.vaultAxios.request<T>({
-      method: method,
-      url: path,
-      data: this.orderObject(body),
-      headers: headers,
-    });
+
+    axiosRequest.headers = request.headers;
+
+    return this.vaultAxios.request<T>(axiosRequest);
   }
 
   private orderObject(original: { [key: string]: any }) {

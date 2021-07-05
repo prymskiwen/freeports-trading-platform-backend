@@ -8,5 +8,8 @@ export class VaultRequestDto {
   path: string;
   body?: any;
   signature?: string;
-  headers?: any;
+  headers?: {
+    signature?: string;
+    authorization?: string;
+  };
 }

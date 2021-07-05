@@ -32,13 +32,7 @@ export class VaultController {
   @ApiOkResponse({})
   async sendRequest(@Body() request: VaultRequestDto): Promise<any> {
     try {
-      const vaultResponse = await this.vaultService.sendRequest(
-        request.method,
-        request.path,
-        request.signature,
-        request.body,
-        request.headers,
-      );
+      const vaultResponse = await this.vaultService.sendRequest(request);
 
       return vaultResponse.data;
     } catch (error) {
