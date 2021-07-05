@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
+import { VaultRequestDto } from '../../vault/dto/vault-request.dto';
 
 export class CreateUserRequestDto {
   /**
@@ -24,4 +25,7 @@ export class CreateUserRequestDto {
   avatar?: string;
 
   jobTitle?: string;
+
+  vaultUserId?: string;
+  vaultRequest?: VaultRequestDto;
 }

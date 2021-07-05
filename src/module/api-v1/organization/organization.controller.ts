@@ -46,6 +46,8 @@ import {
   PermissionOrganization,
 } from 'src/schema/role/permission.helper';
 import { UniqueFieldException } from 'src/exeption/unique-field.exception';
+import { VaultService } from '../vault/vault.service';
+import { VaultResourceCreatedResponseDto } from '../vault/dto/vault-resource-created.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization')
@@ -55,6 +57,7 @@ export class OrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
     private readonly roleService: RoleService,
+    private readonly vaultService: VaultService,
   ) {}
 
   @Get()
@@ -128,6 +131,11 @@ export class OrganizationController {
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateOrganizationResponseDto> {
     try {
+      const vaultOrganization = await this.vaultService.sendRequest<VaultResourceCreatedResponseDto>(
+        request.vaultRequest,
+      );
+      request.vaultOrganizationId = vaultOrganization.data.id;
+
       const organization = await this.organizationService.create(request);
 
       await this.roleService.createRoleOrganizationManager(
