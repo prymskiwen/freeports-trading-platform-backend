@@ -53,9 +53,11 @@ export class AccountService {
         iban: request.iban,
       };
     } else if (request.type === AccountDetailsType.crypto) {
-      account.cryptotDetails = {
-        publicAddress: request.publicAddress,
-      };
+      // TODO: valult request here
+      // account.cryptotDetails = {
+      //   vaultWalletId: requestVault.id,
+      //   publicAddress: requestVault.address,
+      // };
     }
 
     if (persist) {
@@ -81,9 +83,11 @@ export class AccountService {
         iban: request.iban,
       };
     } else if (request.type === AccountDetailsType.crypto) {
-      account.cryptotDetails = {
-        publicAddress: request.publicAddress,
-      };
+      // TODO: valult request here
+      // account.cryptotDetails = {
+      //   vaultWalletId: requestVault.id,
+      //   publicAddress: requestVault.address,
+      // };
     }
 
     if (persist) {
@@ -140,9 +144,12 @@ export class AccountService {
       currency: request.currency,
       type: AccountDetailsType.crypto,
     };
-    account.cryptotDetails = {
-      publicAddress: request.publicAddress,
-    };
+
+    // TODO: valult request here
+    // account.cryptotDetails = {
+    //   vaultWalletId: requestVault.id,
+    //   publicAddress: requestVault.address,
+    // };
 
     if (persist) {
       await account.save();

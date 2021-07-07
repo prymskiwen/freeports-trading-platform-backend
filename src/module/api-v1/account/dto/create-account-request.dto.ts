@@ -26,8 +26,4 @@ export class CreateAccountRequestDto {
   @IsNotEmpty()
   @IsIBAN()
   iban?: string;
-
-  @ValidateIf((o) => o.type === AccountDetailsType.crypto)
-  @IsNotEmpty()
-  publicAddress?: string;
 }
