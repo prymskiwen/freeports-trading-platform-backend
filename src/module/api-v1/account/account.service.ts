@@ -55,7 +55,6 @@ export class AccountService {
     } else if (request.type === AccountDetailsType.crypto) {
       account.cryptotDetails = {
         publicAddress: request.publicAddress,
-        vaultWalletId: request.vaultWalletId,
       };
     }
 
@@ -84,7 +83,6 @@ export class AccountService {
     } else if (request.type === AccountDetailsType.crypto) {
       account.cryptotDetails = {
         publicAddress: request.publicAddress,
-        vaultWalletId: request.vaultWalletId,
       };
     }
 
@@ -144,7 +142,6 @@ export class AccountService {
     };
     account.cryptotDetails = {
       publicAddress: request.publicAddress,
-      vaultWalletId: request.vaultWalletId,
     };
 
     if (persist) {

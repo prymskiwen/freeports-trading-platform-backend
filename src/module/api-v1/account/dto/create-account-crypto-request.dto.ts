@@ -9,7 +9,4 @@ export class CreateAccountCryptoRequestDto {
 
   @IsNotEmpty()
   publicAddress: string;
-
-  @IsNotEmpty()
-  vaultWalletId: string;
 }
