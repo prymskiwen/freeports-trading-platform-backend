@@ -30,8 +30,4 @@ export class CreateAccountRequestDto {
   @ValidateIf((o) => o.type === AccountDetailsType.crypto)
   @IsNotEmpty()
   publicAddress?: string;
-
-  @ValidateIf((o) => o.type === AccountDetailsType.crypto)
-  @IsNotEmpty()
-  vaultWalletId?: string;
 }

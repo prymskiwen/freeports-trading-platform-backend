@@ -79,10 +79,7 @@ export class AccountClearerController {
     @Param('accountId', ParseObjectIdPipe) accountId: string,
   ): Promise<GetAccountClearerDetailsResponseDto> {
     const account = await this.accountService.getAccountClearerById(accountId);
-    // const operations = await this.operationService.getOperationsWithAccount(
-    //   account,
-    // );
-    // console.log(operations);
+
     return AccountMapper.toGetAccountClearerDetailsDto(account);
   }
 
