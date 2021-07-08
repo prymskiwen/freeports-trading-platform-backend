@@ -108,7 +108,7 @@ export class OperationController {
 
     return PaginationHelper.of(
       pagination,
-      totalResult[0].total || 0,
+      totalResult[0]?.total || 0,
       operationDtos,
     );
   }

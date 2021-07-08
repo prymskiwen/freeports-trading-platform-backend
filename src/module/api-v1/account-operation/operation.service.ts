@@ -31,7 +31,7 @@ export class OperationService {
       accountFrom: accountFrom,
       accountId: account,
       amount: request.amount,
-      createdAt: request.createAt,
+      createdAt: new Date(),
       operationDate: request.operationDate,
       operationLabel: request.operationLabel,
       thirdParty: request.thirdParty,

@@ -5,9 +5,6 @@ export class CreateOperationRequestDto {
   amount: number;
 
   @IsNotEmpty()
-  createAt?: Date;
-
-  @IsNotEmpty()
   operationDate: Date;
 
   @IsNotEmpty()
