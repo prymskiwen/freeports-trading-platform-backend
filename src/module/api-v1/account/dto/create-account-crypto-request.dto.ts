@@ -6,7 +6,4 @@ export class CreateAccountCryptoRequestDto {
 
   @IsNotEmpty()
   currency: string;
-
-  @IsNotEmpty()
-  publicAddress: string;
 }
