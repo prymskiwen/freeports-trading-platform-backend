@@ -29,9 +29,11 @@ import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { AccountOperationDocument } from 'src/schema/account-operation/account-operation.schema';
+import { PermissionClearer } from 'src/schema/role/permission.helper';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { AccountService } from '../account/account.service';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { Permissions } from '../auth/decorator/permissions.decorator';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { UpdateOrganizationResponseDto } from '../organization/dto/update-organization-response.dto';
@@ -45,7 +47,7 @@ import { OperationService } from './operation.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/account/:accountId/operation')
-@ApiTags('operation')
+@ApiTags('operation', 'account')
 @ApiBearerAuth()
 export class OperationController {
   constructor(
@@ -53,43 +55,15 @@ export class OperationController {
     private readonly accountService: AccountService,
   ) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create new operation' })
-  @ApiCreatedResponse({
-    description: 'Succesfully created clearer account operation',
-    type: CreateOperationResponseDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalide form',
-    type: InvalidFormExceptionDto,
-  })
-  async createOperationclearer(
-    @Param('accountId', ParseObjectIdPipe) accountId: string,
-    @Body() request: CreateOperationRequestDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<CreateOperationResponseDto> {
-    const account = await this.accountService.getAccountClearerById(accountId);
-    const account_from = await this.accountService.getAccountClearerById(
-      request.accountFrom,
-    );
-    const operation = await this.operationService.createOperation(
-      request,
-      account,
-      account_from,
-      userCurrent,
-    );
-
-    return OperationMapper.toCreateDto(operation);
-  }
-
   @Get()
-  @ApiOperation({ summary: 'Get All operations' })
+  @Permissions(PermissionClearer.operationRead)
+  @ApiOperation({ summary: 'Get clearer account operations list' })
   @ApiPaginationResponse(GetOperationResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
   })
-  async getAllOperations(
+  async getOperations(
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetOperationResponseDto>> {
@@ -108,15 +82,14 @@ export class OperationController {
 
     return PaginationHelper.of(
       pagination,
-      totalResult[0].total || 0,
+      totalResult[0]?.total || 0,
       operationDtos,
     );
   }
 
   @Get(':operationId')
-  @ApiOperation({
-    summary: 'Get account operation',
-  })
+  @Permissions(PermissionClearer.operationRead)
+  @ApiOperation({ summary: 'Get clearer account operation' })
   @ApiOkResponse({ type: GetOperationResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -139,7 +112,34 @@ export class OperationController {
     return OperationMapper.toGetDto(operation);
   }
 
+  @Post()
+  @Permissions(PermissionClearer.operationCreate)
+  @ApiOperation({ summary: 'Create clearer account operation' })
+  @ApiCreatedResponse({
+    description: 'Succesfully created clearer account operation',
+    type: CreateOperationResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalide form',
+    type: InvalidFormExceptionDto,
+  })
+  async createOperation(
+    @Param('accountId', ParseObjectIdPipe) accountId: string,
+    @Body() request: CreateOperationRequestDto,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<CreateOperationResponseDto> {
+    const account = await this.accountService.getAccountClearerById(accountId);
+    const operation = await this.operationService.createOperation(
+      request,
+      account,
+      userCurrent,
+    );
+
+    return OperationMapper.toCreateDto(operation);
+  }
+
   @Put(':operationId')
+  @Permissions(PermissionClearer.operationUpdate)
   @ApiOkResponse({ type: UpdateOrganizationResponseDto })
   @ApiCreatedResponse({
     description: 'Succesfully created clearer account operation',
@@ -150,7 +150,7 @@ export class OperationController {
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Operation has not been found',
+    description: 'Clearer account operation has not been found',
     type: ExceptionDto,
   })
   @ApiBadRequestResponse({
@@ -171,13 +171,14 @@ export class OperationController {
   }
 
   @Delete(':operationId')
-  @ApiOperation({ summary: 'Delete Operatioin' })
+  @Permissions(PermissionClearer.operationDelete)
+  @ApiOperation({ summary: 'Delete clearer account operation' })
   @ApiOkResponse({
-    description: 'Successfully deleted investor Id',
+    description: 'Successfully deleted clearer account operation Id',
     type: DeleteOperationResponseDto,
   })
   @ApiBadRequestResponse({
-    description: 'Impossible delete operation with this id',
+    description: 'Impossible delete clearer account operation',
     type: InvalidFormExceptionDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -185,7 +186,7 @@ export class OperationController {
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Operation has not been found',
+    description: 'Clearer account operation has not been found',
     type: ExceptionDto,
   })
   async deletOperation(

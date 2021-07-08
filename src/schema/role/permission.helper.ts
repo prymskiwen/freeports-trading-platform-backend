@@ -21,6 +21,12 @@ export const PermissionClearer = {
   accountDelete: 'clearer.account.delete',
   accountAssign: 'clearer.account.assign',
 
+  operationRead: 'clearer.operation.read',
+  operationCreate: 'clearer.operation.create',
+  operationUpdate: 'clearer.operation.update',
+  operationDelete: 'clearer.operation.delete',
+  operationReconcile: 'clearer.operation.reconcile',
+
   organizationManagerRead: 'clearer.organization.manager.read',
   organizationManagerCreate: 'clearer.organization.manager.create',
   organizationManagerUpdate: 'clearer.organization.manager.update',
@@ -117,6 +123,31 @@ export const PermissionClearerGroup = [
       {
         name: 'Assign',
         code: PermissionClearer.accountAssign,
+      },
+    ],
+  },
+  {
+    name: 'Account operation',
+    permissions: [
+      {
+        name: 'Read',
+        code: PermissionClearer.operationRead,
+      },
+      {
+        name: 'Create',
+        code: PermissionClearer.operationCreate,
+      },
+      {
+        name: 'Update',
+        code: PermissionClearer.operationUpdate,
+      },
+      {
+        name: 'Delete',
+        code: PermissionClearer.operationDelete,
+      },
+      {
+        name: 'Reconcile',
+        code: PermissionClearer.operationReconcile,
       },
     ],
   },

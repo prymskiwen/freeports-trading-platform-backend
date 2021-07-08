@@ -2,11 +2,11 @@ import { Account } from 'src/schema/account/account.schema';
 
 export class GetOperationResponseDto {
   id: string;
-  accountId: Account;
-  accountFrom: Account;
+  account: Account;
+  type: string;
   amount: number;
+  date: Date;
+  label: string;
   createdAt: Date;
   reconciledId: string;
-  operationDate: Date;
-  operationLabel: string;
 }
