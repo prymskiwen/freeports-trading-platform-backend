@@ -107,14 +107,10 @@ export class OperationInvestorController {
       accountId,
       investor,
     );
-    const accountfrom = await this.accountService.getAccountClearerById(
-      request.accountFrom,
-    );
 
     const operation = await this.operationService.createOperation(
       request,
       account,
-      accountfrom,
       userCurrent,
     );
 

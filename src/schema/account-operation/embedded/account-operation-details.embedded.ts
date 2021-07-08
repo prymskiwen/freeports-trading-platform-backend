@@ -3,37 +3,33 @@ import { SchemaTypes } from 'mongoose';
 import { Account } from 'src/schema/account/account.schema';
 import { User } from 'src/schema/user/user.schema';
 
+export enum AccountOperationDetailsType {
+  credit = 'credit',
+  debit = 'debit',
+}
+
 @Schema({ versionKey: false, _id: false })
 export class AccountOperationDetails {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   initiator?: User;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Account' })
-  accountFrom?: Account;
+  account: Account;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'Account' })
-  accountId?: Account;
+  @Prop({ type: String, enum: AccountOperationDetailsType })
+  type?: AccountOperationDetailsType;
+
+  @Prop()
+  label?: string;
 
   @Prop()
   amount?: number;
 
   @Prop()
+  date?: Date;
+
+  @Prop()
   createdAt?: Date;
-
-  @Prop()
-  operationDate?: Date;
-
-  @Prop()
-  operationLabel?: string;
-
-  @Prop()
-  thirdParty?: string;
-
-  @Prop()
-  lineId?: string;
-
-  @Prop()
-  reconciledId?: string;
 }
 
 export const AccountOperationDetailsSchema = SchemaFactory.createForClass(

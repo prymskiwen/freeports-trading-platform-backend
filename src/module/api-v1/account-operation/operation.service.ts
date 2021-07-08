@@ -21,21 +21,18 @@ export class OperationService {
   async createOperation(
     request: CreateOperationRequestDto,
     account: AccountDocument,
-    accountFrom: AccountDocument,
     inituser: UserDocument,
   ): Promise<AccountOperationDocument> {
     const operation = new this.accountOperationModel();
 
     operation.details = {
       initiator: inituser,
-      accountFrom: accountFrom,
-      accountId: account,
+      account: account,
+      type: request.type,
+      label: request.label,
       amount: request.amount,
+      date: request.date,
       createdAt: new Date(),
-      operationDate: request.operationDate,
-      operationLabel: request.operationLabel,
-      thirdParty: request.thirdParty,
-      lineId: request.lineId,
     };
 
     await operation.save();
@@ -59,7 +56,7 @@ export class OperationService {
         $match: {
           $and: [
             {
-              'details.accountId': account._id,
+              'details.account': account._id,
             },
           ],
         },
@@ -69,7 +66,7 @@ export class OperationService {
     if (search) {
       query.push({
         $match: {
-          'details.operationLabel': {
+          'details.label': {
             $regex: '.*' + search + '.*',
             $options: 'i',
           },
@@ -109,8 +106,8 @@ export class OperationService {
       .findOne({
         _id: operationId,
         $and: [
-          { 'details.accountId': { $exists: true } },
-          { 'details.accountId': account._id },
+          { 'details.account': { $exists: true } },
+          { 'details.account': account._id },
         ],
       })
       .exec();

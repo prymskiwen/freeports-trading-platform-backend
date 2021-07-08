@@ -31,12 +31,12 @@ export class OperationMapper {
     const dto = new GetOperationResponseDto();
 
     dto.id = document._id;
-    dto.accountFrom = document.details.accountFrom;
-    dto.accountId = document.details.accountId;
+    dto.type = document.details.type;
+    dto.account = document.details.account;
     dto.amount = document.details.amount;
     dto.createdAt = document.details.createdAt;
-    dto.operationDate = document.details.operationDate;
-    dto.operationLabel = document.details.operationLabel;
+    dto.date = document.details.date;
+    dto.label = document.details.label;
 
     return dto;
   }

@@ -1,23 +1,17 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { AccountOperationDetailsType } from 'src/schema/account-operation/embedded/account-operation-details.embedded';
 
 export class CreateOperationRequestDto {
   @IsNotEmpty()
   amount: number;
 
   @IsNotEmpty()
-  operationDate: Date;
+  date: Date;
 
   @IsNotEmpty()
-  operationLabel?: string;
+  label?: string;
 
   @IsNotEmpty()
-  thirdParty?: string;
-
-  @IsNotEmpty()
-  lineId?: string;
-
-  @IsNotEmpty()
-  reconciledId?: string;
-
-  accountFrom?: string;
+  @IsEnum(AccountOperationDetailsType)
+  type: AccountOperationDetailsType;
 }
