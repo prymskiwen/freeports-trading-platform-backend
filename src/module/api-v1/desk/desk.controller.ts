@@ -7,6 +7,8 @@ import {
   NotFoundException,
   Patch,
   Get,
+  Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -40,6 +42,7 @@ import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
 import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
+import { DeleteDeskResponseDto } from './dto/delete-desk-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/desk')
@@ -184,5 +187,48 @@ export class DeskController {
     await this.deskService.update(desk, request);
 
     return DeskMapper.toUpdateDto(desk);
+  }
+
+  @Delete(':deskId')
+  @Permissions(PermissionOrganization.deskDelete)
+  @ApiOperation({ summary: 'Delete desk' })
+  @ApiOkResponse({
+    description: 'Successfully deleted desk id',
+    type: DeleteDeskResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Impossible delete desk with investors',
+    type: InvalidFormExceptionDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Desk has not been found',
+    type: ExceptionDto,
+  })
+  async deleteDesk(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+  ): Promise<DeleteDeskResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
+    if (desk.investors?.length) {
+      throw new BadRequestException('Impossible delete desk with investors');
+    }
+
+    await desk.remove();
+
+    return DeskMapper.toDeleteDto(desk);
   }
 }

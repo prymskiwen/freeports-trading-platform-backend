@@ -193,6 +193,7 @@ export const PermissionOrganization = {
   deskCreate: 'organization.#organizationId#.desk.create',
   deskUpdate: 'organization.#organizationId#.desk.update',
   deskDisable: 'organization.#organizationId#.desk.disable',
+  deskDelete: 'organization.#organizationId#.desk.delete',
 
   deskUserRead: 'organization.#organizationId#.desk.user.read',
   deskUserCreate: 'organization.#organizationId#.desk.user.create',
@@ -278,6 +279,10 @@ export const PermissionOrganizationGroup = [
       {
         name: 'Disable',
         code: PermissionOrganization.deskDisable,
+      },
+      {
+        name: 'Delete',
+        code: PermissionOrganization.deskDelete,
       },
     ],
   },

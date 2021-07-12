@@ -161,6 +161,7 @@ export class InvestorController {
       request,
       userCurrent,
     );
+    await desk.updateOne({ $push: { investors: investor._id } });
 
     return InvestorMapper.toCreateDto(investor);
   }
@@ -264,6 +265,7 @@ export class InvestorController {
     }
 
     await investor.remove();
+    await desk.updateOne({ $pull: { investors: investor._id } });
 
     return InvestorMapper.toDeleteDto(investor);
   }

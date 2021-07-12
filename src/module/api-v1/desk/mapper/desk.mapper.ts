@@ -1,5 +1,6 @@
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { CreateDeskResponseDto } from '../dto/create-desk-response.dto';
+import { DeleteDeskResponseDto } from '../dto/delete-desk-response.dto';
 import { GetDeskDetailsResponseDto } from '../dto/get-desk-details-response.dto';
 import { GetDeskResponseDto } from '../dto/get-desk-response.dto';
 import { UpdateDeskResponseDto } from '../dto/update-desk-response.dto';
@@ -21,6 +22,14 @@ export class DeskMapper {
     return dto;
   }
 
+  public static toDeleteDto(document: DeskDocument): DeleteDeskResponseDto {
+    const dto = new DeleteDeskResponseDto();
+
+    dto.id = document.id;
+
+    return dto;
+  }
+
   public static async toGetDto(
     document: DeskDocument,
   ): Promise<GetDeskResponseDto> {
@@ -28,6 +37,10 @@ export class DeskMapper {
 
     dto.id = document._id;
     dto.name = document.name;
+    dto.investors = document.investors?.length;
+    // TODO: get coworkers and desk value
+    dto.coworkers = 0;
+    dto.value = 0;
     dto.createdAt = document.createdAt;
 
     return dto;
