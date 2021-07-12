@@ -38,7 +38,6 @@ export class DeskMapper {
     dto.id = document._id;
     dto.name = document.name;
     dto.investors = document.investors?.length;
-    // TODO: get coworkers and desk value
     dto.coworkers = 0;
     dto.value = 0;
     dto.createdAt = document.createdAt;

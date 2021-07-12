@@ -311,6 +311,44 @@ export class UserService {
     ]);
   }
 
+  async getDeskUserCount(desk: DeskDocument): Promise<number> {
+    const result = await this.userModel.aggregate([
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'roles.role',
+          foreignField: '_id',
+          as: 'user_roles',
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              'roles.effectiveDesks': {
+                $exists: true,
+                $elemMatch: { $eq: desk._id },
+              },
+            },
+            {
+              user_roles: {
+                $elemMatch: {
+                  kind: RoleDesk.name,
+                  desk: desk._id,
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $count: 'total',
+      },
+    ]);
+
+    return result[0]?.total || 0;
+  }
+
   async getByRolePaginated(
     role: RoleDocument,
     pagination: PaginationRequest,
