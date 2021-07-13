@@ -19,7 +19,7 @@ import { UserPublicKeyController } from './user-public-key.controller';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MailModule,
     forwardRef(() => AuthModule),
-    DeskModule,
+    forwardRef(() => DeskModule),
     OrganizationModule,
     forwardRef(() => RoleModule),
   ],

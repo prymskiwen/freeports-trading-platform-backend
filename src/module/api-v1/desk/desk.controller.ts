@@ -43,6 +43,7 @@ import { PaginationParams } from 'src/pagination/pagination-params.decorator';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { PaginationHelper } from 'src/pagination/pagination.helper';
 import { DeleteDeskResponseDto } from './dto/delete-desk-response.dto';
+import { UserService } from '../user/user.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/desk')
@@ -52,6 +53,7 @@ export class DeskController {
   constructor(
     private readonly deskService: DeskService,
     private readonly organizationService: OrganizationService,
+    private readonly userService: UserService,
   ) {}
 
   @Get()
@@ -73,8 +75,16 @@ export class DeskController {
     ] = await this.deskService.getDesksPaginated(organization, pagination);
     const deskDtos: GetDeskResponseDto[] = await Promise.all(
       paginatedResult.map(
-        async (desk: DeskDocument): Promise<GetDeskResponseDto> =>
-          DeskMapper.toGetDto(this.deskService.hydrate(desk)),
+        async (desk: DeskDocument): Promise<GetDeskResponseDto> => {
+          const deskHydrated = this.deskService.hydrate(desk);
+          const deskDto = await DeskMapper.toGetDto(deskHydrated);
+
+          deskDto.coworkers = await this.userService.getDeskUserCount(
+            deskHydrated,
+          );
+
+          return deskDto;
+        },
       ),
     );
 

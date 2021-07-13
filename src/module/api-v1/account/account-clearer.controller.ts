@@ -186,6 +186,10 @@ export class AccountClearerController {
     description: 'Successfully assigned to organization clearer account id',
     type: AssignAccountResponseDto,
   })
+  @ApiBadRequestResponse({
+    description: 'The same currency or account already assigned',
+    type: InvalidFormExceptionDto,
+  })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -205,21 +209,31 @@ export class AccountClearerController {
       throw new NotFoundException();
     }
 
-    const assigned = account.organizations.some((org) => {
+    const assignedAccount = account.organizations.some((org) => {
       return org.toString() === organization.id;
     });
 
-    if (!assigned) {
-      organization.clearing.push({
-        currency: account.details.currency,
-        iban: account.fiatDetails?.iban,
-        account: account,
-      });
-      account.organizations.push(organization);
-
-      await organization.save();
-      await account.save();
+    if (assignedAccount) {
+      throw new BadRequestException('The same account already assigned');
     }
+
+    const assignedCurrency = organization.clearing.some((clearing) => {
+      return clearing.currency === account.details.currency;
+    });
+
+    if (assignedCurrency) {
+      throw new BadRequestException('The same currency already assigned');
+    }
+
+    organization.clearing.push({
+      currency: account.details.currency,
+      iban: account.fiatDetails?.iban,
+      account: account,
+    });
+    account.organizations.push(organization);
+
+    await organization.save();
+    await account.save();
 
     return AccountMapper.toAssignDto(account);
   }
