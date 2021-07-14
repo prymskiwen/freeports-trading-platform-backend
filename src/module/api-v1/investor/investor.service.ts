@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/schema/user/user.schema';
-import { AccountInvestorDocument } from 'src/schema/account/account-investor.schema';
 import {
   Investor,
   InvestorDocument,
@@ -60,15 +59,5 @@ export class InvestorService {
     }
 
     return investor;
-  }
-
-  async unassignAccount(
-    investor: InvestorDocument,
-    account: AccountInvestorDocument,
-  ) {
-    await this.investorModel.updateOne(
-      { _id: investor._id },
-      { $pull: { accounts: account._id } },
-    );
   }
 }

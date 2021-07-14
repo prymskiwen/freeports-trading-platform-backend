@@ -264,11 +264,10 @@ export class AccountClearerController {
       throw new NotFoundException();
     }
 
-    await this.organizationService.unassignAccount(organization, account);
-    await this.accountService.unassignAccountClearerOrganization(
-      account,
-      organization,
-    );
+    await organization.updateOne({
+      $pull: { clearing: { account: account._id } },
+    });
+    await account.updateOne({ $pull: { organizations: organization._id } });
 
     return AccountMapper.toUnassignDto(account);
   }

@@ -13,7 +13,6 @@ import {
   AccountInvestorDocument,
 } from 'src/schema/account/account-investor.schema';
 import { UpdateAccountRequestDto } from './dto/update-account-request.dto';
-import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { InvestorDocument } from 'src/schema/investor/investor.schema';
 import { CreateAccountCryptoRequestDto } from './dto/create-account-crypto-request.dto';
 
@@ -95,16 +94,6 @@ export class AccountService {
     }
 
     return account;
-  }
-
-  async unassignAccountClearerOrganization(
-    account: AccountClearerDocument,
-    organization: OrganizationDocument,
-  ) {
-    await this.accountClearerModel.updateOne(
-      { _id: account._id },
-      { $pull: { organizations: organization._id } },
-    );
   }
 
   async getAccountInvestorList(

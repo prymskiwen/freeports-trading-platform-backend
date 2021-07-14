@@ -201,7 +201,7 @@ export class InvestorAccountController {
       throw new NotFoundException();
     }
 
-    await this.investorService.unassignAccount(investor, account);
+    await investor.updateOne({ $pull: { accounts: account._id } });
     await account.remove();
 
     return AccountMapper.toUnassignDto(account);
