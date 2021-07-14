@@ -1,8 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, SchemaTypes } from 'mongoose';
-import { AccountInvestor } from '../account/account-investor.schema';
+import { Document, SchemaTypes, Types } from 'mongoose';
 import { Desk } from '../desk/desk.schema';
 import { User } from '../user/user.schema';
+import {
+  InvestorAccountDocument,
+  InvestorAccountSchema,
+} from './embedded/investor-account.embedded';
 
 export type InvestorDocument = Investor & Document;
 
@@ -17,8 +20,8 @@ export class Investor {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Desk' })
   desk: Desk;
 
-  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'Account' }] })
-  accounts?: AccountInvestor[];
+  @Prop({ type: [InvestorAccountSchema] })
+  accounts?: Types.DocumentArray<InvestorAccountDocument>;
 }
 
 export const InvestorSchema = SchemaFactory.createForClass(Investor);

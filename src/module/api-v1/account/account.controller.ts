@@ -40,14 +40,14 @@ import { GetAccountResponseDto } from './dto/get-account-response.dto';
 import { UpdateAccountResponseDto } from './dto/update-account-response.dto';
 import { UpdateAccountRequestDto } from './dto/update-account-request.dto';
 import { AssignAccountResponseDto } from './dto/assign-account-response.dto';
-import { GetAccountClearerDetailsResponseDto } from './dto/get-account-clearer-details-response.dto';
+import { GetAccountDetailsResponseDto } from './dto/get-account-details-response.dto';
 import { UnassignAccountResponseDto } from './dto/unassign-account-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/account')
 @ApiTags('account', 'clearer')
 @ApiBearerAuth()
-export class AccountClearerController {
+export class AccountController {
   constructor(
     private readonly accountService: AccountService,
     private readonly organizationService: OrganizationService,
@@ -57,8 +57,8 @@ export class AccountClearerController {
   @Permissions(PermissionClearer.accountRead)
   @ApiOperation({ summary: 'Get clearer account list' })
   @ApiOkResponse({ type: [GetAccountResponseDto] })
-  async getAccountClearerList(): Promise<GetAccountResponseDto[]> {
-    const accounts = await this.accountService.getAccountClearerList();
+  async getAccountList(): Promise<GetAccountResponseDto[]> {
+    const accounts = await this.accountService.getAccountList();
 
     return accounts.map((account) => AccountMapper.toGetDto(account));
   }
@@ -66,7 +66,7 @@ export class AccountClearerController {
   @Get(':accountId')
   @Permissions(PermissionClearer.accountRead)
   @ApiOperation({ summary: 'Get clearer account' })
-  @ApiOkResponse({ type: GetAccountClearerDetailsResponseDto })
+  @ApiOkResponse({ type: GetAccountDetailsResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -75,12 +75,12 @@ export class AccountClearerController {
     description: 'Account has not been found',
     type: ExceptionDto,
   })
-  async getAccountClearer(
+  async getAccount(
     @Param('accountId', ParseObjectIdPipe) accountId: string,
-  ): Promise<GetAccountClearerDetailsResponseDto> {
-    const account = await this.accountService.getAccountClearerById(accountId);
+  ): Promise<GetAccountDetailsResponseDto> {
+    const account = await this.accountService.getAccountById(accountId);
 
-    return AccountMapper.toGetAccountClearerDetailsDto(account);
+    return AccountMapper.toGetDetailsDto(account);
   }
 
   @Post()
@@ -94,11 +94,11 @@ export class AccountClearerController {
     description: 'Invalid form',
     type: InvalidFormExceptionDto,
   })
-  async createAccountClearer(
+  async createAccount(
     @Body() request: CreateAccountRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateAccountResponseDto> {
-    const account = await this.accountService.createAccountClearer(
+    const account = await this.accountService.createAccount(
       request,
       userCurrent,
     );
@@ -125,17 +125,17 @@ export class AccountClearerController {
     description: 'Clearer account has not been found',
     type: ExceptionDto,
   })
-  async updateAccountClearer(
+  async updateAccount(
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Body() request: UpdateAccountRequestDto,
   ): Promise<UpdateAccountResponseDto> {
-    const account = await this.accountService.getAccountClearerById(accountId);
+    const account = await this.accountService.getAccountById(accountId);
 
     if (!account) {
       throw new NotFoundException();
     }
 
-    await this.accountService.updateAccountClearer(account, request);
+    await this.accountService.updateAccount(account, request);
 
     return AccountMapper.toUpdateDto(account);
   }
@@ -159,10 +159,10 @@ export class AccountClearerController {
     description: 'Clearer account has not been found',
     type: ExceptionDto,
   })
-  async deleteAccountClearer(
+  async deleteAccount(
     @Param('accountId', ParseObjectIdPipe) accountId: string,
   ): Promise<DeleteAccountResponseDto> {
-    const account = await this.accountService.getAccountClearerById(accountId);
+    const account = await this.accountService.getAccountById(accountId);
 
     if (!account) {
       throw new NotFoundException();
@@ -198,11 +198,11 @@ export class AccountClearerController {
     description: 'Organization or clearer account has not been found',
     type: ExceptionDto,
   })
-  async assignAccountClearerToOrganization(
+  async assignAccountToOrganization(
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
   ): Promise<AssignAccountResponseDto> {
-    const account = await this.accountService.getAccountClearerById(accountId);
+    const account = await this.accountService.getAccountById(accountId);
     const organization = await this.organizationService.getById(organizationId);
 
     if (!account || !organization) {
@@ -218,7 +218,7 @@ export class AccountClearerController {
     }
 
     const assignedCurrency = organization.clearing.some((clearing) => {
-      return clearing.currency === account.details.currency;
+      return clearing.currency === account.currency;
     });
 
     if (assignedCurrency) {
@@ -226,8 +226,8 @@ export class AccountClearerController {
     }
 
     organization.clearing.push({
-      currency: account.details.currency,
-      iban: account.fiatDetails?.iban,
+      currency: account.currency,
+      iban: account.iban,
       account: account,
     });
     account.organizations.push(organization);
@@ -253,12 +253,12 @@ export class AccountClearerController {
     description: 'Organization or clearer account has not been found',
     type: ExceptionDto,
   })
-  async unassignAccountClearerFromOrganization(
+  async unassignAccountFromOrganization(
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
   ): Promise<UnassignAccountResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
-    const account = await this.accountService.getAccountClearerById(accountId);
+    const account = await this.accountService.getAccountById(accountId);
 
     if (!account || !organization) {
       throw new NotFoundException();

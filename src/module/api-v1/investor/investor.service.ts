@@ -9,12 +9,19 @@ import {
 import { CreateInvestorRequestDto } from './dto/create-investor-request.dto';
 import { UpdateInvestorRequestDto } from './dto/update-investor-request.dto';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
+import {
+  InvestorAccount,
+  InvestorAccountDocument,
+} from 'src/schema/investor/embedded/investor-account.embedded';
+import { CreateInvestorAccountRequestDto } from './dto/account/create-investor-account-request.dto';
 
 @Injectable()
 export class InvestorService {
   constructor(
     @InjectModel(Investor.name)
     private investorModel: Model<InvestorDocument>,
+    @InjectModel(InvestorAccount.name)
+    private investorAccountModel: Model<InvestorAccountDocument>,
   ) {}
 
   async getInvestorList(desk: DeskDocument): Promise<InvestorDocument[]> {
@@ -59,5 +66,28 @@ export class InvestorService {
     }
 
     return investor;
+  }
+
+  async createAccount(
+    investor: InvestorDocument,
+    request: CreateInvestorAccountRequestDto,
+    persist = true,
+  ): Promise<InvestorAccountDocument> {
+    const account = new this.investorAccountModel();
+
+    account.name = request.name;
+    account.currency = request.currency;
+
+    // TODO: vault request here
+    // account.vaultWalletId = requestVault.id;
+    // account.publicAddress = requestVault.address;
+
+    investor.accounts.push(account);
+
+    if (persist) {
+      await investor.save();
+    }
+
+    return account;
   }
 }

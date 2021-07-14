@@ -5,15 +5,18 @@ import { OrganizationModule } from '../organization/organization.module';
 import { InvestorService } from './investor.service';
 import { InvestorController } from './investor.controller';
 import { InvestorAccountController } from './investor-account.controller';
-import { AccountModule } from '../account/account.module';
 import { DeskModule } from '../desk/desk.module';
+import {
+  InvestorAccount,
+  InvestorAccountSchema,
+} from 'src/schema/investor/embedded/investor-account.embedded';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Investor.name, schema: InvestorSchema },
+      { name: InvestorAccount.name, schema: InvestorAccountSchema },
     ]),
-    AccountModule,
     DeskModule,
     OrganizationModule,
   ],

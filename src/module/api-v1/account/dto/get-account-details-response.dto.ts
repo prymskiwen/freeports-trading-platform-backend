@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Organization } from 'src/schema/organization/organization.schema';
 
-export class GetAccountClearerDetailsResponseDto {
+export class GetAccountDetailsResponseDto {
   id: string;
   name: string;
   currency: string;
