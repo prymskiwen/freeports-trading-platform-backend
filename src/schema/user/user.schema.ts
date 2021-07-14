@@ -1,12 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, SchemaTypes } from 'mongoose';
+import { Document, SchemaTypes, Types } from 'mongoose';
 import { Organization } from 'src/schema/organization/organization.schema';
 import {
   UserPersonal,
   UserPersonalSchema,
 } from './embedded/user-personal.embedded';
 import {
-  UserPublicKey,
+  UserPublicKeyDocument,
   UserPublicKeySchema,
 } from './embedded/user-public-key.embedded';
 import { UserRole, UserRoleSchema } from './embedded/user-role.embedded';
@@ -28,7 +28,7 @@ export class User {
   personal?: UserPersonal;
 
   @Prop({ type: [UserPublicKeySchema] })
-  publicKeys?: UserPublicKey[];
+  publicKeys?: Types.DocumentArray<UserPublicKeyDocument>;
 
   @Prop({ type: [UserRoleSchema] })
   roles?: UserRole[];
