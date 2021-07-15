@@ -6,6 +6,7 @@ import { DeskService } from './desk.service';
 import { DeskController } from './desk.controller';
 import { RoleModule } from '../role/role.module';
 import { UserModule } from '../user/user.module';
+import { DeskMyController } from './desk-my.controller';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { UserModule } from '../user/user.module';
     forwardRef(() => RoleModule),
     forwardRef(() => UserModule),
   ],
-  controllers: [DeskController],
+  controllers: [DeskController, DeskMyController],
   providers: [DeskService],
   exports: [DeskService],
 })

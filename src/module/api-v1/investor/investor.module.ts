@@ -10,6 +10,7 @@ import {
   InvestorAccount,
   InvestorAccountSchema,
 } from 'src/schema/investor/embedded/investor-account.embedded';
+import { InvestorMyController } from './investor-my.controller';
 
 @Module({
   imports: [
@@ -20,7 +21,11 @@ import {
     DeskModule,
     OrganizationModule,
   ],
-  controllers: [InvestorController, InvestorAccountController],
+  controllers: [
+    InvestorController,
+    InvestorAccountController,
+    InvestorMyController,
+  ],
   providers: [InvestorService],
   exports: [InvestorService],
 })

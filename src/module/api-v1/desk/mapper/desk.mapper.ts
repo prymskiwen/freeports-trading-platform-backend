@@ -30,9 +30,7 @@ export class DeskMapper {
     return dto;
   }
 
-  public static async toGetDto(
-    document: DeskDocument,
-  ): Promise<GetDeskResponseDto> {
+  public static toGetDto(document: DeskDocument): GetDeskResponseDto {
     const dto = new GetDeskResponseDto();
 
     dto.id = document._id;
@@ -45,12 +43,12 @@ export class DeskMapper {
     return dto;
   }
 
-  public static async toGetDetailsDto(
+  public static toGetDetailsDto(
     document: DeskDocument,
-  ): Promise<GetDeskDetailsResponseDto> {
+  ): GetDeskDetailsResponseDto {
     const dto = Object.assign(
       new GetDeskDetailsResponseDto(),
-      await this.toGetDto(document),
+      this.toGetDto(document),
     );
 
     return dto;

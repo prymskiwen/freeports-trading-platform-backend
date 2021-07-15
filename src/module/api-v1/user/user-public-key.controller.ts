@@ -23,15 +23,14 @@ import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
-import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { GetUserPublicKeyResponseDto } from './dto/public-key/get-user-public-key-response.dto';
 import { CreateUserPublicKeyRequestDto } from './dto/public-key/create-user-public-key-request.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { UserService } from './user.service';
 
-@UseGuards(JwtTwoFactorGuard, PermissionsGuard)
+@UseGuards(JwtTwoFactorGuard)
 @Controller('api/v1/my/public-key')
-@ApiTags('user', 'public-key')
+@ApiTags('user', 'my', 'public-key')
 @ApiBearerAuth()
 export class UserPublicKeyController {
   constructor(private readonly userService: UserService) {}

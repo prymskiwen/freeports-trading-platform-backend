@@ -77,7 +77,7 @@ export class DeskController {
       paginatedResult.map(
         async (desk: DeskDocument): Promise<GetDeskResponseDto> => {
           const deskHydrated = this.deskService.hydrate(desk);
-          const deskDto = await DeskMapper.toGetDto(deskHydrated);
+          const deskDto = DeskMapper.toGetDto(deskHydrated);
 
           deskDto.coworkers = await this.userService.getDeskUserCount(
             deskHydrated,

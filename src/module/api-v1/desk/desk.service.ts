@@ -6,6 +6,9 @@ import { CreateDeskRequestDto } from './dto/create-desk-request.dto';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { UpdateDeskRequestDto } from './dto/update-desk-request.dto';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { UserDocument } from 'src/schema/user/user.schema';
+import { RoleDesk } from 'src/schema/role/role-desk.schema';
+import { RoleMultidesk } from 'src/schema/role/role-multidesk.schema';
 
 @Injectable()
 export class DeskService {
@@ -97,5 +100,27 @@ export class DeskService {
         },
       },
     ]);
+  }
+
+  async getMyDeskList(user: UserDocument): Promise<DeskDocument[]> {
+    await user.populate('roles.role').execPopulate();
+
+    const deskIds = user.roles.reduce((prev, role) => {
+      if (role.role.disabled) {
+        return prev;
+      }
+
+      if (role.role.kind === RoleDesk.name) {
+        return prev.concat(role.role['desk']);
+      }
+
+      if (role.role.kind === RoleMultidesk.name) {
+        return prev.concat(role.effectiveDesks);
+      }
+
+      return prev;
+    }, []);
+
+    return await this.deskModel.find({ _id: { $in: deskIds } }).exec();
   }
 }
