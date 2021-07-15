@@ -48,10 +48,11 @@ export class InvestorMapper {
   public static toGetDetailsDto(
     document: InvestorDocument,
   ): GetInvestorDetailsResponseDto {
-    const dto = new GetInvestorDetailsResponseDto();
+    const dto = Object.assign(
+      new GetInvestorDetailsResponseDto(),
+      this.toGetDto(document),
+    );
 
-    dto.id = document.id;
-    dto.name = document.name;
     dto.accounts = document.accounts;
 
     return dto;

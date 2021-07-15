@@ -13,10 +13,17 @@ import { UserClearerOrganizationManagerController } from './user-clearer-organiz
 import { UserDeskController } from './user-desk.controller';
 import { MailModule } from '../mail/mail.module';
 import { UserPublicKeyController } from './user-public-key.controller';
+import {
+  UserPublicKey,
+  UserPublicKeySchema,
+} from 'src/schema/user/embedded/user-public-key.embedded';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: UserPublicKey.name, schema: UserPublicKeySchema },
+    ]),
     MailModule,
     forwardRef(() => AuthModule),
     forwardRef(() => DeskModule),

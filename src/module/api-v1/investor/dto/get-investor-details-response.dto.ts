@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AccountInvestor } from 'src/schema/account/account-investor.schema';
+import { InvestorAccount } from 'src/schema/investor/embedded/investor-account.embedded';
 
 export class GetInvestorDetailsResponseDto {
   id: string;
   name: string;
 
-  @ApiProperty({ type: [AccountInvestor] })
-  accounts: AccountInvestor[];
+  @ApiProperty({ type: [InvestorAccount] })
+  accounts: InvestorAccount[];
 }

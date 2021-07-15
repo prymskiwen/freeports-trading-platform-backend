@@ -8,7 +8,6 @@ import { AccountModule } from '../account/account.module';
 import { DeskModule } from '../desk/desk.module';
 import { InvestorModule } from '../investor/investor.module';
 import { OrganizationModule } from '../organization/organization.module';
-import { OperationInvestorController } from './operation-investor.controller';
 import { OperationController } from './operation.controller';
 import { OperationService } from './operation.service';
 
@@ -22,7 +21,7 @@ import { OperationService } from './operation.service';
     OrganizationModule,
     InvestorModule,
   ],
-  controllers: [OperationController, OperationInvestorController],
+  controllers: [OperationController],
   providers: [OperationService],
   exports: [OperationService],
 })

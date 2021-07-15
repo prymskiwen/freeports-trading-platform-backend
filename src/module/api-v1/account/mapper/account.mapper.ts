@@ -1,9 +1,10 @@
-import { AccountClearerDocument } from 'src/schema/account/account-clearer.schema';
-import { AccountDocument } from 'src/schema/account/account.schema';
-import { AccountDetailsType } from 'src/schema/account/embedded/account-details.embedded';
+import {
+  AccountDocument,
+  AccountType,
+} from 'src/schema/account/account.schema';
 import { CreateAccountResponseDto } from '../dto/create-account-response.dto';
 import { DeleteAccountResponseDto } from '../dto/delete-account-response.dto';
-import { GetAccountClearerDetailsResponseDto } from '../dto/get-account-clearer-details-response.dto';
+import { GetAccountDetailsResponseDto } from '../dto/get-account-details-response.dto';
 import { GetAccountResponseDto } from '../dto/get-account-response.dto';
 import { AssignAccountResponseDto } from '../dto/assign-account-response.dto';
 import { UpdateAccountResponseDto } from '../dto/update-account-response.dto';
@@ -64,38 +65,28 @@ export class AccountMapper {
     const dto = new GetAccountResponseDto();
 
     dto.id = document.id;
-    dto.name = document.details.name;
-    dto.currency = document.details.currency;
-    dto.balance = document.details.balance;
-    dto.type = document.details.type;
+    dto.name = document.name;
+    dto.currency = document.currency;
+    dto.balance = document.balance;
+    dto.type = document.type;
 
-    if (document.details.type === AccountDetailsType.fiat) {
-      dto.iban = document.fiatDetails.iban;
-    } else if (document.details.type === AccountDetailsType.crypto) {
-      dto.publicAddress = document.cryptotDetails.publicAddress;
-      dto.vaultWalletId = document.cryptotDetails.vaultWalletId;
+    if (document.type === AccountType.fiat) {
+      dto.iban = document.iban;
+    } else if (document.type === AccountType.crypto) {
+      dto.publicAddress = document.publicAddress;
+      dto.vaultWalletId = document.vaultWalletId;
     }
 
     return dto;
   }
 
-  public static toGetAccountClearerDetailsDto(
-    document: AccountClearerDocument,
-  ): GetAccountClearerDetailsResponseDto {
-    const dto = new GetAccountClearerDetailsResponseDto();
-
-    dto.id = document.id;
-    dto.name = document.details.name;
-    dto.currency = document.details.currency;
-    dto.balance = document.details.balance;
-    dto.type = document.details.type;
-
-    if (document.details.type === AccountDetailsType.fiat) {
-      dto.iban = document.fiatDetails.iban;
-    } else if (document.details.type === AccountDetailsType.crypto) {
-      dto.publicAddress = document.cryptotDetails.publicAddress;
-      dto.vaultWalletId = document.cryptotDetails.vaultWalletId;
-    }
+  public static toGetDetailsDto(
+    document: AccountDocument,
+  ): GetAccountDetailsResponseDto {
+    const dto = Object.assign(
+      new GetAccountDetailsResponseDto(),
+      this.toGetDto(document),
+    );
 
     dto.organizations = document.organizations;
 

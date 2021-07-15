@@ -5,7 +5,7 @@ import {
   IsNumber,
   ValidateIf,
 } from 'class-validator';
-import { AccountDetailsType } from 'src/schema/account/embedded/account-details.embedded';
+import { AccountType } from 'src/schema/account/account.schema';
 
 export class CreateAccountRequestDto {
   @IsNotEmpty()
@@ -15,14 +15,14 @@ export class CreateAccountRequestDto {
   currency: string;
 
   @IsNotEmpty()
-  @IsEnum(AccountDetailsType)
-  type: AccountDetailsType;
+  @IsEnum(AccountType)
+  type: AccountType;
 
   @IsNotEmpty()
   @IsNumber()
   balance?: number;
 
-  @ValidateIf((o) => o.type === AccountDetailsType.fiat)
+  @ValidateIf((o) => o.type === AccountType.fiat)
   @IsNotEmpty()
   @IsIBAN()
   iban?: string;

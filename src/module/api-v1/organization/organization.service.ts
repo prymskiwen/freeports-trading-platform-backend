@@ -8,7 +8,6 @@ import {
 import { CreateOrganizationRequestDto } from './dto/create-organization-request.dto';
 import { UpdateOrganizationRequestDto } from './dto/update-organization-request.dto';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
-import { AccountDocument } from 'src/schema/account/account.schema';
 
 @Injectable()
 export class OrganizationService {
@@ -114,15 +113,5 @@ export class OrganizationService {
         },
       },
     ]);
-  }
-
-  async unassignAccount(
-    organization: OrganizationDocument,
-    account: AccountDocument,
-  ) {
-    await this.organizationModel.updateOne(
-      { _id: organization._id },
-      { $pull: { clearing: { account: account._id } } },
-    );
   }
 }

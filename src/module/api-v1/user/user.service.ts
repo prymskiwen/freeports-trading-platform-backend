@@ -11,13 +11,39 @@ import { RoleDesk } from 'src/schema/role/role-desk.schema';
 import { RoleDocument } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 import { MailService } from '../mail/mail.service';
+import {
+  UserPublicKey,
+  UserPublicKeyDocument,
+} from 'src/schema/user/embedded/user-public-key.embedded';
+import { CreateUserPublicKeyRequestDto } from './dto/public-key/create-user-public-key-request.dto';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
+    @InjectModel(UserPublicKey.name)
+    private userPublicKeyModel: Model<UserPublicKeyDocument>,
     private mailService: MailService,
   ) {}
+
+  async createPublicKey(
+    user: UserDocument,
+    request: CreateUserPublicKeyRequestDto,
+    persist = true,
+  ): Promise<UserPublicKeyDocument> {
+    const publicKey = new this.userPublicKeyModel();
+
+    publicKey.key = request.key;
+
+    user.publicKeys.push(publicKey);
+
+    if (persist) {
+      await user.save();
+    }
+
+    return publicKey;
+  }
 
   async getById(id: string): Promise<UserDocument> {
     return await this.userModel.findById(id).exec();

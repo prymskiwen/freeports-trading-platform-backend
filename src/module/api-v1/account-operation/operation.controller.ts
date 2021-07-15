@@ -67,7 +67,7 @@ export class OperationController {
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @PaginationParams() pagination: PaginationRequest,
   ): Promise<PaginationResponseDto<GetOperationResponseDto>> {
-    const account = await this.accountService.getAccountClearerById(accountId);
+    const account = await this.accountService.getAccountById(accountId);
     const [
       { paginatedResult, totalResult },
     ] = await this.operationService.getOperationPaginated(account, pagination);
@@ -103,7 +103,7 @@ export class OperationController {
     @Param('accountId', ParseObjectIdPipe) accountId: string,
     @Param('operationId', ParseObjectIdPipe) operationId: string,
   ): Promise<GetOperationResponseDto> {
-    const account = await this.accountService.getAccountClearerById(accountId);
+    const account = await this.accountService.getAccountById(accountId);
     const operation = await this.operationService.getOperationWithAccount(
       account,
       operationId,
@@ -128,7 +128,7 @@ export class OperationController {
     @Body() request: CreateOperationRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateOperationResponseDto> {
-    const account = await this.accountService.getAccountClearerById(accountId);
+    const account = await this.accountService.getAccountById(accountId);
     const operation = await this.operationService.createOperation(
       request,
       account,

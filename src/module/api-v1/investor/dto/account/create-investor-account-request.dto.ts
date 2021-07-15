@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class CreateAccountCryptoRequestDto {
+export class CreateInvestorAccountRequestDto {
   @IsNotEmpty()
   name: string;
 

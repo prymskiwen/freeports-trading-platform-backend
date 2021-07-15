@@ -23,19 +23,18 @@ import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception
 import { InvestorService } from './investor.service';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
-import { UserDocument } from 'src/schema/user/user.schema';
-import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Permissions } from '../auth/decorator/permissions.decorator';
 import { PermissionsGuard } from '../auth/guard/permissions.guard';
 import { OrganizationService } from '../organization/organization.service';
 import { PermissionDesk } from 'src/schema/role/permission.helper';
-import { AssignAccountResponseDto } from '../account/dto/assign-account-response.dto';
-import { AccountService } from '../account/account.service';
-import { AccountMapper } from '../account/mapper/account.mapper';
-import { UnassignAccountResponseDto } from '../account/dto/unassign-account-response.dto';
-import { GetAccountResponseDto } from '../account/dto/get-account-response.dto';
-import { CreateAccountCryptoRequestDto } from '../account/dto/create-account-crypto-request.dto';
 import { DeskService } from '../desk/desk.service';
+import { GetInvestorAccountResponseDto } from './dto/account/get-investor-account-response.dto';
+import { InvestorAccountMapper } from './mapper/investor-account.mapper';
+import { InvestorAccountDocument } from 'src/schema/investor/embedded/investor-account.embedded';
+import { AssignInvestorAccountResponseDto } from './dto/account/assign-investor-account-response.dto';
+import { CreateInvestorAccountRequestDto } from './dto/account/create-investor-account-request.dto';
+import { UnassignInvestorAccountResponseDto } from './dto/account/unassign-investor-account-response.dto';
+import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -48,13 +47,12 @@ export class InvestorAccountController {
     private readonly deskService: DeskService,
     private readonly investorService: InvestorService,
     private readonly organizationService: OrganizationService,
-    private readonly accountService: AccountService,
   ) {}
 
   @Get()
   @Permissions(PermissionDesk.accountRead)
   @ApiOperation({ summary: 'Get investor account list' })
-  @ApiOkResponse({ type: [GetAccountResponseDto] })
+  @ApiOkResponse({ type: [GetInvestorAccountResponseDto] })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -67,7 +65,7 @@ export class InvestorAccountController {
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
-  ): Promise<GetAccountResponseDto[]> {
+  ): Promise<GetInvestorAccountResponseDto[]> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -88,9 +86,9 @@ export class InvestorAccountController {
       throw new NotFoundException();
     }
 
-    const accounts = await this.accountService.getAccountInvestorList(investor);
-
-    return accounts.map((account) => AccountMapper.toGetDto(account));
+    return investor.accounts.map((account: InvestorAccountDocument) =>
+      InvestorAccountMapper.toGetDto(account),
+    );
   }
 
   @Post()
@@ -98,7 +96,7 @@ export class InvestorAccountController {
   @ApiOperation({ summary: 'Create account and assign it to investor' })
   @ApiCreatedResponse({
     description: 'Successfully assigned to investor account id',
-    type: AssignAccountResponseDto,
+    type: AssignInvestorAccountResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -116,9 +114,8 @@ export class InvestorAccountController {
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
-    @Body() request: CreateAccountCryptoRequestDto,
-    @CurrentUser() userCurrent: UserDocument,
-  ): Promise<AssignAccountResponseDto> {
+    @Body() request: CreateInvestorAccountRequestDto,
+  ): Promise<AssignInvestorAccountResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -139,16 +136,17 @@ export class InvestorAccountController {
       throw new NotFoundException();
     }
 
-    const account = await this.accountService.createAccountInvestor(
-      investor,
-      request,
-      userCurrent,
-    );
+    const assignedCurrency = investor.accounts.some((account) => {
+      return account.currency === request.currency;
+    });
 
-    investor.accounts.push(account);
-    await investor.save();
+    if (assignedCurrency) {
+      throw new UniqueFieldException('currency', request.currency);
+    }
 
-    return AccountMapper.toAssignDto(account);
+    const account = await this.investorService.createAccount(investor, request);
+
+    return InvestorAccountMapper.toAssignDto(account);
   }
 
   @Delete(':accountId')
@@ -156,7 +154,7 @@ export class InvestorAccountController {
   @ApiOperation({ summary: 'Delete account and unassign it from investor' })
   @ApiOkResponse({
     description: 'Successfully unassigned account id',
-    type: UnassignAccountResponseDto,
+    type: UnassignInvestorAccountResponseDto,
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -171,7 +169,7 @@ export class InvestorAccountController {
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('accountId', ParseObjectIdPipe) accountId: string,
-  ): Promise<UnassignAccountResponseDto> {
+  ): Promise<UnassignInvestorAccountResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -192,18 +190,15 @@ export class InvestorAccountController {
       throw new NotFoundException();
     }
 
-    const account = await this.accountService.getAccountInvestorById(
-      accountId,
-      investor,
-    );
+    const account = investor.accounts.id(accountId);
 
     if (!account) {
       throw new NotFoundException();
     }
 
-    await this.investorService.unassignAccount(investor, account);
     await account.remove();
+    await investor.save();
 
-    return AccountMapper.toUnassignDto(account);
+    return InvestorAccountMapper.toUnassignDto(account);
   }
 }
