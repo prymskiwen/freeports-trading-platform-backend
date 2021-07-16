@@ -14,6 +14,9 @@ import {
   InvestorAccountDocument,
 } from 'src/schema/investor/embedded/investor-account.embedded';
 import { CreateInvestorAccountRequestDto } from './dto/account/create-investor-account-request.dto';
+import { PermissionDesk } from 'src/schema/role/permission.helper';
+import { RoleDesk } from 'src/schema/role/role-desk.schema';
+import { RoleMultidesk } from 'src/schema/role/role-multidesk.schema';
 
 @Injectable()
 export class InvestorService {
@@ -89,5 +92,31 @@ export class InvestorService {
     }
 
     return account;
+  }
+
+  async getMyInvestorList(user: UserDocument): Promise<InvestorDocument[]> {
+    await user.populate('roles.role').execPopulate();
+
+    const deskIds = user.roles.reduce((prev, role) => {
+      if (role.role.disabled) {
+        return prev;
+      }
+
+      if (!role.role.permissions.includes(PermissionDesk.investorRead)) {
+        return prev;
+      }
+
+      if (role.role.kind === RoleDesk.name) {
+        return prev.concat(role.role['desk']);
+      }
+
+      if (role.role.kind === RoleMultidesk.name) {
+        return prev.concat(role.effectiveDesks);
+      }
+
+      return prev;
+    }, []);
+
+    return await this.investorModel.find({ desk: { $in: deskIds } }).exec();
   }
 }

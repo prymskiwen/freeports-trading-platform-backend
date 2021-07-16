@@ -27,7 +27,7 @@ import {
     MailModule,
     forwardRef(() => AuthModule),
     forwardRef(() => DeskModule),
-    OrganizationModule,
+    forwardRef(() => OrganizationModule),
     forwardRef(() => RoleModule),
   ],
   controllers: [
