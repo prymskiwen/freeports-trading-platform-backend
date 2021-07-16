@@ -8,6 +8,7 @@ import { RoleModule } from './role/role.module';
 import { UserModule } from './user/user.module';
 import { InvestorModule } from './investor/investor.module';
 import { VaultModule } from './vault/vault.module';
+import { RequestModule } from './request/request.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { VaultModule } from './vault/vault.module';
     DeskModule,
     InvestorModule,
     OrganizationModule,
+    RequestModule,
     RoleModule,
     UserModule,
     VaultModule,

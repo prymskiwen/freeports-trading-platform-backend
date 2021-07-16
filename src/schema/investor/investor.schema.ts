@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes, Types } from 'mongoose';
 import { Desk } from '../desk/desk.schema';
+import { Request } from '../request/request.schema';
 import { User } from '../user/user.schema';
 import {
   InvestorAccountDocument,
@@ -22,6 +23,9 @@ export class Investor {
 
   @Prop({ type: [InvestorAccountSchema] })
   accounts?: Types.DocumentArray<InvestorAccountDocument>;
+
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'Request' }] })
+  requests?: Request[];
 }
 
 export const InvestorSchema = SchemaFactory.createForClass(Investor);
