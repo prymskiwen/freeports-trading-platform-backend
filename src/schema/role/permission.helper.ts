@@ -330,6 +330,16 @@ export const PermissionDesk = {
   accountRead: 'desk.#deskId#.account.read',
   accountCreate: 'desk.#deskId#.account.create',
   accountDelete: 'desk.#deskId#.account.delete',
+
+  requestTrade: 'desk.#deskId#.request.trade',
+  requestFund: 'desk.#deskId#.request.fund',
+  requestRefund: 'desk.#deskId#.request.refund',
+  requestMove: 'desk.#deskId#.request.move',
+
+  validateTrade: 'desk.#deskId#.validate.trade',
+  validateFund: 'desk.#deskId#.validate.fund',
+  validateRefund: 'desk.#deskId#.validate.refund',
+  validateMove: 'desk.#deskId#.validate.move',
 } as const;
 
 export const PermissionDeskGroup = [
@@ -418,6 +428,48 @@ export const PermissionDeskGroup = [
       {
         name: 'Delete',
         code: PermissionDesk.accountDelete,
+      },
+    ],
+  },
+  {
+    name: 'Make a request for ...',
+    permissions: [
+      {
+        name: 'Trade',
+        code: PermissionDesk.requestTrade,
+      },
+      {
+        name: 'Fund',
+        code: PermissionDesk.requestFund,
+      },
+      {
+        name: 'Refund',
+        code: PermissionDesk.requestRefund,
+      },
+      {
+        name: 'Assets move',
+        code: PermissionDesk.requestMove,
+      },
+    ],
+  },
+  {
+    name: 'Validate request for ...',
+    permissions: [
+      {
+        name: 'Trade',
+        code: PermissionDesk.validateTrade,
+      },
+      {
+        name: 'Fund',
+        code: PermissionDesk.validateFund,
+      },
+      {
+        name: 'Refund',
+        code: PermissionDesk.validateRefund,
+      },
+      {
+        name: 'Assets move',
+        code: PermissionDesk.validateMove,
       },
     ],
   },

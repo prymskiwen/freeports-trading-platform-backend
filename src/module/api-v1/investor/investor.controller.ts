@@ -224,7 +224,7 @@ export class InvestorController {
     type: DeleteInvestorResponseDto,
   })
   @ApiBadRequestResponse({
-    description: 'Impossible delete investor with accounts',
+    description: 'Impossible delete investor with accounts or requests',
     type: InvalidFormExceptionDto,
   })
   @ApiUnprocessableEntityResponse({
@@ -262,6 +262,10 @@ export class InvestorController {
 
     if (investor.accounts?.length) {
       throw new BadRequestException('Impossible delete investor with accounts');
+    }
+
+    if (investor.requests?.length) {
+      throw new BadRequestException('Impossible delete investor with requests');
     }
 
     await investor.remove();

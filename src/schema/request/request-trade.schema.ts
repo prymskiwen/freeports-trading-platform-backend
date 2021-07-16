@@ -35,6 +35,12 @@ export class RequestTrade {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Account' })
   accountTo: Account;
 
+  @Prop()
+  currencyFrom?: string;
+
+  @Prop()
+  currencyTo?: string;
+
   @Prop({ type: String, enum: RequestTradeType })
   type: RequestTradeType;
 

@@ -9,6 +9,8 @@ import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
 import { RoleMultidesk } from 'src/schema/role/role-multidesk.schema';
+import { RoleOrganization } from 'src/schema/role/role-organization.schema';
+import { PermissionOrganization } from 'src/schema/role/permission.helper';
 
 @Injectable()
 export class DeskService {
@@ -103,8 +105,38 @@ export class DeskService {
   }
 
   async getMyDeskList(user: UserDocument): Promise<DeskDocument[]> {
+    const organization = user.organization as OrganizationDocument;
+
     await user.populate('roles.role').execPopulate();
 
+    const hasPermission = user.roles.some((role) => {
+      // if role is not disabled
+      if (role.role.disabled) {
+        return false;
+      }
+
+      // if role kind is organization role
+      if (role.role.kind !== RoleOrganization.name) {
+        return false;
+      }
+
+      // and organization is the same the user belongs to
+      if (!organization.equals(role.role['organization'])) {
+        return false;
+      }
+
+      // and role has permission to read desks
+      return role.role.permissions.includes(PermissionOrganization.deskRead);
+    });
+
+    // we have access to any desk within organization
+    if (hasPermission) {
+      return await this.deskModel
+        .find({ organization: organization._id })
+        .exec();
+    }
+
+    // if we have no access to all desks check what we realted to by desk or multidesk roles
     const deskIds = user.roles.reduce((prev, role) => {
       if (role.role.disabled) {
         return prev;
