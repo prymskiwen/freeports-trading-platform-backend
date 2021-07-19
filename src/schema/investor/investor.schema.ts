@@ -15,6 +15,9 @@ export class Investor {
   @Prop()
   name: string;
 
+  @Prop()
+  createdAt?: Date;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   owner: User;
 
