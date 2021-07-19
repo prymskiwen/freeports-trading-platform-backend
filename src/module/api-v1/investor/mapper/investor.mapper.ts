@@ -54,6 +54,7 @@ export class InvestorMapper {
       this.toGetDto(document),
     );
 
+    dto.createdAt = document.createdAt;
     dto.accounts = document.accounts;
 
     return dto;

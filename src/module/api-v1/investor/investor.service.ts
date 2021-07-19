@@ -46,9 +46,10 @@ export class InvestorService {
   ): Promise<InvestorDocument> {
     const investor = new this.investorModel();
 
-    investor.desk = desk;
-    investor.owner = user;
     investor.name = request.name;
+    investor.createdAt = new Date();
+    investor.owner = user;
+    investor.desk = desk;
 
     if (persist) {
       await investor.save();
