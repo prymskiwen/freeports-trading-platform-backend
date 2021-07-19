@@ -40,6 +40,7 @@ export class InvestorMapper {
     const dto = new GetInvestorResponseDto();
 
     dto.id = document.id;
+    dto.desk = document.desk;
     dto.name = document.name;
 
     return dto;
