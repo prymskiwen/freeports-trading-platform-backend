@@ -63,7 +63,7 @@ export class RequestTrade {
   priceForInvestor: string;
 
   @Prop({ type: [RequestTradeRfqSchema] })
-  rfq?: Types.DocumentArray<RequestTradeRfqDocument>;
+  rfqs?: Types.DocumentArray<RequestTradeRfqDocument>;
 }
 
 export const RequestTradeSchema = SchemaFactory.createForClass(RequestTrade);

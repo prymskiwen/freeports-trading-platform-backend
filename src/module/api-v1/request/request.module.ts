@@ -23,6 +23,11 @@ import {
   RequestMoveSchema,
 } from 'src/schema/request/request-move.schema';
 import { InvestorModule } from '../investor/investor.module';
+import {
+  RequestTradeRfq,
+  RequestTradeRfqSchema,
+} from 'src/schema/request/embedded/request-trade-rfq.embedded';
+import { RequestTradeRfqController } from './request-trade-rfq.controller';
 
 @Module({
   imports: [
@@ -43,13 +48,14 @@ import { InvestorModule } from '../investor/investor.module';
           { name: RequestMove.name, schema: RequestMoveSchema },
         ],
       },
+      { name: RequestTradeRfq.name, schema: RequestTradeRfqSchema },
     ]),
     DeskModule,
     InvestorModule,
     OrganizationModule,
     UserModule,
   ],
-  controllers: [RequestTradeController],
+  controllers: [RequestTradeController, RequestTradeRfqController],
   providers: [RequestService],
   exports: [RequestService],
 })

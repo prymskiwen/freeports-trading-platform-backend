@@ -3,8 +3,8 @@ export class GetOrganizationResponseDto {
   name: string;
   createdAt: Date;
 
-  commissionOrganization?: number;
-  commissionClearer?: number;
+  commissionOrganization?: string;
+  commissionClearer?: string;
 
   userActive: number;
   userSuspended: number;
