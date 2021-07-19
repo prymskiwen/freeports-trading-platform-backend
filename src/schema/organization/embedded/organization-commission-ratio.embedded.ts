@@ -3,10 +3,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 @Schema({ versionKey: false, _id: false })
 export class OrganizationCommissionRatio {
   @Prop()
-  clearer?: number;
+  clearer?: string;
 
   @Prop()
-  organization?: number;
+  organization?: string;
 }
 
 export const OrganizationCommissionRatioSchema = SchemaFactory.createForClass(

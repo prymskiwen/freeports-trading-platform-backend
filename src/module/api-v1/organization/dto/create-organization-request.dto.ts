@@ -11,6 +11,6 @@ export class CreateOrganizationRequestDto {
   country?: string;
   logo?: string;
 
-  commissionOrganization?: number;
-  commissionClearer?: number;
+  commissionOrganization?: string;
+  commissionClearer?: string;
 }
