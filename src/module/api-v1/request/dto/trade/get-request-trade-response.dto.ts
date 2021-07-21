@@ -5,7 +5,7 @@ import { RequestStatus } from 'src/schema/request/request.schema';
 
 export class GetRequestTradeResponseDto {
   id: string;
-
+  friendlyId: string;
   status: RequestStatus;
   createdAt: Date;
 
