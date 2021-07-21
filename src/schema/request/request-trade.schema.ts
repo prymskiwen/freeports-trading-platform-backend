@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, SchemaTypes, Types } from 'mongoose';
+import { Document, Model, SchemaTypes, Types } from 'mongoose';
 import { Account } from '../account/account.schema';
 import { Investor } from '../investor/investor.schema';
 import { OperationRequest } from '../operation-request/operation-request.schema';
@@ -21,6 +21,7 @@ export type RequestTradeDocument = RequestTrade & Document;
 @Schema({ versionKey: false })
 export class RequestTrade {
   kind: string;
+  friendlyId: string;
   initiator: User;
   investor: Investor;
   createdAt?: Date;
@@ -67,3 +68,17 @@ export class RequestTrade {
 }
 
 export const RequestTradeSchema = SchemaFactory.createForClass(RequestTrade);
+
+RequestTradeSchema.pre<RequestTradeDocument>('save', async function () {
+  if (!this.isNew) {
+    return;
+  }
+
+  const model = <Model<RequestTradeDocument>>this.constructor;
+  const count = await model
+    .find({ investor: this.investor })
+    .countDocuments()
+    .exec();
+
+  this.friendlyId = `TR-${(count + 1).toString().padStart(6, '0')}`;
+});

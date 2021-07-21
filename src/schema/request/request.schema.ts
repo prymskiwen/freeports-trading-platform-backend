@@ -12,15 +12,15 @@ export enum RequestStatus {
   pending = 'pending', // wait for approve
   approved = 'approved', // approved by security officer
   refused = 'refused', // refused by security officer
-  partial = 'partial', // Partially accepted)
-  acccepted = 'acccepted', // Fully accepted)
-  processing = 'processing', // Waiting funds from Broker
-  done = 'done', //Clearer made reconciliation
+  partial = 'partial', // Partially accepted
+  acccepted = 'acccepted', // Fully accepted
+  processing = 'processing', // Waiting funds
+  done = 'done', // Clearer made reconciliation
 }
 
 export type RequestDocument = Request & Document;
 
-@Schema({ versionKey: false, discriminatorKey: 'kind' })
+@Schema({ versionKey: false, discriminatorKey: 'kind', autoIndex: true })
 export class Request {
   @Prop({
     type: String,
@@ -28,6 +28,9 @@ export class Request {
     enum: [RequestTrade.name, RequestFund.name, RequestRefund.name],
   })
   kind: string;
+
+  @Prop()
+  friendlyId: string;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   initiator: User;
@@ -56,3 +59,5 @@ export class Request {
 }
 
 export const RequestSchema = SchemaFactory.createForClass(Request);
+
+RequestSchema.index({ investor: 1, friendlyId: 1 }, { unique: true });

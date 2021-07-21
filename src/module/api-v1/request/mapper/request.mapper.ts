@@ -20,6 +20,7 @@ export class RequestMapper {
     const dto = new GetRequestTradeResponseDto();
 
     dto.id = document.id;
+    dto.friendlyId = document.friendlyId;
     dto.status = document.status;
     dto.createdAt = document.createdAt;
     dto.accountFrom = document.accountFrom;
