@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Model, SchemaTypes } from 'mongoose';
+import { Document, SchemaTypes } from 'mongoose';
 import { Account } from '../account/account.schema';
 import { InvestorAccount } from '../investor/embedded/investor-account.embedded';
 import { Investor } from '../investor/investor.schema';
@@ -32,17 +32,3 @@ export class RequestRefund {
 }
 
 export const RequestRefundSchema = SchemaFactory.createForClass(RequestRefund);
-
-RequestRefundSchema.pre<RequestRefundDocument>('save', async function () {
-  if (!this.isNew) {
-    return;
-  }
-
-  const model = <Model<RequestRefundDocument>>this.constructor;
-  const count = await model
-    .find({ investor: this.investor })
-    .countDocuments()
-    .exec();
-
-  this.friendlyId = `RE-${(count + 1).toString().padStart(6, '0')}`;
-});
