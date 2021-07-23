@@ -4,6 +4,8 @@ import {
   Get,
   Param,
   NotFoundException,
+  Post,
+  Body,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -27,6 +29,7 @@ import { OrganizationService } from '../organization/organization.service';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { RequestTradeRfqMapper } from './mapper/request-trade-rfq.mapper';
 import { GetRequestTradeRfqResponseDto } from './dto/trade/get-request-trade-rfq-response.dto';
+import { CreateRequestTradeRfqRequestDto } from './dto/trade/create-request-trade-rfq-request.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -92,9 +95,9 @@ export class RequestTradeRfqController {
     return requestTrade.rfqs.map((rfq) => RequestTradeRfqMapper.toGetDto(rfq));
   }
 
-  @Get('recent')
+  @Post()
   @Permissions(PermissionDesk.requestTrade)
-  @ApiOperation({ summary: 'Get recent RFQ for trade request' })
+  @ApiOperation({ summary: 'Get and persist recent RFQ for trade request' })
   @ApiOkResponse({ type: GetRequestTradeRfqResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -109,6 +112,7 @@ export class RequestTradeRfqController {
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('tradeId', ParseObjectIdPipe) tradeId: string,
+    @Body() request: CreateRequestTradeRfqRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<GetRequestTradeRfqResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
@@ -140,7 +144,11 @@ export class RequestTradeRfqController {
       throw new NotFoundException();
     }
 
-    const rfq = await this.requestService.createRfq(requestTrade, userCurrent);
+    const rfq = await this.requestService.createRfq(
+      requestTrade,
+      request,
+      userCurrent,
+    );
 
     return RequestTradeRfqMapper.toGetDto(rfq);
   }

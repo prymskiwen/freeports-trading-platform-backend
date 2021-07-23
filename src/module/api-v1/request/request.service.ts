@@ -15,6 +15,7 @@ import {
   RequestTradeRfqDocument,
 } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
+import { CreateRequestTradeRfqRequestDto } from './dto/trade/create-request-trade-rfq-request.dto';
 
 @Injectable()
 export class RequestService {
@@ -82,20 +83,22 @@ export class RequestService {
 
   async createRfq(
     requestTrade: RequestTradeDocument,
+    request: CreateRequestTradeRfqRequestDto,
     user: UserDocument,
     persist = true,
   ): Promise<RequestTradeRfqDocument> {
     const rfq = new this.requestTradeRfqModel();
 
     rfq.initiator = user;
+    rfq.quantity = request.quantity;
 
     // TODO: broker API request here
     // calculate side and instrument
+    // get quantity from request
     //
     // rfq.validUntil = requestBroker['valid_until'];
     // rfq.rfqId = requestBroker['rfq_id'];
     // rfq.clientRfqId = requestBroker['client_rfq_id'];
-    // rfq.quantity = requestBroker['quantity'];
     // rfq.side = requestBroker['side'];
     // rfq.instrument = requestBroker['instrument'];
     // rfq.price = requestBroker['price'];
