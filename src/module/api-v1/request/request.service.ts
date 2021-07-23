@@ -16,6 +16,7 @@ import {
 } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
 import { CreateRequestTradeRfqRequestDto } from './dto/trade/create-request-trade-rfq-request.dto';
+import { InvestorService } from '../investor/investor.service';
 
 @Injectable()
 export class RequestService {
@@ -24,6 +25,7 @@ export class RequestService {
     private requestTradeModel: Model<RequestTradeDocument>,
     @InjectModel(RequestTradeRfq.name)
     private requestTradeRfqModel: Model<RequestTradeRfqDocument>,
+    private readonly investorService: InvestorService,
   ) {}
 
   async getRequestTradeList(
@@ -45,6 +47,16 @@ export class RequestService {
         _id: requestTradeId,
         investor: investor,
       })
+      .exec();
+  }
+
+  async getRequestTradeMyList(
+    user: UserDocument,
+  ): Promise<RequestTradeDocument[]> {
+    const investors = await this.investorService.getMyInvestorList(user);
+
+    return await this.requestTradeModel
+      .find({ investor: { $in: investors } })
       .exec();
   }
 

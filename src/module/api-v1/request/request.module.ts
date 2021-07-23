@@ -28,6 +28,7 @@ import {
   RequestTradeRfqSchema,
 } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 import { RequestTradeRfqController } from './request-trade-rfq.controller';
+import { RequestTradeMyController } from './request-trade-my.controller';
 
 @Module({
   imports: [
@@ -55,7 +56,11 @@ import { RequestTradeRfqController } from './request-trade-rfq.controller';
     OrganizationModule,
     UserModule,
   ],
-  controllers: [RequestTradeController, RequestTradeRfqController],
+  controllers: [
+    RequestTradeController,
+    RequestTradeRfqController,
+    RequestTradeMyController,
+  ],
   providers: [RequestService],
   exports: [RequestService],
 })
