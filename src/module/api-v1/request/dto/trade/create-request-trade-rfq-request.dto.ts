@@ -1,6 +1,7 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumberString } from 'class-validator';
 
 export class CreateRequestTradeRfqRequestDto {
   @IsNotEmpty()
+  @IsNumberString()
   quantity: string;
 }

@@ -30,6 +30,8 @@ import { ExceptionDto } from 'src/exeption/dto/exception.dto';
 import { RequestTradeRfqMapper } from './mapper/request-trade-rfq.mapper';
 import { GetRequestTradeRfqResponseDto } from './dto/trade/get-request-trade-rfq-response.dto';
 import { CreateRequestTradeRfqRequestDto } from './dto/trade/create-request-trade-rfq-request.dto';
+import { InvalidFormException } from 'src/exeption/invalid-form.exception';
+import BigNumber from 'bignumber.js';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -142,6 +144,24 @@ export class RequestTradeRfqController {
 
     if (!requestTrade) {
       throw new NotFoundException();
+    }
+
+    // TODO: get total quantity from orders (broker orders / validated rfq)
+    const quantityOrder = new BigNumber(0);
+    const quantityRequest = new BigNumber(request.quantity);
+    const quantityRequestTrade = new BigNumber(requestTrade.quantity);
+    if (
+      !quantityRequest.gt(0) ||
+      quantityRequest.gt(quantityRequestTrade.minus(quantityOrder))
+    ) {
+      throw new InvalidFormException([
+        {
+          path: 'quantity',
+          constraints: {
+            IsMatch: `rfq quantity should be positive and less or equal trade request quantity (${quantityRequestTrade}) - order quantity (${quantityOrder})`,
+          },
+        },
+      ]);
     }
 
     const rfq = await this.requestService.createRfq(

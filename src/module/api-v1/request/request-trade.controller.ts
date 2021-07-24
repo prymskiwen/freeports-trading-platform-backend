@@ -149,7 +149,7 @@ export class RequestTradeController {
         {
           path: 'accountFrom',
           constraints: {
-            IsUnique: `accountFrom not found as organizaton account`,
+            IsExist: `accountFrom not found as organizaton account`,
           },
         },
       ]);
@@ -164,7 +164,7 @@ export class RequestTradeController {
         {
           path: 'accountTo',
           constraints: {
-            IsUnique: `accountTo not found as organizaton account`,
+            IsExist: `accountTo not found as organizaton account`,
           },
         },
       ]);
