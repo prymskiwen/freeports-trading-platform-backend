@@ -8,12 +8,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
-import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
+import JwtTwoFactorGuard from '../../../auth/guard/jwt-two-factor.guard';
 import { UserDocument } from 'src/schema/user/user.schema';
-import { CurrentUser } from '../auth/decorator/current-user.decorator';
-import { RequestService } from './request.service';
-import { GetRequestTradeMyResponseDto } from './dto/trade/get-request-trade-my-response.dto';
-import { RequestMapper } from './mapper/request.mapper';
+import { CurrentUser } from '../../../auth/decorator/current-user.decorator';
+import { RequestService } from '../../request.service';
+import { GetRequestTradeMyResponseDto } from '../../dto/trade/get-request-trade-my-response.dto';
+import { RequestTradeMapper } from '../../mapper/request-trade.mapper';
 
 @UseGuards(JwtTwoFactorGuard)
 @Controller('api/v1/my/request/trade')
@@ -41,9 +41,7 @@ export class RequestTradeMyController {
     );
 
     return await Promise.all(
-      requests.map(
-        async (req) => await RequestMapper.toGetRequestTradeMyDto(req),
-      ),
+      requests.map(async (req) => await RequestTradeMapper.toGetMyDto(req)),
     );
   }
 }

@@ -24,6 +24,7 @@ export class RequestTrade {
   friendlyId: string;
   initiator: User;
   investor: Investor;
+  quantity: string;
   createdAt?: Date;
   modifiedAt?: Date;
   status: RequestStatus;
@@ -50,9 +51,6 @@ export class RequestTrade {
 
   @Prop()
   limitTime?: Date;
-
-  @Prop()
-  quantity: string;
 
   @Prop()
   commissionClearer: string;

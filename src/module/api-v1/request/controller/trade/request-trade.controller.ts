@@ -17,22 +17,22 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { Permissions } from '../auth/decorator/permissions.decorator';
-import { PermissionsGuard } from '../auth/guard/permissions.guard';
-import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
+import { Permissions } from '../../../auth/decorator/permissions.decorator';
+import { PermissionsGuard } from '../../../auth/guard/permissions.guard';
+import JwtTwoFactorGuard from '../../../auth/guard/jwt-two-factor.guard';
 import { PermissionDesk } from 'src/schema/role/permission.helper';
-import { RequestService } from './request.service';
-import { GetRequestTradeResponseDto } from './dto/trade/get-request-trade-response.dto';
-import { RequestMapper } from './mapper/request.mapper';
-import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { RequestService } from '../../request.service';
+import { GetRequestTradeResponseDto } from '../../dto/trade/get-request-trade-response.dto';
+import { RequestTradeMapper } from '../../mapper/request-trade.mapper';
+import { CurrentUser } from '../../../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
-import { DeskService } from '../desk/desk.service';
-import { InvestorService } from '../investor/investor.service';
-import { OrganizationService } from '../organization/organization.service';
+import { DeskService } from '../../../desk/desk.service';
+import { InvestorService } from '../../../investor/investor.service';
+import { OrganizationService } from '../../../organization/organization.service';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
-import { CreateRequestResponseDto } from './dto/create-request-response.dto';
-import { CreateRequestTradeRequestDto } from './dto/trade/create-request-trade-request.dto';
+import { CreateRequestResponseDto } from '../../dto/create-request-response.dto';
+import { CreateRequestTradeRequestDto } from '../../dto/trade/create-request-trade-request.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
 import { InvalidFormException } from 'src/exeption/invalid-form.exception';
 
@@ -89,9 +89,7 @@ export class RequestTradeController {
 
     const requests = await this.requestService.getRequestTradeList(investor);
 
-    return requests.map((request) =>
-      RequestMapper.toGetRequestTradeDto(request),
-    );
+    return requests.map((request) => RequestTradeMapper.toGetDto(request));
   }
 
   @Post()
@@ -180,6 +178,6 @@ export class RequestTradeController {
     );
     await investor.updateOne({ $push: { requests: requestTrade._id } });
 
-    return RequestMapper.toCreateDto(requestTrade);
+    return RequestTradeMapper.toCreateDto(requestTrade);
   }
 }

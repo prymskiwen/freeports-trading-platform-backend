@@ -8,7 +8,7 @@ import { InvestorDocument } from 'src/schema/investor/investor.schema';
 import { DeskMapper } from '../../desk/mapper/desk.mapper';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
 
-export class RequestMapper {
+export class RequestTradeMapper {
   public static toCreateDto(
     document: RequestDocument,
   ): CreateRequestResponseDto {
@@ -19,7 +19,7 @@ export class RequestMapper {
     return dto;
   }
 
-  public static toGetRequestTradeDto(
+  public static toGetDto(
     document: RequestTradeDocument,
   ): GetRequestTradeResponseDto {
     const dto = new GetRequestTradeResponseDto();
@@ -40,12 +40,12 @@ export class RequestMapper {
     return dto;
   }
 
-  public static async toGetRequestTradeMyDto(
+  public static async toGetMyDto(
     document: RequestTradeDocument,
   ): Promise<GetRequestTradeMyResponseDto> {
     const dto = Object.assign(
       new GetRequestTradeMyResponseDto(),
-      this.toGetRequestTradeDto(document),
+      this.toGetDto(document),
     );
 
     await document.populate('investor').execPopulate();

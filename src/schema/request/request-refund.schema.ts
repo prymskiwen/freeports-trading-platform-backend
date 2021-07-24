@@ -15,6 +15,7 @@ export class RequestRefund {
   friendlyId: string;
   initiator: User;
   investor: Investor;
+  quantity: string;
   createdAt?: Date;
   modifiedAt?: Date;
   status: RequestStatus;
@@ -26,9 +27,6 @@ export class RequestRefund {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Account' })
   accountTo?: InvestorAccount;
-
-  @Prop()
-  quantity: string;
 }
 
 export const RequestRefundSchema = SchemaFactory.createForClass(RequestRefund);

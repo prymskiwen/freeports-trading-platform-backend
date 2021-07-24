@@ -53,6 +53,9 @@ export class Request {
   investor: Investor;
 
   @Prop()
+  quantity: string;
+
+  @Prop()
   createdAt?: Date;
 
   @Prop()
