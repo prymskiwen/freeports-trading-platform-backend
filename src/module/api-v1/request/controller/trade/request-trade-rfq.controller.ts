@@ -100,7 +100,7 @@ export class RequestTradeRfqController {
   @Post()
   @Permissions(PermissionDesk.requestTrade)
   @ApiOperation({ summary: 'Get and persist recent RFQ for trade request' })
-  @ApiOkResponse({ type: GetRequestTradeRfqResponseDto })
+  @ApiOkResponse({ type: [GetRequestTradeRfqResponseDto] })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -116,7 +116,7 @@ export class RequestTradeRfqController {
     @Param('tradeId', ParseObjectIdPipe) tradeId: string,
     @Body() request: CreateRequestTradeRfqRequestDto,
     @CurrentUser() userCurrent: UserDocument,
-  ): Promise<GetRequestTradeRfqResponseDto> {
+  ): Promise<GetRequestTradeRfqResponseDto[]> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -164,12 +164,12 @@ export class RequestTradeRfqController {
       ]);
     }
 
-    const rfq = await this.requestService.createRfq(
+    const rfqs = await this.requestService.createRfq(
       requestTrade,
       request,
       userCurrent,
     );
 
-    return RequestTradeRfqMapper.toGetDto(rfq);
+    return rfqs.map((rfq) => RequestTradeRfqMapper.toGetDto(rfq));
   }
 }
