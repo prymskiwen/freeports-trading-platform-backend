@@ -2,7 +2,7 @@ import { CreateRequestResponseDto } from '../dto/create-request-response.dto';
 import { RequestDocument } from 'src/schema/request/request.schema';
 import { GetRequestTradeResponseDto } from '../dto/trade/get-request-trade-response.dto';
 import { RequestTradeDocument } from 'src/schema/request/request-trade.schema';
-import { GetRequestTradeMyResponseDto } from '../dto/trade/get-request-trade-my-response.dto';
+import { GetRequestTradeDetailsResponseDto } from '../dto/trade/get-request-trade-details-response.dto';
 import { InvestorMapper } from '../../investor/mapper/investor.mapper';
 import { InvestorDocument } from 'src/schema/investor/investor.schema';
 import { DeskMapper } from '../../desk/mapper/desk.mapper';
@@ -40,11 +40,11 @@ export class RequestTradeMapper {
     return dto;
   }
 
-  public static async toGetMyDto(
+  public static async toGetDetailsDto(
     document: RequestTradeDocument,
-  ): Promise<GetRequestTradeMyResponseDto> {
+  ): Promise<GetRequestTradeDetailsResponseDto> {
     const dto = Object.assign(
-      new GetRequestTradeMyResponseDto(),
+      new GetRequestTradeDetailsResponseDto(),
       this.toGetDto(document),
     );
 

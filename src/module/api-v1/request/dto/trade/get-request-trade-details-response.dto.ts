@@ -3,7 +3,7 @@ import { GetDeskResponseDto } from 'src/module/api-v1/desk/dto/get-desk-response
 import { GetInvestorResponseDto } from 'src/module/api-v1/investor/dto/get-investor-response.dto';
 import { GetRequestTradeResponseDto } from './get-request-trade-response.dto';
 
-export class GetRequestTradeMyResponseDto extends GetRequestTradeResponseDto {
+export class GetRequestTradeDetailsResponseDto extends GetRequestTradeResponseDto {
   desk: GetDeskResponseDto;
 
   @ApiProperty({ type: GetInvestorResponseDto })
