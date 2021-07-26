@@ -12,7 +12,7 @@ import JwtTwoFactorGuard from '../../../auth/guard/jwt-two-factor.guard';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CurrentUser } from '../../../auth/decorator/current-user.decorator';
 import { RequestService } from '../../request.service';
-import { GetRequestTradeMyResponseDto } from '../../dto/trade/get-request-trade-my-response.dto';
+import { GetRequestTradeDetailsResponseDto } from '../../dto/trade/get-request-trade-details-response.dto';
 import { RequestTradeMapper } from '../../mapper/request-trade.mapper';
 
 @UseGuards(JwtTwoFactorGuard)
@@ -24,7 +24,7 @@ export class RequestTradeMyController {
 
   @Get()
   @ApiOperation({ summary: 'Get trade request list a user has access to' })
-  @ApiOkResponse({ type: [GetRequestTradeMyResponseDto] })
+  @ApiOkResponse({ type: [GetRequestTradeDetailsResponseDto] })
   @ApiUnauthorizedResponse({
     description: 'Not authenticated',
     type: ExceptionDto,
@@ -35,13 +35,15 @@ export class RequestTradeMyController {
   })
   async getRequestTradeMyList(
     @CurrentUser() userCurrent: UserDocument,
-  ): Promise<GetRequestTradeMyResponseDto[]> {
+  ): Promise<GetRequestTradeDetailsResponseDto[]> {
     const requests = await this.requestService.getRequestTradeMyList(
       userCurrent,
     );
 
     return await Promise.all(
-      requests.map(async (req) => await RequestTradeMapper.toGetMyDto(req)),
+      requests.map(
+        async (req) => await RequestTradeMapper.toGetDetailsDto(req),
+      ),
     );
   }
 }

@@ -8,6 +8,7 @@ export class RequestTradeRfqMapper {
     const dto = new GetRequestTradeRfqResponseDto();
 
     dto.id = document.id;
+    dto.brokerId = document.brokerId || 'N/A';
     dto.createdAt = document.createdAt;
     dto.validUntil = document.validUntil;
     dto.quantity = document.quantity;

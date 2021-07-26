@@ -120,13 +120,14 @@ export class RequestService {
     request: CreateRequestTradeRfqRequestDto,
     user: UserDocument,
     persist = true,
-  ): Promise<RequestTradeRfqDocument> {
+  ): Promise<RequestTradeRfqDocument[]> {
     const rfq = new this.requestTradeRfqModel();
 
     rfq.initiator = user;
     rfq.quantity = request.quantity;
 
     // TODO: broker API request here
+    rfq.brokerId = 'broker 1';
     // calculate side and instrument
     // get quantity from request
     //
@@ -147,7 +148,7 @@ export class RequestService {
       await requestTrade.save();
     }
 
-    return rfq;
+    return [rfq];
   }
 
   async getRequestFundList(

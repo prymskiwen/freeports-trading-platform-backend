@@ -35,6 +35,7 @@ import { CreateRequestResponseDto } from '../../dto/create-request-response.dto'
 import { CreateRequestTradeRequestDto } from '../../dto/trade/create-request-trade-request.dto';
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
 import { InvalidFormException } from 'src/exeption/invalid-form.exception';
+import { GetRequestTradeDetailsResponseDto } from '../../dto/trade/get-request-trade-details-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -90,6 +91,56 @@ export class RequestTradeController {
     const requests = await this.requestService.getRequestTradeList(investor);
 
     return requests.map((request) => RequestTradeMapper.toGetDto(request));
+  }
+
+  @Get(':tradeId')
+  @Permissions(PermissionDesk.requestTrade)
+  @ApiOperation({ summary: 'Get trade request' })
+  @ApiOkResponse({ type: GetRequestTradeDetailsResponseDto })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Trade request has not been found',
+    type: ExceptionDto,
+  })
+  async getInvestor(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('investorId', ParseObjectIdPipe) investorId: string,
+    @Param('tradeId', ParseObjectIdPipe) tradeId: string,
+  ): Promise<GetRequestTradeDetailsResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
+    const investor = await this.investorService.getInvestorById(
+      investorId,
+      desk,
+    );
+
+    if (!investor) {
+      throw new NotFoundException();
+    }
+
+    const requestTrade = await this.requestService.getRequestTradeById(
+      tradeId,
+      investor,
+    );
+
+    if (!requestTrade) {
+      throw new NotFoundException();
+    }
+
+    return RequestTradeMapper.toGetDetailsDto(requestTrade);
   }
 
   @Post()
