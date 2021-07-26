@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { OrganizationModule } from '../organization/organization.module';
 import { DeskModule } from '../desk/desk.module';
 import { UserModule } from '../user/user.module';
-import { RequestTradeController } from './request-trade.controller';
+import { RequestTradeController } from './controller/trade/request-trade.controller';
 import { RequestService } from './request.service';
 import { Request, RequestSchema } from 'src/schema/request/request.schema';
 import {
@@ -27,7 +27,11 @@ import {
   RequestTradeRfq,
   RequestTradeRfqSchema,
 } from 'src/schema/request/embedded/request-trade-rfq.embedded';
-import { RequestTradeRfqController } from './request-trade-rfq.controller';
+import { RequestTradeRfqController } from './controller/trade/request-trade-rfq.controller';
+import { RequestTradeMyController } from './controller/trade/request-trade-my.controller';
+import { RequestFundController } from './controller/request-fund.controller';
+import { RequestRefundController } from './controller/request-refund.controller';
+import { RequestMoveController } from './controller/request-move.controller';
 
 @Module({
   imports: [
@@ -55,7 +59,14 @@ import { RequestTradeRfqController } from './request-trade-rfq.controller';
     OrganizationModule,
     UserModule,
   ],
-  controllers: [RequestTradeController, RequestTradeRfqController],
+  controllers: [
+    RequestTradeMyController,
+    RequestTradeController,
+    RequestTradeRfqController,
+    RequestFundController,
+    RequestRefundController,
+    RequestMoveController,
+  ],
   providers: [RequestService],
   exports: [RequestService],
 })

@@ -4,11 +4,16 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
+  IsNumberString,
   ValidateIf,
 } from 'class-validator';
 import { RequestTradeType } from 'src/schema/request/request-trade.schema';
 
 export class CreateRequestTradeRequestDto {
+  @IsNotEmpty()
+  @IsNumberString()
+  quantity: string;
+
   @IsNotEmpty()
   @IsMongoId()
   @ApiProperty({ type: String, description: 'Trade account from Id' })
@@ -22,9 +27,6 @@ export class CreateRequestTradeRequestDto {
   @IsNotEmpty()
   @IsEnum(RequestTradeType)
   type: RequestTradeType;
-
-  @IsNotEmpty()
-  quantity: string;
 
   @ValidateIf((o) => o.type === RequestTradeType.limit)
   @IsNotEmpty()

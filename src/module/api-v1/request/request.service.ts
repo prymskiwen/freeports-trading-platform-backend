@@ -15,6 +15,24 @@ import {
   RequestTradeRfqDocument,
 } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 import { OrganizationDocument } from 'src/schema/organization/organization.schema';
+import { CreateRequestTradeRfqRequestDto } from './dto/trade/create-request-trade-rfq-request.dto';
+import { InvestorService } from '../investor/investor.service';
+import {
+  RequestFund,
+  RequestFundDocument,
+} from 'src/schema/request/request-fund.schema';
+import { CreateRequestFundRequestDto } from './dto/fund/create-request-fund-request.dto';
+import {
+  RequestRefund,
+  RequestRefundDocument,
+} from 'src/schema/request/request-refund.schema';
+import {
+  RequestMove,
+  RequestMoveDocument,
+} from 'src/schema/request/request-move.schema';
+import { InvestorAccountDocument } from 'src/schema/investor/embedded/investor-account.embedded';
+import { CreateRequestRefundRequestDto } from './dto/refund/create-request-refund-request.dto';
+import { CreateRequestMoveRequestDto } from './dto/move/create-request-move-request.dto';
 
 @Injectable()
 export class RequestService {
@@ -23,6 +41,13 @@ export class RequestService {
     private requestTradeModel: Model<RequestTradeDocument>,
     @InjectModel(RequestTradeRfq.name)
     private requestTradeRfqModel: Model<RequestTradeRfqDocument>,
+    @InjectModel(RequestFund.name)
+    private requestFundModel: Model<RequestFundDocument>,
+    @InjectModel(RequestRefund.name)
+    private requestRefundModel: Model<RequestRefundDocument>,
+    @InjectModel(RequestMove.name)
+    private requestMoveModel: Model<RequestMoveDocument>,
+    private readonly investorService: InvestorService,
   ) {}
 
   async getRequestTradeList(
@@ -44,6 +69,16 @@ export class RequestService {
         _id: requestTradeId,
         investor: investor,
       })
+      .exec();
+  }
+
+  async getRequestTradeMyList(
+    user: UserDocument,
+  ): Promise<RequestTradeDocument[]> {
+    const investors = await this.investorService.getMyInvestorList(user);
+
+    return await this.requestTradeModel
+      .find({ investor: { $in: investors } })
       .exec();
   }
 
@@ -82,20 +117,22 @@ export class RequestService {
 
   async createRfq(
     requestTrade: RequestTradeDocument,
+    request: CreateRequestTradeRfqRequestDto,
     user: UserDocument,
     persist = true,
   ): Promise<RequestTradeRfqDocument> {
     const rfq = new this.requestTradeRfqModel();
 
     rfq.initiator = user;
+    rfq.quantity = request.quantity;
 
     // TODO: broker API request here
     // calculate side and instrument
+    // get quantity from request
     //
     // rfq.validUntil = requestBroker['valid_until'];
     // rfq.rfqId = requestBroker['rfq_id'];
     // rfq.clientRfqId = requestBroker['client_rfq_id'];
-    // rfq.quantity = requestBroker['quantity'];
     // rfq.side = requestBroker['side'];
     // rfq.instrument = requestBroker['instrument'];
     // rfq.price = requestBroker['price'];
@@ -111,5 +148,145 @@ export class RequestService {
     }
 
     return rfq;
+  }
+
+  async getRequestFundList(
+    investor: InvestorDocument,
+  ): Promise<RequestFundDocument[]> {
+    return await this.requestFundModel
+      .find({
+        investor: investor._id,
+      })
+      .exec();
+  }
+
+  async getRequestFundById(
+    requestFundId: string,
+    investor: InvestorDocument,
+  ): Promise<RequestFundDocument> {
+    return await this.requestFundModel
+      .findOne({
+        _id: requestFundId,
+        investor: investor,
+      })
+      .exec();
+  }
+
+  async createRequestFund(
+    investor: InvestorDocument,
+    accountFrom: InvestorAccountDocument,
+    accountTo: OrganizationClearing,
+    request: CreateRequestFundRequestDto,
+    user: UserDocument,
+    persist = true,
+  ): Promise<RequestFundDocument> {
+    const fund = new this.requestFundModel();
+
+    fund.status = RequestStatus.requesting;
+    fund.investor = investor;
+    fund.initiator = user;
+    fund.quantity = request.quantity;
+    fund.createdAt = new Date();
+    fund.accountFrom = accountFrom;
+    fund.accountTo = accountTo.account;
+
+    if (persist) {
+      await fund.save();
+    }
+
+    return fund;
+  }
+
+  async getRequestRefundList(
+    investor: InvestorDocument,
+  ): Promise<RequestRefundDocument[]> {
+    return await this.requestRefundModel
+      .find({
+        investor: investor._id,
+      })
+      .exec();
+  }
+
+  async getRequestRefundById(
+    requestRefundId: string,
+    investor: InvestorDocument,
+  ): Promise<RequestRefundDocument> {
+    return await this.requestRefundModel
+      .findOne({
+        _id: requestRefundId,
+        investor: investor,
+      })
+      .exec();
+  }
+
+  async createRequestRefund(
+    investor: InvestorDocument,
+    accountFrom: OrganizationClearing,
+    accountTo: InvestorAccountDocument,
+    request: CreateRequestRefundRequestDto,
+    user: UserDocument,
+    persist = true,
+  ): Promise<RequestRefundDocument> {
+    const refund = new this.requestRefundModel();
+
+    refund.status = RequestStatus.requesting;
+    refund.investor = investor;
+    refund.initiator = user;
+    refund.quantity = request.quantity;
+    refund.createdAt = new Date();
+    refund.accountFrom = accountFrom.account;
+    refund.accountTo = accountTo;
+
+    if (persist) {
+      await refund.save();
+    }
+
+    return refund;
+  }
+
+  async getRequestMoveList(
+    investor: InvestorDocument,
+  ): Promise<RequestMoveDocument[]> {
+    return await this.requestMoveModel
+      .find({
+        investor: investor._id,
+      })
+      .exec();
+  }
+
+  async getRequestMoveById(
+    requestMoveId: string,
+    investor: InvestorDocument,
+  ): Promise<RequestMoveDocument> {
+    return await this.requestMoveModel
+      .findOne({
+        _id: requestMoveId,
+        investor: investor,
+      })
+      .exec();
+  }
+
+  async createRequestMove(
+    investor: InvestorDocument,
+    accountFrom: InvestorAccountDocument,
+    request: CreateRequestMoveRequestDto,
+    user: UserDocument,
+    persist = true,
+  ): Promise<RequestMoveDocument> {
+    const move = new this.requestMoveModel();
+
+    move.status = RequestStatus.requesting;
+    move.investor = investor;
+    move.initiator = user;
+    move.quantity = request.quantity;
+    move.createdAt = new Date();
+    move.accountFrom = accountFrom;
+    move.publicAddressTo = request.publicAddressTo;
+
+    if (persist) {
+      await move.save();
+    }
+
+    return move;
   }
 }

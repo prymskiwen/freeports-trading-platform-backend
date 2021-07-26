@@ -14,6 +14,7 @@ export class RequestMove {
   friendlyId: string;
   initiator: User;
   investor: Investor;
+  quantity: string;
   createdAt?: Date;
   modifiedAt?: Date;
   status: RequestStatus;
@@ -25,9 +26,6 @@ export class RequestMove {
 
   @Prop()
   publicAddressTo?: string;
-
-  @Prop()
-  quantity: string;
 }
 
 export const RequestMoveSchema = SchemaFactory.createForClass(RequestMove);

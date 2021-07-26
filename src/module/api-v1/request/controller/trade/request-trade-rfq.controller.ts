@@ -4,6 +4,8 @@ import {
   Get,
   Param,
   NotFoundException,
+  Post,
+  Body,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -13,20 +15,23 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { Permissions } from '../auth/decorator/permissions.decorator';
-import { PermissionsGuard } from '../auth/guard/permissions.guard';
-import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
+import { Permissions } from '../../../auth/decorator/permissions.decorator';
+import { PermissionsGuard } from '../../../auth/guard/permissions.guard';
+import JwtTwoFactorGuard from '../../../auth/guard/jwt-two-factor.guard';
 import { PermissionDesk } from 'src/schema/role/permission.helper';
-import { RequestService } from './request.service';
-import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { RequestService } from '../../request.service';
+import { CurrentUser } from '../../../auth/decorator/current-user.decorator';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
-import { DeskService } from '../desk/desk.service';
-import { InvestorService } from '../investor/investor.service';
-import { OrganizationService } from '../organization/organization.service';
+import { DeskService } from '../../../desk/desk.service';
+import { InvestorService } from '../../../investor/investor.service';
+import { OrganizationService } from '../../../organization/organization.service';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
-import { RequestTradeRfqMapper } from './mapper/request-trade-rfq.mapper';
-import { GetRequestTradeRfqResponseDto } from './dto/trade/get-request-trade-rfq-response.dto';
+import { RequestTradeRfqMapper } from '../../mapper/request-trade-rfq.mapper';
+import { GetRequestTradeRfqResponseDto } from '../../dto/trade/get-request-trade-rfq-response.dto';
+import { CreateRequestTradeRfqRequestDto } from '../../dto/trade/create-request-trade-rfq-request.dto';
+import { InvalidFormException } from 'src/exeption/invalid-form.exception';
+import BigNumber from 'bignumber.js';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -92,9 +97,9 @@ export class RequestTradeRfqController {
     return requestTrade.rfqs.map((rfq) => RequestTradeRfqMapper.toGetDto(rfq));
   }
 
-  @Get('recent')
+  @Post()
   @Permissions(PermissionDesk.requestTrade)
-  @ApiOperation({ summary: 'Get recent RFQ for trade request' })
+  @ApiOperation({ summary: 'Get and persist recent RFQ for trade request' })
   @ApiOkResponse({ type: GetRequestTradeRfqResponseDto })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -109,6 +114,7 @@ export class RequestTradeRfqController {
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('tradeId', ParseObjectIdPipe) tradeId: string,
+    @Body() request: CreateRequestTradeRfqRequestDto,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<GetRequestTradeRfqResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
@@ -140,7 +146,29 @@ export class RequestTradeRfqController {
       throw new NotFoundException();
     }
 
-    const rfq = await this.requestService.createRfq(requestTrade, userCurrent);
+    // TODO: get total quantity from orders (broker orders / validated rfq)
+    const quantityOrder = new BigNumber(0);
+    const quantityRequest = new BigNumber(request.quantity);
+    const quantityRequestTrade = new BigNumber(requestTrade.quantity);
+    if (
+      !quantityRequest.gt(0) ||
+      quantityRequest.gt(quantityRequestTrade.minus(quantityOrder))
+    ) {
+      throw new InvalidFormException([
+        {
+          path: 'quantity',
+          constraints: {
+            IsMatch: `rfq quantity should be positive and less or equal trade request quantity (${quantityRequestTrade}) - order quantity (${quantityOrder})`,
+          },
+        },
+      ]);
+    }
+
+    const rfq = await this.requestService.createRfq(
+      requestTrade,
+      request,
+      userCurrent,
+    );
 
     return RequestTradeRfqMapper.toGetDto(rfq);
   }

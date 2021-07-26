@@ -2,8 +2,13 @@ import { CreateRequestResponseDto } from '../dto/create-request-response.dto';
 import { RequestDocument } from 'src/schema/request/request.schema';
 import { GetRequestTradeResponseDto } from '../dto/trade/get-request-trade-response.dto';
 import { RequestTradeDocument } from 'src/schema/request/request-trade.schema';
+import { GetRequestTradeMyResponseDto } from '../dto/trade/get-request-trade-my-response.dto';
+import { InvestorMapper } from '../../investor/mapper/investor.mapper';
+import { InvestorDocument } from 'src/schema/investor/investor.schema';
+import { DeskMapper } from '../../desk/mapper/desk.mapper';
+import { DeskDocument } from 'src/schema/desk/desk.schema';
 
-export class RequestMapper {
+export class RequestTradeMapper {
   public static toCreateDto(
     document: RequestDocument,
   ): CreateRequestResponseDto {
@@ -14,7 +19,7 @@ export class RequestMapper {
     return dto;
   }
 
-  public static toGetRequestTradeDto(
+  public static toGetDto(
     document: RequestTradeDocument,
   ): GetRequestTradeResponseDto {
     const dto = new GetRequestTradeResponseDto();
@@ -31,6 +36,27 @@ export class RequestMapper {
     dto.quantity = document.quantity;
     dto.limitPrice = document.limitPrice;
     dto.limitTime = document.limitTime;
+
+    return dto;
+  }
+
+  public static async toGetMyDto(
+    document: RequestTradeDocument,
+  ): Promise<GetRequestTradeMyResponseDto> {
+    const dto = Object.assign(
+      new GetRequestTradeMyResponseDto(),
+      this.toGetDto(document),
+    );
+
+    await document.populate('investor').execPopulate();
+    dto.investor = InvestorMapper.toGetDto(
+      document.investor as InvestorDocument,
+    );
+
+    await document
+      .populate({ path: 'investor', populate: { path: 'desk' } })
+      .execPopulate();
+    dto.desk = DeskMapper.toGetDto(document.investor.desk as DeskDocument);
 
     return dto;
   }

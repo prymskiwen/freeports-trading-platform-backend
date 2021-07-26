@@ -15,6 +15,7 @@ export class RequestFund {
   friendlyId: string;
   initiator: User;
   investor: Investor;
+  quantity: string;
   createdAt?: Date;
   modifiedAt?: Date;
   status: RequestStatus;
@@ -26,9 +27,6 @@ export class RequestFund {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Account' })
   accountTo: Account;
-
-  @Prop()
-  quantity: string;
 }
 
 export const RequestFundSchema = SchemaFactory.createForClass(RequestFund);
