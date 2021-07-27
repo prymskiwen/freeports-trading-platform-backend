@@ -40,6 +40,12 @@ import { UpdateInvestorResponseDto } from './dto/update-investor-response.dto';
 import { UpdateInvestorRequestDto } from './dto/update-investor-request.dto';
 import { DeleteInvestorResponseDto } from './dto/delete-investor-response.dto';
 import { DeskService } from '../desk/desk.service';
+import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
+import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
+import { PaginationHelper } from 'src/pagination/pagination.helper';
+import { PaginationParams } from 'src/pagination/pagination-params.decorator';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { InvestorDocument } from 'src/schema/investor/investor.schema';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/desk/:deskId/investor')
@@ -55,7 +61,7 @@ export class InvestorController {
   @Get()
   @Permissions(PermissionDesk.investorRead)
   @ApiOperation({ summary: 'Get investor list' })
-  @ApiOkResponse({ type: [GetInvestorResponseDto] })
+  @ApiPaginationResponse(GetInvestorResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -67,7 +73,8 @@ export class InvestorController {
   async getInvestorList(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
-  ): Promise<GetInvestorResponseDto[]> {
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetInvestorResponseDto>> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -79,9 +86,25 @@ export class InvestorController {
       throw new NotFoundException();
     }
 
-    const investors = await this.investorService.getInvestorList(desk);
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.investorService.getInvestorsPaginated(desk, pagination);
+    const investorDtos: GetInvestorResponseDto[] = await Promise.all(
+      paginatedResult.map(
+        async (investor: InvestorDocument): Promise<GetInvestorResponseDto> => {
+          const investorHydrated = this.investorService.hydrate(investor);
+          const deskDto = InvestorMapper.toGetDto(investorHydrated);
 
-    return investors.map((investor) => InvestorMapper.toGetDto(investor));
+          return deskDto;
+        },
+      ),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      investorDtos,
+    );
   }
 
   @Get(':investorId')
