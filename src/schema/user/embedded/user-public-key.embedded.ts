@@ -17,6 +17,9 @@ export class UserPublicKey {
   key?: string;
 
   @Prop()
+  name?: string;
+
+  @Prop()
   current?: boolean;
 
   @Prop({ type: String, enum: UserPublicKeyStatus })
