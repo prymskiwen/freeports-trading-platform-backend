@@ -36,6 +36,12 @@ import { CreateRequestTradeRequestDto } from '../../dto/trade/create-request-tra
 import { InvalidFormExceptionDto } from 'src/exeption/dto/invalid-form-exception.dto';
 import { InvalidFormException } from 'src/exeption/invalid-form.exception';
 import { GetRequestTradeDetailsResponseDto } from '../../dto/trade/get-request-trade-details-response.dto';
+import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { PaginationParams } from 'src/pagination/pagination-params.decorator';
+import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
+import { RequestTradeDocument } from 'src/schema/request/request-trade.schema';
+import { PaginationHelper } from 'src/pagination/pagination.helper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -54,7 +60,7 @@ export class RequestTradeController {
   @Get()
   @Permissions(PermissionDesk.requestTrade)
   @ApiOperation({ summary: 'Get trade request list' })
-  @ApiOkResponse({ type: [GetRequestTradeResponseDto] })
+  @ApiPaginationResponse(GetRequestTradeResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -63,11 +69,12 @@ export class RequestTradeController {
     description: 'Investor has not been found',
     type: ExceptionDto,
   })
-  async getRequestTradeList(
+  async getRequestTrades(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
-  ): Promise<GetRequestTradeResponseDto[]> {
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetRequestTradeResponseDto>> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -88,9 +95,32 @@ export class RequestTradeController {
       throw new NotFoundException();
     }
 
-    const requests = await this.requestService.getRequestTradeList(investor);
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.requestService.getRequestTradesPaginated(
+      investor,
+      pagination,
+    );
+    const requestDtos: GetRequestTradeResponseDto[] = await Promise.all(
+      paginatedResult.map(
+        async (
+          request: RequestTradeDocument,
+        ): Promise<GetRequestTradeResponseDto> => {
+          const requestHydrated = this.requestService.hydrateRequestTrade(
+            request,
+          );
+          const requestDto = RequestTradeMapper.toGetDto(requestHydrated);
 
-    return requests.map((request) => RequestTradeMapper.toGetDto(request));
+          return requestDto;
+        },
+      ),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      requestDtos,
+    );
   }
 
   @Get(':tradeId')
@@ -105,7 +135,7 @@ export class RequestTradeController {
     description: 'Trade request has not been found',
     type: ExceptionDto,
   })
-  async getInvestor(
+  async getRequestTrade(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,

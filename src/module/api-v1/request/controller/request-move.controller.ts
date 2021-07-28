@@ -36,6 +36,13 @@ import { InvalidFormException } from 'src/exeption/invalid-form.exception';
 import { GetRequestMoveResponseDto } from '../dto/move/get-request-move-response.dto';
 import { CreateRequestMoveRequestDto } from '../dto/move/create-request-move-request.dto';
 import { InvestorAccountDocument } from 'src/schema/investor/embedded/investor-account.embedded';
+import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
+import { PaginationParams } from 'src/pagination/pagination-params.decorator';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
+import { RequestMoveDocument } from 'src/schema/request/request-move.schema';
+import { PaginationHelper } from 'src/pagination/pagination.helper';
+import { GetRequestMoveDetailsResponseDto } from '../dto/move/get-request-move-details-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -54,7 +61,7 @@ export class RequestMoveController {
   @Get()
   @Permissions(PermissionDesk.requestMove)
   @ApiOperation({ summary: 'Get move request list' })
-  @ApiOkResponse({ type: [GetRequestMoveResponseDto] })
+  @ApiPaginationResponse(GetRequestMoveResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -63,11 +70,12 @@ export class RequestMoveController {
     description: 'Investor has not been found',
     type: ExceptionDto,
   })
-  async getRequestMoveList(
+  async getRequestMoves(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
-  ): Promise<GetRequestMoveResponseDto[]> {
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetRequestMoveResponseDto>> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -88,9 +96,82 @@ export class RequestMoveController {
       throw new NotFoundException();
     }
 
-    const requests = await this.requestService.getRequestMoveList(investor);
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.requestService.getRequestMovesPaginated(
+      investor,
+      pagination,
+    );
+    const requestDtos: GetRequestMoveResponseDto[] = await Promise.all(
+      paginatedResult.map(
+        async (
+          request: RequestMoveDocument,
+        ): Promise<GetRequestMoveResponseDto> => {
+          const requestHydrated = this.requestService.hydrateRequestMove(
+            request,
+          );
+          const requestDto = RequestMoveMapper.toGetDto(requestHydrated);
 
-    return requests.map((request) => RequestMoveMapper.toGetDto(request));
+          return requestDto;
+        },
+      ),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      requestDtos,
+    );
+  }
+
+  @Get(':moveId')
+  @Permissions(PermissionDesk.requestMove)
+  @ApiOperation({ summary: 'Get move request' })
+  @ApiOkResponse({ type: GetRequestMoveDetailsResponseDto })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Move request has not been found',
+    type: ExceptionDto,
+  })
+  async getRequestMove(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('investorId', ParseObjectIdPipe) investorId: string,
+    @Param('moveId', ParseObjectIdPipe) moveId: string,
+  ): Promise<GetRequestMoveDetailsResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
+    const investor = await this.investorService.getInvestorById(
+      investorId,
+      desk,
+    );
+
+    if (!investor) {
+      throw new NotFoundException();
+    }
+
+    const requestMove = await this.requestService.getRequestMoveById(
+      moveId,
+      investor,
+    );
+
+    if (!requestMove) {
+      throw new NotFoundException();
+    }
+
+    return RequestMoveMapper.toGetDetailsDto(requestMove);
   }
 
   @Post()

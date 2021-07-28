@@ -1,3 +1,4 @@
+import { MailService } from './../mail/mail.service';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -10,7 +11,6 @@ import { DeskDocument } from 'src/schema/desk/desk.schema';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
 import { RoleDocument } from 'src/schema/role/role.schema';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
-import { MailService } from '../mail/mail.service';
 import {
   UserPublicKey,
   UserPublicKeyDocument,
@@ -35,6 +35,7 @@ export class UserService {
     const publicKey = new this.userPublicKeyModel();
 
     publicKey.key = request.key;
+    publicKey.name = request.name;
 
     user.publicKeys.push(publicKey);
 

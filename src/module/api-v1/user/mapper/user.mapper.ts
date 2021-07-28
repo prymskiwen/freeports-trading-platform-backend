@@ -31,6 +31,8 @@ export class UserMapper {
     dto.phone = document.personal.phone;
     dto.jobTitle = document.personal.jobTitle;
     dto.suspended = document.suspended;
+    dto.vaultUserId = document.vaultUserId;
+    dto.publicKeys = document.publicKeys;
 
     return dto;
   }

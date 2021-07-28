@@ -1,4 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
+import { VaultRequestDto } from '../../vault/dto/vault-request.dto';
 
 export class CreateOrganizationRequestDto {
   @IsNotEmpty()
@@ -13,4 +14,7 @@ export class CreateOrganizationRequestDto {
 
   commissionOrganization?: string;
   commissionClearer?: string;
+
+  vaultOrganizationId?: string;
+  vaultRequest: VaultRequestDto;
 }

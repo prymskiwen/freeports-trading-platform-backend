@@ -17,6 +17,7 @@ import { CreateInvestorAccountRequestDto } from './dto/account/create-investor-a
 import { PermissionDesk } from 'src/schema/role/permission.helper';
 import { RoleDesk } from 'src/schema/role/role-desk.schema';
 import { RoleMultidesk } from 'src/schema/role/role-multidesk.schema';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 
 @Injectable()
 export class InvestorService {
@@ -27,8 +28,49 @@ export class InvestorService {
     private investorAccountModel: Model<InvestorAccountDocument>,
   ) {}
 
-  async getInvestorList(desk: DeskDocument): Promise<InvestorDocument[]> {
-    return await this.investorModel.find({ desk: desk._id }).exec();
+  hydrate(investor: any): InvestorDocument {
+    return this.investorModel.hydrate(investor);
+  }
+
+  async getInvestorsPaginated(
+    desk: DeskDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          desk: desk._id,
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          name: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.investorModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 
   async getInvestorById(
@@ -119,5 +161,69 @@ export class InvestorService {
     }, []);
 
     return await this.investorModel.find({ desk: { $in: deskIds } }).exec();
+  }
+
+  // TODO: improve query if possible, sanitize search
+  async getMyInvestorsPaginated(
+    pagination: PaginationRequest,
+    user: UserDocument,
+  ): Promise<any[]> {
+    await user.populate('roles.role').execPopulate();
+
+    const deskIds = user.roles.reduce((prev, role) => {
+      if (role.role.disabled) {
+        return prev;
+      }
+
+      if (!role.role.permissions.includes(PermissionDesk.investorRead)) {
+        return prev;
+      }
+
+      if (role.role.kind === RoleDesk.name) {
+        return prev.concat(role.role['desk']);
+      }
+
+      if (role.role.kind === RoleMultidesk.name) {
+        return prev.concat(role.effectiveDesks);
+      }
+
+      return prev;
+    }, []);
+
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          desk: { $in: deskIds },
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          name: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.investorModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 }
