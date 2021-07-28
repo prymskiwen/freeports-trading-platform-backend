@@ -28,12 +28,8 @@ export class InvestorService {
     private investorAccountModel: Model<InvestorAccountDocument>,
   ) {}
 
-  hydrate(desk: any): InvestorDocument {
-    return this.investorModel.hydrate(desk);
-  }
-
-  async getInvestorList(desk: DeskDocument): Promise<InvestorDocument[]> {
-    return await this.investorModel.find({ desk: desk._id }).exec();
+  hydrate(investor: any): InvestorDocument {
+    return this.investorModel.hydrate(investor);
   }
 
   async getInvestorsPaginated(
@@ -165,5 +161,69 @@ export class InvestorService {
     }, []);
 
     return await this.investorModel.find({ desk: { $in: deskIds } }).exec();
+  }
+
+  // TODO: improve query if possible, sanitize search
+  async getMyInvestorsPaginated(
+    pagination: PaginationRequest,
+    user: UserDocument,
+  ): Promise<any[]> {
+    await user.populate('roles.role').execPopulate();
+
+    const deskIds = user.roles.reduce((prev, role) => {
+      if (role.role.disabled) {
+        return prev;
+      }
+
+      if (!role.role.permissions.includes(PermissionDesk.investorRead)) {
+        return prev;
+      }
+
+      if (role.role.kind === RoleDesk.name) {
+        return prev.concat(role.role['desk']);
+      }
+
+      if (role.role.kind === RoleMultidesk.name) {
+        return prev.concat(role.effectiveDesks);
+      }
+
+      return prev;
+    }, []);
+
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          desk: { $in: deskIds },
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          name: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.investorModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 }

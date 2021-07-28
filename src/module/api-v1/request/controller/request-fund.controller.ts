@@ -36,6 +36,13 @@ import { InvalidFormException } from 'src/exeption/invalid-form.exception';
 import { GetRequestFundResponseDto } from '../dto/fund/get-request-fund-response.dto';
 import { CreateRequestFundRequestDto } from '../dto/fund/create-request-fund-request.dto';
 import { InvestorAccountDocument } from 'src/schema/investor/embedded/investor-account.embedded';
+import { ApiPaginationResponse } from 'src/pagination/api-pagination-response.decorador';
+import { PaginationParams } from 'src/pagination/pagination-params.decorator';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { PaginationResponseDto } from 'src/pagination/pagination-response.dto';
+import { RequestFundDocument } from 'src/schema/request/request-fund.schema';
+import { PaginationHelper } from 'src/pagination/pagination.helper';
+import { GetRequestFundDetailsResponseDto } from '../dto/fund/get-request-fund-details-response.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -54,7 +61,7 @@ export class RequestFundController {
   @Get()
   @Permissions(PermissionDesk.requestFund)
   @ApiOperation({ summary: 'Get fund request list' })
-  @ApiOkResponse({ type: [GetRequestFundResponseDto] })
+  @ApiPaginationResponse(GetRequestFundResponseDto)
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
     type: ExceptionDto,
@@ -63,11 +70,12 @@ export class RequestFundController {
     description: 'Investor has not been found',
     type: ExceptionDto,
   })
-  async getRequestFundList(
+  async getRequestFunds(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
-  ): Promise<GetRequestFundResponseDto[]> {
+    @PaginationParams() pagination: PaginationRequest,
+  ): Promise<PaginationResponseDto<GetRequestFundResponseDto>> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -88,9 +96,82 @@ export class RequestFundController {
       throw new NotFoundException();
     }
 
-    const requests = await this.requestService.getRequestFundList(investor);
+    const [
+      { paginatedResult, totalResult },
+    ] = await this.requestService.getRequestFundsPaginated(
+      investor,
+      pagination,
+    );
+    const requestDtos: GetRequestFundResponseDto[] = await Promise.all(
+      paginatedResult.map(
+        async (
+          request: RequestFundDocument,
+        ): Promise<GetRequestFundResponseDto> => {
+          const requestHydrated = this.requestService.hydrateRequestFund(
+            request,
+          );
+          const requestDto = RequestFundMapper.toGetDto(requestHydrated);
 
-    return requests.map((request) => RequestFundMapper.toGetDto(request));
+          return requestDto;
+        },
+      ),
+    );
+
+    return PaginationHelper.of(
+      pagination,
+      totalResult[0]?.total || 0,
+      requestDtos,
+    );
+  }
+
+  @Get(':fundId')
+  @Permissions(PermissionDesk.requestFund)
+  @ApiOperation({ summary: 'Get fund request' })
+  @ApiOkResponse({ type: GetRequestFundDetailsResponseDto })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Fund request has not been found',
+    type: ExceptionDto,
+  })
+  async getRequestFund(
+    @Param('organizationId', ParseObjectIdPipe) organizationId: string,
+    @Param('deskId', ParseObjectIdPipe) deskId: string,
+    @Param('investorId', ParseObjectIdPipe) investorId: string,
+    @Param('fundId', ParseObjectIdPipe) fundId: string,
+  ): Promise<GetRequestFundDetailsResponseDto> {
+    const organization = await this.organizationService.getById(organizationId);
+    const desk = await this.deskService.getById(deskId);
+
+    if (
+      !organization ||
+      !desk ||
+      desk.organization.toString() !== organization.id
+    ) {
+      throw new NotFoundException();
+    }
+
+    const investor = await this.investorService.getInvestorById(
+      investorId,
+      desk,
+    );
+
+    if (!investor) {
+      throw new NotFoundException();
+    }
+
+    const requestFund = await this.requestService.getRequestFundById(
+      fundId,
+      investor,
+    );
+
+    if (!requestFund) {
+      throw new NotFoundException();
+    }
+
+    return RequestFundMapper.toGetDetailsDto(requestFund);
   }
 
   @Post()

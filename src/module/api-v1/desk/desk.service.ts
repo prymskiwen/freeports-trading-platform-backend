@@ -104,7 +104,11 @@ export class DeskService {
     ]);
   }
 
-  async getMyDeskList(user: UserDocument): Promise<DeskDocument[]> {
+  // TODO: improve query if possible, sanitize search
+  async getMyDesksPaginated(
+    pagination: PaginationRequest,
+    user: UserDocument,
+  ): Promise<any[]> {
     const organization = user.organization as OrganizationDocument;
 
     await user.populate('roles.role').execPopulate();
@@ -153,6 +157,40 @@ export class DeskService {
       return prev;
     }, []);
 
-    return await this.deskModel.find({ _id: { $in: deskIds } }).exec();
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          _id: { $in: deskIds },
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          name: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.deskModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 }

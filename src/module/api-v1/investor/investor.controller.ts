@@ -67,10 +67,10 @@ export class InvestorController {
     type: ExceptionDto,
   })
   @ApiNotFoundResponse({
-    description: 'Organization has not been found',
+    description: 'Desk has not been found',
     type: ExceptionDto,
   })
-  async getInvestorList(
+  async getInvestors(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @PaginationParams() pagination: PaginationRequest,

@@ -33,6 +33,7 @@ import {
 import { InvestorAccountDocument } from 'src/schema/investor/embedded/investor-account.embedded';
 import { CreateRequestRefundRequestDto } from './dto/refund/create-request-refund-request.dto';
 import { CreateRequestMoveRequestDto } from './dto/move/create-request-move-request.dto';
+import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 
 @Injectable()
 export class RequestService {
@@ -50,14 +51,20 @@ export class RequestService {
     private readonly investorService: InvestorService,
   ) {}
 
-  async getRequestTradeList(
-    investor: InvestorDocument,
-  ): Promise<RequestTradeDocument[]> {
-    return await this.requestTradeModel
-      .find({
-        investor: investor._id,
-      })
-      .exec();
+  hydrateRequestTrade(request: any): RequestTradeDocument {
+    return this.requestTradeModel.hydrate(request);
+  }
+
+  hydrateRequestFund(request: any): RequestFundDocument {
+    return this.requestFundModel.hydrate(request);
+  }
+
+  hydrateRequestRefund(request: any): RequestRefundDocument {
+    return this.requestRefundModel.hydrate(request);
+  }
+
+  hydrateRequestMove(request: any): RequestMoveDocument {
+    return this.requestMoveModel.hydrate(request);
   }
 
   async getRequestTradeById(
@@ -72,14 +79,89 @@ export class RequestService {
       .exec();
   }
 
-  async getRequestTradeMyList(
+  async getRequestTradesPaginated(
+    investor: InvestorDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          investor: investor._id,
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          friendlyId: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.requestTradeModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
+  }
+
+  // TODO: improve query if possible, sanitize search
+  async getMyRequestTradesPaginated(
+    pagination: PaginationRequest,
     user: UserDocument,
-  ): Promise<RequestTradeDocument[]> {
+  ): Promise<any[]> {
     const investors = await this.investorService.getMyInvestorList(user);
 
-    return await this.requestTradeModel
-      .find({ investor: { $in: investors } })
-      .exec();
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          investor: { $in: investors.map((investor) => investor._id) },
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          friendlyId: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.requestTradeModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 
   async createRequestTrade(
@@ -151,16 +233,6 @@ export class RequestService {
     return [rfq];
   }
 
-  async getRequestFundList(
-    investor: InvestorDocument,
-  ): Promise<RequestFundDocument[]> {
-    return await this.requestFundModel
-      .find({
-        investor: investor._id,
-      })
-      .exec();
-  }
-
   async getRequestFundById(
     requestFundId: string,
     investor: InvestorDocument,
@@ -171,6 +243,47 @@ export class RequestService {
         investor: investor,
       })
       .exec();
+  }
+
+  async getRequestFundsPaginated(
+    investor: InvestorDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          investor: investor._id,
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          friendlyId: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.requestFundModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 
   async createRequestFund(
@@ -198,16 +311,6 @@ export class RequestService {
     return fund;
   }
 
-  async getRequestRefundList(
-    investor: InvestorDocument,
-  ): Promise<RequestRefundDocument[]> {
-    return await this.requestRefundModel
-      .find({
-        investor: investor._id,
-      })
-      .exec();
-  }
-
   async getRequestRefundById(
     requestRefundId: string,
     investor: InvestorDocument,
@@ -218,6 +321,47 @@ export class RequestService {
         investor: investor,
       })
       .exec();
+  }
+
+  async getRequestRefundsPaginated(
+    investor: InvestorDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          investor: investor._id,
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          friendlyId: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.requestRefundModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 
   async createRequestRefund(
@@ -245,16 +389,6 @@ export class RequestService {
     return refund;
   }
 
-  async getRequestMoveList(
-    investor: InvestorDocument,
-  ): Promise<RequestMoveDocument[]> {
-    return await this.requestMoveModel
-      .find({
-        investor: investor._id,
-      })
-      .exec();
-  }
-
   async getRequestMoveById(
     requestMoveId: string,
     investor: InvestorDocument,
@@ -265,6 +399,47 @@ export class RequestService {
         investor: investor,
       })
       .exec();
+  }
+
+  async getRequestMovesPaginated(
+    investor: InvestorDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          investor: investor._id,
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          friendlyId: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.requestMoveModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 
   async createRequestMove(
