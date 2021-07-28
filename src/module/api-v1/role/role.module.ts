@@ -27,6 +27,7 @@ import { RoleClearerAssignController } from './role-clearer-assign.controller';
 import { RoleOrganizationAssignController } from './role-organization-assign.controller';
 import { RoleMultideskAssignController } from './role-multidesk-assign.controller';
 import { RoleDeskAssignController } from './role-desk-assign.controller';
+import { RoleDeskFromOrganizationController } from './role-desk-from-organization.controller';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { RoleDeskAssignController } from './role-desk-assign.controller';
     RoleMultideskAssignController,
     RoleDeskController,
     RoleDeskAssignController,
+    RoleDeskFromOrganizationController,
     PermissionController,
   ],
   providers: [RoleService],

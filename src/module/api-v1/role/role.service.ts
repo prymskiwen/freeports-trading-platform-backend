@@ -223,6 +223,17 @@ export class RoleService {
       .exec();
   }
 
+  async getOrganizationRoleDeskList(
+    desks: DeskDocument[],
+  ): Promise<RoleDeskDocument[]> {
+    return await this.roleDeskModel
+      .find({
+        desk: { $in: desks.map((desk) => desk._id) },
+        $or: [{ system: { $exists: false } }, { system: false }],
+      })
+      .exec();
+  }
+
   async getRoleDeskById(
     roleId: string,
     desk: DeskDocument,
