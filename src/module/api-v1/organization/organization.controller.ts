@@ -131,10 +131,10 @@ export class OrganizationController {
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateOrganizationResponseDto> {
     try {
-      const vaultOrganization = await this.vaultService.sendRequest<VaultResourceCreatedResponseDto>(
+      const vaultOrganization = await this.vaultService.sendRequest<any>(
         request.vaultRequest,
       );
-      request.vaultOrganizationId = vaultOrganization.data.id;
+      request.vaultOrganizationId = vaultOrganization.data.organization.id;
 
       const organization = await this.organizationService.create(request);
 

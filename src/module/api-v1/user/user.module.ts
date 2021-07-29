@@ -17,6 +17,7 @@ import {
   UserPublicKey,
   UserPublicKeySchema,
 } from 'src/schema/user/embedded/user-public-key.embedded';
+import { VaultModule } from '../vault/vault.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import {
     forwardRef(() => DeskModule),
     forwardRef(() => OrganizationModule),
     forwardRef(() => RoleModule),
+    forwardRef(() => VaultModule),
   ],
   controllers: [
     InitController,

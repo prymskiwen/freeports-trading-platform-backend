@@ -41,13 +41,19 @@ import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionClearer } from 'src/schema/role/permission.helper';
 import { GetUserDetailsResponseDto } from './dto/get-user-details-response.dto';
 import { UniqueFieldException } from 'src/exeption/unique-field.exception';
+import { CreateVaultUserRequestDto } from './dto/create-vault-user-request.dto';
+import { VaultService } from '../vault/vault.service';
+import { VaultResourceCreatedResponseDto } from '../vault/dto/vault-resource-created.dto';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/user')
 @ApiTags('user', 'clearer')
 @ApiBearerAuth()
 export class UserClearerController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly vaultService: VaultService,
+  ) {}
 
   @Get()
   @Permissions(PermissionClearer.coworkerRead)
@@ -228,5 +234,46 @@ export class UserClearerController {
     await user.save();
 
     return UserMapper.toUpdateDto(user);
+  }
+
+  @Post(':userId/vault-user')
+  @Permissions(PermissionClearer.coworkerUpdate)
+  @ApiOperation({ summary: 'create vault user' })
+  @ApiOkResponse({
+    description: 'Successfully created vault user',
+    type: UpdateUserResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Vault error',
+    type: ExceptionDto,
+  })
+  async createVaultUser(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+    @Body() request: CreateVaultUserRequestDto,
+  ): Promise<UpdateUserResponseDto> {
+    const user = await this.userService.getClearerUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    try {
+      const vaultUser = await this.vaultService.sendRequest<{
+        user: VaultResourceCreatedResponseDto;
+      }>(request.vaultRequest);
+
+      user.vaultUserId = vaultUser.data.user.id;
+
+      await user.save();
+
+      return UserMapper.toUpdateDto(user);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 }
