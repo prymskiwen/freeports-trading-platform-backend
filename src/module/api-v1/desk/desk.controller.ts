@@ -60,6 +60,14 @@ export class DeskController {
   @Permissions(PermissionOrganization.deskRead)
   @ApiOperation({ summary: 'Get desk list' })
   @ApiPaginationResponse(GetDeskResponseDto)
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Organization has not been found',
+    type: ExceptionDto,
+  })
   async getDesks(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @PaginationParams() pagination: PaginationRequest,

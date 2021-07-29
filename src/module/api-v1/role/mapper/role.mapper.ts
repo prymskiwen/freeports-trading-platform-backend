@@ -10,6 +10,9 @@ import { GetRoleDeskResponseDto } from '../dto/desk/get-role-desk-response.dto';
 import { GetRoleMultideskResponseDto } from '../dto/multidesk/get-role-multidesk-response.dto';
 import { GetRoleOrganizationResponseDto } from '../dto/organization/get-role-organization-response.dto';
 import { UpdateRoleResponseDto } from '../dto/update-role-response.dto';
+import { GetRoleDeskDetailsResponseDto } from '../dto/desk/get-role-desk-details-response.dto';
+import { DeskMapper } from '../../desk/mapper/desk.mapper';
+import { DeskDocument } from 'src/schema/desk/desk.schema';
 
 export class RoleMapper {
   public static toCreateDto(document: RoleDocument): CreateRoleResponseDto {
@@ -80,6 +83,20 @@ export class RoleMapper {
     dto.id = document._id;
     dto.name = document.name;
     dto.permissions = document.permissions;
+
+    return dto;
+  }
+
+  public static async toGetRoleDeskDetailsDto(
+    document: RoleDeskDocument,
+  ): Promise<GetRoleDeskDetailsResponseDto> {
+    const dto = Object.assign(
+      new GetRoleDeskDetailsResponseDto(),
+      this.toGetRoleDeskDto(document),
+    );
+
+    await document.populate('desk').execPopulate();
+    dto.desk = DeskMapper.toGetDto(document.desk as DeskDocument);
 
     return dto;
   }
