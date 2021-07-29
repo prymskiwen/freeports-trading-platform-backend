@@ -27,6 +27,12 @@ export class DeskService {
     return await this.deskModel.findById(id).exec();
   }
 
+  async getDeskList(
+    organization: OrganizationDocument,
+  ): Promise<DeskDocument[]> {
+    return await this.deskModel.find({ organization: organization._id }).exec();
+  }
+
   async create(
     organization: OrganizationDocument,
     request: CreateDeskRequestDto,
