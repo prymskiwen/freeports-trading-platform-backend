@@ -41,6 +41,7 @@ import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { NewPasswordRequestDto } from './dto/new-password-request.dto';
 import { NewPasswordResponseDto } from './dto/new-password-response.dto';
 import { ResetPasswordRequestDto } from './dto/reset-password-request.dto';
+import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
 
 @Controller('api/v1/auth')
 @ApiTags('auth')
@@ -78,7 +79,7 @@ export class AuthController {
   @Post(':userId/setpassword')
   @ApiCreatedResponse({
     description: 'New Password is saved successfully',
-    type: NewPasswordResponseDto,
+    type: ResetPasswordResponseDto,
   })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials',
@@ -96,7 +97,7 @@ export class AuthController {
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: ResetPasswordRequestDto,
   ): Promise<any> {
-    return userId;
+    return this.authService.resetPassword(userId, request.password, request.token);
   }
 
   @Post(':userId/password')

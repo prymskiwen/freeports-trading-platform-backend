@@ -16,6 +16,7 @@ import { toFileStream } from 'qrcode';
 import { Response } from 'express';
 import { OTPSecretNotSet } from 'src/exeption/otp-secret-not-set.exception';
 import { SuspendedUserException } from 'src/exeption/suspended-user.exception';
+import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -175,5 +176,35 @@ export class AuthService {
     await user.save();
 
     return { success: true };
+  }
+
+  async resetPassword(userId: string, password: string, resetPasswordToken: string): Promise<ResetPasswordResponseDto> {
+    try {
+      const token = this.jwtService.verify(resetPasswordToken);
+      const user = await this.userService.getById(token.user_id);
+
+      if (!user) {
+        throw new InvalidTokenException();
+      }
+      
+      if (user && (JSON.stringify(user._id) !== JSON.stringify(userId))) {
+        throw new InvalidTokenException();
+      }
+
+      await this.userService.updatePassword(userId, password);
+
+      return {success: true};
+      
+    } catch (error) {
+      if (error.name && error.name === 'TokenExpiredError') {
+        throw new ExpiredTokenException();
+      }
+
+      if (error.response) {
+        throw error;
+      }
+
+      throw new InvalidTokenException();
+    }
   }
 }
