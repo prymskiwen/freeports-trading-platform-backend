@@ -21,7 +21,7 @@ export class User {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Organization' })
   organization?: Organization;
 
-  @Prop({ unique: true })
+  @Prop()
   vaultUserId?: string;
 
   @Prop({ type: UserPersonalSchema })

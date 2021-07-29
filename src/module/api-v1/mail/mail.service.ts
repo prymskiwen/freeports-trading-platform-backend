@@ -66,4 +66,40 @@ export class MailService {
         console.log(err.statusCode);
       });
   }
+
+  async sendResetPasswordEmail(user: UserDocument, resetPasswordToken: string) {
+    const url = `${process.env.HOST_NAME}/reset-password/${user._id}/${resetPasswordToken}`;
+    const name = user.personal.nickname;
+    
+    const request = mailjet.post('send', { version: 'v3.1' }).request({
+      Messages: [
+        {
+          From: {
+            Email: process.env.MAIL_FROM,
+            Name: 'Freeports',
+          },
+          To: [
+            {
+              Email: user.personal.email,
+              Name: name,
+            },
+          ],
+          Subject: 'Reset password',
+          TextPart: '',
+          HTMLPart: `<p>Hello ${name},</p>
+            <p>Please click below to reset your password</p>
+            <p>
+                <a href="${url}">Reset Your Password</a>
+            </p>`,
+        },
+      ],
+    });
+    request
+      .then((result) => {
+        console.log(result.body);
+      })
+      .catch((err) => {
+        console.log(err.statusCode);
+      });
+  }
 }

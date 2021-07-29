@@ -16,6 +16,7 @@ import {
   UserPublicKeyDocument,
 } from 'src/schema/user/embedded/user-public-key.embedded';
 import { CreateUserPublicKeyRequestDto } from './dto/public-key/create-user-public-key-request.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
@@ -25,6 +26,7 @@ export class UserService {
     @InjectModel(UserPublicKey.name)
     private userPublicKeyModel: Model<UserPublicKeyDocument>,
     private mailService: MailService,
+    private jwtService: JwtService,
   ) {}
 
   async createPublicKey(
@@ -127,6 +129,13 @@ export class UserService {
 
     if (persist) {
       await user.save();
+      
+      if(!request.password) {
+        const resetPasswordToken = this.jwtService.sign(
+          { user_id: user._id }
+        );
+        await this.mailService.sendResetPasswordEmail(user, resetPasswordToken);    
+      }
     }
 
     await this.mailService.sendUserConfirmation(user, user._id);
