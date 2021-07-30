@@ -446,4 +446,14 @@ export class UserService {
       { $pull: { roles: { role: role._id } } },
     );
   }
+
+  async sendResetPasswordEmail(
+    user: UserDocument
+  ): Promise<any> {
+    const resetPasswordToken = this.jwtService.sign(
+      { user_id: user._id }
+    );
+    await this.mailService.sendResetPasswordEmail(user, resetPasswordToken);
+    return {success: true};
+  }
 }
