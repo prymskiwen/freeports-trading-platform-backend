@@ -18,9 +18,6 @@ import {
   UserPublicKeySchema,
 } from 'src/schema/user/embedded/user-public-key.embedded';
 import { VaultModule } from '../vault/vault.module';
-import { JwtModule } from '@nestjs/jwt';
-import authenticationConfig from 'src/config/auth.config';
-import { ConfigType } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -34,15 +31,6 @@ import { ConfigType } from '@nestjs/config';
     forwardRef(() => OrganizationModule),
     forwardRef(() => RoleModule),
     forwardRef(() => VaultModule),
-    JwtModule.registerAsync({
-      useFactory: (authConfig: ConfigType<typeof authenticationConfig>) => ({
-        secret: authConfig.secret,
-        signOptions: {
-          expiresIn: authConfig.access_expires_in,
-        },
-      }),
-      inject: [authenticationConfig.KEY],
-    }),
   ],
   controllers: [
     InitController,
