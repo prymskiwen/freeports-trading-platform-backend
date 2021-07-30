@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import commonConfig from './config/common.config';
 import corsConfig from './config/cors.config';
 import openapiConfig from './config/openapi.config';
-import * as bodyParser from "body-parser";
+import * as bodyParser from 'body-parser';
 import { AppModule } from './module/app.module';
 import { ValidationPipeCustomException } from './pipe/validation.pipe';
 import { useContainer } from 'class-validator';
@@ -22,13 +22,17 @@ async function bootstrap() {
       contentSecurityPolicy: false,
     }),
   );
-  app.use(bodyParser.json({
-    limit: '200mb',
-  }));
-  
-  app.use(bodyParser.urlencoded({
-    limit: '200mb',
-  }));
+  app.use(
+    bodyParser.json({
+      limit: '200mb',
+    }),
+  );
+
+  app.use(
+    bodyParser.urlencoded({
+      limit: '200mb',
+    }),
+  );
 
   app.enableCors({
     origin: corsConf.origin,
@@ -55,7 +59,11 @@ async function bootstrap() {
       include: apiConf.root,
       deepScanRoutes: true,
     });
-    SwaggerModule.setup(apiConf.path, app, document);
+    SwaggerModule.setup(apiConf.path, app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    });
   });
 
   app.useGlobalFilters(new HttpExceptionFilter());
