@@ -129,12 +129,12 @@ export class UserService {
 
     if (persist) {
       await user.save();
-      
-      if(!request.password) {
-        const resetPasswordToken = this.jwtService.sign(
-          { user_id: user._id }
-        );
-        await this.mailService.sendResetPasswordEmail(user, resetPasswordToken);    
+
+      if (!request.password) {
+        const resetPasswordToken = this.jwtService.sign({ 
+          user_id: user._id 
+        });
+        await this.mailService.sendResetPasswordEmail(user, resetPasswordToken);
       }
     }
 
@@ -447,13 +447,10 @@ export class UserService {
     );
   }
 
-  async sendResetPasswordEmail(
-    user: UserDocument
-  ): Promise<any> {
-    const resetPasswordToken = this.jwtService.sign(
-      { user_id: user._id }
-    );
-    await this.mailService.sendResetPasswordEmail(user, resetPasswordToken);
-    return {success: true};
+  async sendResetPasswordEmail(user: UserDocument): Promise<any> {
+    const resetPasswordToken = this.jwtService.sign({ 
+      user_id: user._id 
+    });
+    return this.mailService.sendResetPasswordEmail(user, resetPasswordToken);
   }
 }

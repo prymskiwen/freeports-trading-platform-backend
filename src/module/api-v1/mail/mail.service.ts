@@ -8,7 +8,7 @@ const nodemailer = require('nodemailer');
 export class MailService {
   private mailer: any;
   private mailFrom: string;
-  
+
   constructor(private mailerService: MailerService) {
     const smtpConfig = {
       host: process.env.MAIL_HOST,
@@ -26,7 +26,7 @@ export class MailService {
   async sendUserConfirmation(user: UserDocument, token: string) {
     const url = `${process.env.HOST_NAME}/auth/${token}/password`;
     const name = user.personal.nickname;
-    
+
     const message = {
       from: this.mailFrom,
       to: user.personal.email,
@@ -62,12 +62,16 @@ export class MailService {
             </p>`
     };
 
-    this.mailer.sendMail(message, (error) => {
-      if (error) {
-        console.log(error, error.message);
-        return;
-      }
-      console.log('Message sent successfully!');
-    });
+    return new Promise((resolve, reject) => {
+      this.mailer.sendMail(message, (error) => {
+        if (error) {
+          console.log(error, error.message);
+          resolve({ success: false });
+        } else {
+          console.log('Message sent successfully!');
+          resolve({ success: true });
+        }
+      });
+    })
   }
 }
