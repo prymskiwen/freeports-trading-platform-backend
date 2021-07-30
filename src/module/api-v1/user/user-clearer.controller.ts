@@ -276,4 +276,27 @@ export class UserClearerController {
       throw error;
     }
   }
+
+  @Post(':userId/email-resetpassword')
+  @Permissions(PermissionClearer.coworkerRead)
+  @ApiOperation({ summary: 'Send reset password email' })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Clearer user has not been found',
+    type: ExceptionDto,
+  })
+  async sendResetPasswordEmail(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<any> {
+    const user = await this.userService.getClearerUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return await this.userService.sendResetPasswordEmail(user);
+  }
 }
