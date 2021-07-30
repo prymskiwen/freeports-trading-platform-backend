@@ -59,7 +59,13 @@ async function bootstrap() {
       include: apiConf.root,
       deepScanRoutes: true,
     });
-    SwaggerModule.setup(apiConf.path, app, document);
+    SwaggerModule.setup(apiConf.path, app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        defaultModelRendering: 'model', // controls how the model is shown when the API is first rendered
+        tryItOutEnabled: true, // controls whether the "Try it out" section should be enabled by default
+      },
+    });
   });
 
   app.useGlobalFilters(new HttpExceptionFilter());
