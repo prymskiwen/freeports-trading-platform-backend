@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { InvestorModule } from './investor/investor.module';
 import { VaultModule } from './vault/vault.module';
 import { RequestModule } from './request/request.module';
+import { BrokersModule } from './brokers/brokers.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { RequestModule } from './request/request.module';
     RoleModule,
     UserModule,
     VaultModule,
+    BrokersModule,
   ],
 })
 export class APIV1Module {}
