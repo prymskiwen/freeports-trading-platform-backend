@@ -97,7 +97,11 @@ export class AuthController {
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: ResetPasswordRequestDto,
   ): Promise<any> {
-    return this.authService.resetPassword(userId, request.password, request.token);
+    return this.authService.resetPassword(
+      userId, 
+      request.password, 
+      request.token,
+    );
   }
 
   @Post(':userId/password')
@@ -117,15 +121,15 @@ export class AuthController {
     description: 'Server error',
     type: ExceptionDto,
   })
-  async updatePassword(
+  async changePassword(
     @Param('userId', ParseObjectIdPipe) userId: string,
     @Body() request: NewPasswordRequestDto,
-  ): Promise<NewPasswordResponseDto> {
-    const updatedUser = await this.authService.updatePassword(
+  ): Promise<UserDocument> {
+    return await this.authService.changePassword(
       userId,
-      request.password,
+      request.currentPassword,
+      request.newPassword,
     );
-    return { id: updatedUser._id };
   }
 
   @Post('/2fa/generate')
