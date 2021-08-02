@@ -80,7 +80,7 @@ export class UserClearerOrganizationManagerController {
 
     const roleManager = await this.roleService.getRoleOrganizationManager(
       organization,
-    );
+    );  
 
     if (!roleManager) {
       throw new NotFoundException();
@@ -186,7 +186,7 @@ export class UserClearerOrganizationManagerController {
       const roleManager = await this.roleService.getRoleOrganizationManager(
         organization,
       );
-      const user = await this.userService.create(request, false);
+      const user = await this.userService.create(request, false, false);
 
       user.organization = organization;
       organization.users.push(user.id);

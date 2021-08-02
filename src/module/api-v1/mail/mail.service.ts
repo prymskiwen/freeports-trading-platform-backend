@@ -48,8 +48,8 @@ export class MailService {
     });
   }
 
-  async sendResetPasswordEmail(user: UserDocument, resetPasswordToken: string) {
-    const url = `${process.env.HOST_NAME}/reset-password/${user._id}/${resetPasswordToken}`;
+  async sendResetPasswordEmail(user: UserDocument, resetPasswordToken: string, clearerUser: boolean) {
+    const url = `${clearerUser ? process.env.HOST_CLEARER : process.env.HOST_ORGANIZATION}/reset-password/${user._id}/${resetPasswordToken}`;
     const name = user.personal.nickname;
 
     const message = {

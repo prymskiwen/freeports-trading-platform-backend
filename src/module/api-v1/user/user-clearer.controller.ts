@@ -297,6 +297,6 @@ export class UserClearerController {
       throw new NotFoundException();
     }
 
-    return await this.userService.sendResetPasswordEmail(user);
+    return await this.userService.sendResetPasswordEmail(user, true);
   }
 }

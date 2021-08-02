@@ -112,6 +112,7 @@ export class UserService {
   async create(
     request: CreateUserRequestDto,
     persist = true,
+    clearerUser = true,
   ): Promise<UserDocument> {
     const user = new this.userModel();
 
@@ -129,16 +130,14 @@ export class UserService {
 
     if (persist) {
       await user.save();
-
-      if (!request.password) {
-        const resetPasswordToken = this.jwtService.sign({ 
-          user_id: user._id 
-        });
-        await this.mailService.sendResetPasswordEmail(user, resetPasswordToken);
-      }
     }
 
     await this.mailService.sendUserConfirmation(user, user._id);
+
+    const resetPasswordToken = this.jwtService.sign({ 
+      user_id: user._id 
+    });
+    await this.mailService.sendResetPasswordEmail(user, resetPasswordToken, clearerUser);
 
     return user;
   }
@@ -447,10 +446,10 @@ export class UserService {
     );
   }
 
-  async sendResetPasswordEmail(user: UserDocument): Promise<any> {
+  async sendResetPasswordEmail(user: UserDocument, clearerUser: boolean): Promise<any> {
     const resetPasswordToken = this.jwtService.sign({ 
       user_id: user._id 
     });
-    return this.mailService.sendResetPasswordEmail(user, resetPasswordToken);
+    return this.mailService.sendResetPasswordEmail(user, resetPasswordToken, clearerUser);
   }
 }
