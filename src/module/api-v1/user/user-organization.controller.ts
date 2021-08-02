@@ -162,7 +162,7 @@ export class UserOrganizationController {
         throw new NotFoundException();
       }
 
-      const user = await this.userService.create(request, false);
+      const user = await this.userService.create(request, false, false);
 
       user.organization = organization;
       organization.users.push(user.id);
