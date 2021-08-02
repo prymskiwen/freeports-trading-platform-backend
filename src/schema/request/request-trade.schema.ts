@@ -5,6 +5,10 @@ import { Investor } from '../investor/investor.schema';
 import { OperationRequest } from '../operation-request/operation-request.schema';
 import { User } from '../user/user.schema';
 import {
+  RequestTradeOrderDocument,
+  RequestTradeOrderSchema,
+} from './embedded/request-trade-order.embedded';
+import {
   RequestTradeRfqDocument,
   RequestTradeRfqSchema,
 } from './embedded/request-trade-rfq.embedded';
@@ -63,6 +67,9 @@ export class RequestTrade {
 
   @Prop({ type: [RequestTradeRfqSchema] })
   rfqs?: Types.DocumentArray<RequestTradeRfqDocument>;
+
+  @Prop({ type: [RequestTradeOrderSchema] })
+  orders?: Types.DocumentArray<RequestTradeOrderDocument>;
 }
 
 export const RequestTradeSchema = SchemaFactory.createForClass(RequestTrade);
