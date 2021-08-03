@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
 import { User } from 'src/schema/user/user.schema';
 
-export enum RequestTradeRfqType {
+export enum RequestTradeRfqSide {
   buy = 'buy',
   sale = 'sale',
 }
@@ -32,11 +32,11 @@ export class RequestTradeRfq {
   @Prop()
   quantity: string;
 
-  @Prop({ type: String, enum: RequestTradeRfqType })
-  side: RequestTradeRfqType;
+  @Prop({ type: String, enum: RequestTradeRfqSide })
+  side: RequestTradeRfqSide;
 
   /**
-   * tradable from-to currency pairs
+   * Tradable from-to currency pairs.
    *
    * @example BTCUSD.SPOT
    */

@@ -1,4 +1,4 @@
-import { RequestTradeRfqType } from 'src/schema/request/embedded/request-trade-rfq.embedded';
+import { RequestTradeRfqSide } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 
 export class GetRequestTradeRfqResponseDto {
   id: string;
@@ -6,6 +6,6 @@ export class GetRequestTradeRfqResponseDto {
   createdAt: Date;
   validUntil: Date;
   quantity: string;
-  side: RequestTradeRfqType;
+  side: RequestTradeRfqSide;
   price: string;
 }
