@@ -49,7 +49,7 @@ export enum OrderType {
   'MKT',
 }
 
-export class Broker {
+export class B2C2 {
   name = 'B2C2';
   BASE_URL = 'https://api.uat.b2c2.net';
   SOCKET_BASE_URL = 'wss://socket.uat.b2c2.net/quotes';
@@ -58,7 +58,8 @@ export class Broker {
   //
   axiosInstance: AxiosInstance;
 
-  constructor() {
+  constructor(config) {
+    this.accessToken = config.accessToken;
     this.axiosInstance = axios.create({
       baseURL: this.BASE_URL,
       headers: { Authorization: `Token ${this.accessToken}` },
@@ -97,9 +98,3 @@ export class Broker {
     });
   }
 }
-
-const broker = new Broker();
-
-broker.rfq(uuidv4(), 'BTCUSD.SPOT', Side.buy, '1').then((response) => {
-  console.log('response ', response.data);
-});

@@ -32,6 +32,7 @@ import { RequestTradeMyController } from './controller/trade/request-trade-my.co
 import { RequestFundController } from './controller/request-fund.controller';
 import { RequestRefundController } from './controller/request-refund.controller';
 import { RequestMoveController } from './controller/request-move.controller';
+import { BrokersModule } from '../brokers/brokers.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { RequestMoveController } from './controller/request-move.controller';
     InvestorModule,
     OrganizationModule,
     UserModule,
+    BrokersModule,
   ],
   controllers: [
     RequestTradeMyController,
