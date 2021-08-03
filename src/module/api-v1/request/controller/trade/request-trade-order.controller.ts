@@ -96,7 +96,8 @@ export class RequestTradeOrderController {
       throw new NotFoundException();
     }
 
-    // TODO: get total quantity from orders (broker orders / validated rfq)
+    //TODO validate order price
+
     const quantityOrder = new BigNumber(0);
     const quantityRequest = new BigNumber(request.quantity);
     const quantityRequestTrade = new BigNumber(requestTrade.quantity);
@@ -108,7 +109,7 @@ export class RequestTradeOrderController {
         {
           path: 'quantity',
           constraints: {
-            IsMatch: `rfq quantity should be positive and less or equal trade request quantity (${quantityRequestTrade}) - order quantity (${quantityOrder})`,
+            IsMatch: `order quantity should be positive and less or equal trade request quantity (${quantityRequestTrade}) - order quantity (${quantityOrder})`,
           },
         },
       ]);

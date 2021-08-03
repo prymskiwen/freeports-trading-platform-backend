@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  RequestTradeOrderTrade,
+  RequestTradeOrderTradeDocument,
+} from './../../../schema/request/embedded/request-trade-order-trade.embedded';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -36,14 +40,25 @@ import { CreateRequestMoveRequestDto } from './dto/move/create-request-move-requ
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
 import { BrokersService } from '../brokers/brokers.service';
 import { v4 as uuidv4 } from 'uuid';
+import { CreateRequestTradeOrderRequestDto } from './dto/trade/create-request-trade-order-request.dto';
+import {
+  RequestTradeOrder,
+  RequestTradeOrderDocument,
+} from 'src/schema/request/embedded/request-trade-order.embedded';
 
 @Injectable()
 export class RequestService {
+  static readonly ORDER_VALID_UNTIL = 10000;
+
   constructor(
     @InjectModel(RequestTrade.name)
     private requestTradeModel: Model<RequestTradeDocument>,
     @InjectModel(RequestTradeRfq.name)
     private requestTradeRfqModel: Model<RequestTradeRfqDocument>,
+    @InjectModel(RequestTradeOrder.name)
+    private requestTradeOrderModel: Model<RequestTradeOrderDocument>,
+    @InjectModel(RequestTradeOrderTrade.name)
+    private requestTradeOrderTradeModel: Model<RequestTradeOrderTradeDocument>,
     @InjectModel(RequestFund.name)
     private requestFundModel: Model<RequestFundDocument>,
     @InjectModel(RequestRefund.name)
@@ -248,6 +263,60 @@ export class RequestService {
     }
 
     return rfqs;
+  }
+
+  async createOrder(
+    requestTrade: RequestTradeDocument,
+    request: CreateRequestTradeOrderRequestDto,
+    user: UserDocument,
+    persist = true,
+  ): Promise<RequestTradeOrderDocument> {
+    const clientId = uuidv4();
+
+    const rfq = requestTrade.rfqs.find((rfq) => rfq.id === request.rfqId);
+
+    if (!rfq) {
+      throw new NotFoundException(`couldn't find rfq with id ${request.rfqId}`);
+    }
+    const order = new this.requestTradeOrderModel();
+    order.initiator = user;
+    order.brokerId = rfq.brokerId;
+    order.validUntil = new Date(request.validUntil);
+    order.rfqId = rfq.id;
+    order.clientOrderId = clientId;
+    order.quantity = rfq.quantity;
+    order.instrument = rfq.instrument;
+    order.price = rfq.price;
+    order.type = request.orderType;
+    // order.trades = [];
+    const orderResponse = await this.brokersService.order(
+      rfq.brokerId,
+      clientId,
+      rfq.instrument,
+      rfq.side,
+      rfq.quantity,
+      request.price,
+      request.validUntil,
+    );
+    order.executedPrice = orderResponse.executed_price;
+    order.rawResponse = JSON.stringify(orderResponse);
+    // type: RequestTradeOrderType;
+    // status;
+    // orderId;
+    // side: RequestTradeRfqSide;
+    // executingUnit;
+    // rawQuery;
+    orderResponse.trades.forEach((trade) => {
+      order.trades.push(new this.requestTradeOrderTradeModel(trade));
+    });
+
+    requestTrade.orders.push(order);
+
+    if (persist) {
+      await requestTrade.save();
+    }
+
+    return order;
   }
 
   async getRequestFundById(

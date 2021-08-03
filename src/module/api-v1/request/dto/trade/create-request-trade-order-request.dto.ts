@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumberString } from 'class-validator';
-import { OrderType } from 'src/module/api-v1/brokers/brokers/b2c2/b2c2.broker';
+import { RequestTradeOrderType } from 'src/schema/request/embedded/request-trade-order.embedded';
 
 export class CreateRequestTradeOrderRequestDto {
   @IsNotEmpty()
@@ -12,5 +12,8 @@ export class CreateRequestTradeOrderRequestDto {
 
   validUntil?: string;
 
-  orderType?: OrderType;
+  orderType?: RequestTradeOrderType;
+
+  @IsNotEmpty()
+  rfqId: string;
 }

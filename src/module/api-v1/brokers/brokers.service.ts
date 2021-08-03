@@ -1,7 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { B2C2, RFQResponse } from './brokers/b2c2/b2c2.broker';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { B2C2, RFQResponse, OrderResponse } from './brokers/b2c2/b2c2.broker';
 import BrokersConfig from 'src/config/brokers.config';
 import { ConfigType } from '@nestjs/config';
+import { RequestTradeRfqSide } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 
 @Injectable()
 export class BrokersService {
@@ -17,12 +18,34 @@ export class BrokersService {
     }
   }
   async rfqs(id, instrument, side, quantity): Promise<RFQResponse[]> {
-    // TODO: handle errors
+    // TODO: handle errors and multiple brokers
     const rfq = await this.brokers[0].rfq(id, instrument, side, quantity);
     return [rfq.data];
-    // return Promise.all(
-    //   this.brokers.map((broker) => {
-    //   }),
-    // );
+  }
+
+  async order(
+    brokerId: string,
+    id: string,
+    instrument: string,
+    side: RequestTradeRfqSide,
+    quantity: string,
+    price: string,
+    validUntil: string,
+  ): Promise<OrderResponse> {
+    const broker = this.brokers.find((broker) => broker.name === brokerId);
+    if (!broker) {
+      throw new NotFoundException(`No broker with id ${brokerId}`);
+    }
+
+    const response = await broker.order(
+      id,
+      instrument,
+      side,
+      quantity,
+      price,
+      validUntil,
+    );
+
+    return response.data;
   }
 }

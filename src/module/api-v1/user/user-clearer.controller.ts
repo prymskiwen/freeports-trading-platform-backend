@@ -298,6 +298,7 @@ export class UserClearerController {
 
     return await this.userService.sendResetPasswordEmail(
       user,
-      user.organization ? false : true);
+      user.organization ? false : true,
+    );
   }
 }

@@ -33,6 +33,14 @@ import { RequestFundController } from './controller/request-fund.controller';
 import { RequestRefundController } from './controller/request-refund.controller';
 import { RequestMoveController } from './controller/request-move.controller';
 import { BrokersModule } from '../brokers/brokers.module';
+import {
+  RequestTradeOrder,
+  RequestTradeOrderSchema,
+} from 'src/schema/request/embedded/request-trade-order.embedded';
+import {
+  RequestTradeOrderTrade,
+  RequestTradeOrderTradeSchema,
+} from 'src/schema/request/embedded/request-trade-order-trade.embedded';
 
 @Module({
   imports: [
@@ -54,6 +62,11 @@ import { BrokersModule } from '../brokers/brokers.module';
         ],
       },
       { name: RequestTradeRfq.name, schema: RequestTradeRfqSchema },
+      { name: RequestTradeOrder.name, schema: RequestTradeOrderSchema },
+      {
+        name: RequestTradeOrderTrade.name,
+        schema: RequestTradeOrderTradeSchema,
+      },
     ]),
     DeskModule,
     InvestorModule,
