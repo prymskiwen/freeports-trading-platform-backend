@@ -8,12 +8,13 @@ const nodemailer = require('nodemailer');
 export class MailService {
   private mailer: any;
   private mailFrom: string;
-  
+
   constructor(private mailerService: MailerService) {
     const smtpConfig = {
       host: process.env.MAIL_HOST,
       port: process.env.MAIL_PORT,
-      secure: true,
+      secure: process.env.MAIL_SECURE === 'true',
+      requireTLS: process.env.MAIL_REQUIRETLS === 'true',
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD,
@@ -26,7 +27,7 @@ export class MailService {
   async sendUserConfirmation(user: UserDocument, token: string) {
     const url = `${process.env.HOST_NAME}/auth/${token}/password`;
     const name = user.personal.nickname;
-    
+
     const message = {
       from: this.mailFrom,
       to: user.personal.email,
@@ -47,8 +48,8 @@ export class MailService {
     });
   }
 
-  async sendResetPasswordEmail(user: UserDocument, resetPasswordToken: string) {
-    const url = `${process.env.HOST_NAME}/reset-password/${user._id}/${resetPasswordToken}`;
+  async sendResetPasswordEmail(user: UserDocument, resetPasswordToken: string, clearerUser: boolean) {
+    const url = `${clearerUser ? process.env.HOST_CLEARER : process.env.HOST_ORGANIZATION}/reset-password/${user._id}/${resetPasswordToken}`;
     const name = user.personal.nickname;
 
     const message = {
@@ -62,12 +63,16 @@ export class MailService {
             </p>`
     };
 
-    this.mailer.sendMail(message, (error) => {
-      if (error) {
-        console.log(error, error.message);
-        return;
-      }
-      console.log('Message sent successfully!');
-    });
+    return new Promise((resolve, reject) => {
+      this.mailer.sendMail(message, (error) => {
+        if (error) {
+          console.log(error, error.message);
+          resolve({ success: false });
+        } else {
+          console.log('Message sent successfully!');
+          resolve({ success: true });
+        }
+      });
+    })
   }
 }
