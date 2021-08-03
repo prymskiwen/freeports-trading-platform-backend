@@ -27,11 +27,12 @@ import { DeskService } from '../../../desk/desk.service';
 import { InvestorService } from '../../../investor/investor.service';
 import { OrganizationService } from '../../../organization/organization.service';
 import { ExceptionDto } from 'src/exeption/dto/exception.dto';
-import { RequestTradeRfqMapper } from '../../mapper/request-trade-rfq.mapper';
 import { GetRequestTradeRfqResponseDto } from '../../dto/trade/get-request-trade-rfq-response.dto';
-import { CreateRequestTradeRfqRequestDto } from '../../dto/trade/create-request-trade-rfq-request.dto';
 import { InvalidFormException } from 'src/exeption/invalid-form.exception';
 import BigNumber from 'bignumber.js';
+import { CreateRequestTradeOrderRequestDto } from '../../dto/trade/create-request-trade-order-request.dto';
+import { GetRequestTradeOrderResponseDto } from '../../dto/trade/get-request-trade-order-response.dto';
+import { RequestTradeOrderMapper } from '../../mapper/request-trade-order.mapper';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller(
@@ -64,9 +65,9 @@ export class RequestTradeOrderController {
     @Param('deskId', ParseObjectIdPipe) deskId: string,
     @Param('investorId', ParseObjectIdPipe) investorId: string,
     @Param('tradeId', ParseObjectIdPipe) tradeId: string,
-    @Body() request: CreateRequestTradeRfqRequestDto,
+    @Body() request: CreateRequestTradeOrderRequestDto,
     @CurrentUser() userCurrent: UserDocument,
-  ): Promise<GetRequestTradeRfqResponseDto[]> {
+  ): Promise<GetRequestTradeOrderResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
     const desk = await this.deskService.getById(deskId);
 
@@ -115,12 +116,12 @@ export class RequestTradeOrderController {
       ]);
     }
 
-    const rfqs = await this.requestService.createRfq(
+    const order = await this.requestService.createOrder(
       requestTrade,
       request,
       userCurrent,
     );
 
-    return rfqs.map((rfq) => RequestTradeRfqMapper.toGetDto(rfq));
+    return RequestTradeOrderMapper.toGetDto(order);
   }
 }
