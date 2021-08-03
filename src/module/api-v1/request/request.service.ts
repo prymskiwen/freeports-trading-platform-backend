@@ -34,6 +34,8 @@ import { InvestorAccountDocument } from 'src/schema/investor/embedded/investor-a
 import { CreateRequestRefundRequestDto } from './dto/refund/create-request-refund-request.dto';
 import { CreateRequestMoveRequestDto } from './dto/move/create-request-move-request.dto';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { BrokersService } from '../brokers/brokers.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class RequestService {
@@ -49,6 +51,7 @@ export class RequestService {
     @InjectModel(RequestMove.name)
     private requestMoveModel: Model<RequestMoveDocument>,
     private readonly investorService: InvestorService,
+    private readonly brokersService: BrokersService,
   ) {}
 
   hydrateRequestTrade(request: any): RequestTradeDocument {
@@ -203,34 +206,48 @@ export class RequestService {
     user: UserDocument,
     persist = true,
   ): Promise<RequestTradeRfqDocument[]> {
-    const rfq = new this.requestTradeRfqModel();
+    const clientId = uuidv4();
 
-    rfq.initiator = user;
-    rfq.quantity = request.quantity;
+    const instrument =
+      requestTrade.currencyFrom.toUpperCase() +
+      requestTrade.currencyTo.toUpperCase() +
+      '.SPOT';
+    const rfqsResponses = await this.brokersService.rfqs(
+      clientId,
+      instrument,
+      'buy',
+      requestTrade.quantity,
+    );
 
-    // TODO: broker API request here
-    rfq.brokerId = 'broker 1';
-    // calculate side and instrument
-    // get quantity from request
-    //
-    // rfq.validUntil = requestBroker['valid_until'];
-    // rfq.rfqId = requestBroker['rfq_id'];
-    // rfq.clientRfqId = requestBroker['client_rfq_id'];
-    // rfq.side = requestBroker['side'];
-    // rfq.instrument = requestBroker['instrument'];
-    // rfq.price = requestBroker['price'];
-    // rfq.createdAt = new Date();
-    //
-    // rfq.rawQuery =
-    // rfq.rawResponse =
+    const rfqs = [];
+    rfqsResponses.forEach((rfqResponse) => {
+      const rfq = new this.requestTradeRfqModel();
+      rfq.initiator = user;
+      rfq.quantity = request.quantity;
 
-    requestTrade.rfqs.push(rfq);
+      // TODO: broker API request here
+      rfq.brokerId = 'B2C2';
+      // calculate side and instrument
+      // get quantity from request
+
+      rfq.validUntil = new Date(rfqResponse['valid_until']);
+      rfq.rfqId = rfqResponse['rfq_id'];
+      rfq.clientRfqId = clientId;
+      rfq.side = rfqResponse['side'];
+      rfq.instrument = rfqResponse['instrument'];
+      rfq.price = rfqResponse['price'];
+      rfq.createdAt = new Date();
+      rfq.rawResponse = JSON.stringify(rfqResponse);
+      // rfq.rawQuery =
+      rfqs.push(rfq);
+      requestTrade.rfqs.push(rfq);
+    });
 
     if (persist) {
       await requestTrade.save();
     }
 
-    return [rfq];
+    return rfqs;
   }
 
   async getRequestFundById(

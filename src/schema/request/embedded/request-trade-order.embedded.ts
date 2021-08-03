@@ -5,16 +5,12 @@ import {
   RequestTradeOrderTradeDocument,
   RequestTradeOrderTradeSchema,
 } from './request-trade-order-trade.embedded';
+import { RequestTradeRfqSide } from './request-trade-rfq.embedded';
 
 export enum RequestTradeOrderStatus {
   requesting = 'requesting',
   success = 'success',
   failed = 'failed',
-}
-
-export enum RequestTradeOrderSide {
-  buy = 'buy',
-  sale = 'sale',
 }
 
 export enum RequestTradeOrderType {
@@ -31,6 +27,9 @@ export class RequestTradeOrder {
 
   @Prop()
   createdAt?: Date;
+
+  @Prop()
+  brokerId: string;
 
   @Prop({ type: String, enum: RequestTradeOrderStatus })
   status: RequestTradeOrderStatus;
@@ -53,8 +52,8 @@ export class RequestTradeOrder {
   @Prop()
   quantity: string;
 
-  @Prop({ type: String, enum: RequestTradeOrderSide })
-  side: RequestTradeOrderSide;
+  @Prop({ type: String, enum: RequestTradeRfqSide })
+  side: RequestTradeRfqSide;
 
   /**
    * Tradable from-to currency pairs.

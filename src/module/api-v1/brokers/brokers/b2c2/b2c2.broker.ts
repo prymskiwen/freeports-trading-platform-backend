@@ -1,5 +1,6 @@
-import axios, { AxiosInstance } from 'axios';
-import { v4 as uuidv4 } from 'uuid';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { RequestTradeRfqSide } from 'src/schema/request/embedded/request-trade-rfq.embedded';
+
 // import { io, Socket } from 'socket.io-client';
 
 export interface OrderResponse {
@@ -38,10 +39,15 @@ export interface OrderResponse {
   trades?: TradesEntity[] | null;
   created: string;
 }
-
-export enum Side {
-  'buy' = 'buy',
-  'sell' = 'sell',
+export interface RFQResponse {
+  valid_until: string;
+  rfq_id: string;
+  client_rfq_id: string;
+  quantity: string;
+  side: RequestTradeRfqSide;
+  instrument: string;
+  price: string;
+  created: string;
 }
 
 export enum OrderType {
@@ -69,10 +75,10 @@ export class B2C2 {
   rfq(
     id: string,
     instrument: string,
-    side: Side,
+    side: RequestTradeRfqSide,
     quantity: string,
-  ): Promise<any> {
-    return this.axiosInstance.post('/request_for_quote/', {
+  ): Promise<AxiosResponse<RFQResponse>> {
+    return this.axiosInstance.post<RFQResponse>('/request_for_quote/', {
       instrument: instrument,
       side: side,
       quantity: quantity,
@@ -83,18 +89,21 @@ export class B2C2 {
   order(
     id: string,
     instrument: string,
-    side: Side,
+    side: RequestTradeRfqSide,
     quantity: string,
     price: string,
-    validUntil: number,
+    validUntil: string,
     executing_unit?: string,
-  ): Promise<OrderResponse> {
-    return this.axiosInstance.post('/order/', {
+  ): Promise<AxiosResponse<OrderResponse>> {
+    return this.axiosInstance.post<OrderResponse>('/order/', {
       instrument: instrument,
       side: side,
       quantity: quantity,
-      client_rfq_id: id,
+      client_order_id: id,
       price,
+      valid_until: validUntil,
+      //TODO allow other order types
+      order_type: 'FOK',
     });
   }
 }
