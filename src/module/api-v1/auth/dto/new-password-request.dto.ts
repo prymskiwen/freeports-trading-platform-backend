@@ -1,3 +1,4 @@
 export class NewPasswordRequestDto {
-  password: string;
+  currentPassword: string;
+  newPassword: string;
 }

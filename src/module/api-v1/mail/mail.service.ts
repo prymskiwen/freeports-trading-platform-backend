@@ -55,11 +55,14 @@ export class MailService {
     const message = {
       from: this.mailFrom,
       to: user.personal.email,
-      subject: 'Reset password',
+      subject: 'Update your password on Freeports Trading Platform',
       html: `<p>Hello ${name},</p>
-            <p>Please click below to reset your password</p>
+            <p>You are receiving this email because you are invited to define a new password on your account. If you received this email by error, just ignore and delete it.</p>
             <p>
-                <a href="${url}">Reset Your Password</a>
+                <a href="${url}">Click here to define your password</a>
+            </p>
+            <p>
+              Once your password is defined, you can use your email and the new password to login onto the Platform.
             </p>`
     };
 
