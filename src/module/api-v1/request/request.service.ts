@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  RequestTradeOrderTrade,
+  RequestTradeOrderTradeDocument,
+} from './../../../schema/request/embedded/request-trade-order-trade.embedded';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -34,14 +38,28 @@ import { InvestorAccountDocument } from 'src/schema/investor/embedded/investor-a
 import { CreateRequestRefundRequestDto } from './dto/refund/create-request-refund-request.dto';
 import { CreateRequestMoveRequestDto } from './dto/move/create-request-move-request.dto';
 import { PaginationRequest } from 'src/pagination/pagination-request.interface';
+import { BrokersService } from '../brokers/brokers.service';
+import { v4 as uuidv4 } from 'uuid';
+import { CreateRequestTradeOrderRequestDto } from './dto/trade/create-request-trade-order-request.dto';
+import {
+  RequestTradeOrder,
+  RequestTradeOrderDocument,
+} from 'src/schema/request/embedded/request-trade-order.embedded';
+import { BigNumber } from 'bignumber.js';
 
 @Injectable()
 export class RequestService {
+  readonly ORDER_VALID_UNTIL = 10000;
+
   constructor(
     @InjectModel(RequestTrade.name)
     private requestTradeModel: Model<RequestTradeDocument>,
     @InjectModel(RequestTradeRfq.name)
     private requestTradeRfqModel: Model<RequestTradeRfqDocument>,
+    @InjectModel(RequestTradeOrder.name)
+    private requestTradeOrderModel: Model<RequestTradeOrderDocument>,
+    @InjectModel(RequestTradeOrderTrade.name)
+    private requestTradeOrderTradeModel: Model<RequestTradeOrderTradeDocument>,
     @InjectModel(RequestFund.name)
     private requestFundModel: Model<RequestFundDocument>,
     @InjectModel(RequestRefund.name)
@@ -49,6 +67,7 @@ export class RequestService {
     @InjectModel(RequestMove.name)
     private requestMoveModel: Model<RequestMoveDocument>,
     private readonly investorService: InvestorService,
+    private readonly brokersService: BrokersService,
   ) {}
 
   hydrateRequestTrade(request: any): RequestTradeDocument {
@@ -203,34 +222,114 @@ export class RequestService {
     user: UserDocument,
     persist = true,
   ): Promise<RequestTradeRfqDocument[]> {
-    const rfq = new this.requestTradeRfqModel();
+    const clientId = uuidv4();
 
-    rfq.initiator = user;
-    rfq.quantity = request.quantity;
+    const instrument =
+      requestTrade.currencyFrom.toUpperCase() +
+      requestTrade.currencyTo.toUpperCase() +
+      '.SPOT';
+    const rfqsResponses = await this.brokersService.rfqs(
+      clientId,
+      instrument,
+      'buy',
+      request.quantity,
+    );
 
-    // TODO: broker API request here
-    rfq.brokerId = 'broker 1';
-    // calculate side and instrument
-    // get quantity from request
-    //
-    // rfq.validUntil = requestBroker['valid_until'];
-    // rfq.rfqId = requestBroker['rfq_id'];
-    // rfq.clientRfqId = requestBroker['client_rfq_id'];
-    // rfq.side = requestBroker['side'];
-    // rfq.instrument = requestBroker['instrument'];
-    // rfq.price = requestBroker['price'];
-    // rfq.createdAt = new Date();
-    //
-    // rfq.rawQuery =
-    // rfq.rawResponse =
+    const rfqs = [];
+    rfqsResponses.forEach((rfqResponse) => {
+      const rfq = new this.requestTradeRfqModel();
+      rfq.initiator = user;
+      rfq.quantity = request.quantity;
 
-    requestTrade.rfqs.push(rfq);
+      // TODO: broker API request here
+      rfq.brokerId = 'B2C2';
+      // calculate side and instrument
+      // get quantity from request
+
+      rfq.validUntil = new Date(rfqResponse['valid_until']);
+      rfq.rfqId = rfqResponse['rfq_id'];
+      rfq.clientRfqId = clientId;
+      rfq.side = rfqResponse['side'];
+      rfq.instrument = rfqResponse['instrument'];
+      // that case is for b2c2 only
+      rfq.price = new BigNumber(rfqResponse['price'])
+        .times(new BigNumber(rfqResponse['quantity']))
+        .toString();
+
+      rfq.createdAt = new Date();
+      rfq.rawResponse = JSON.stringify(rfqResponse);
+      // rfq.rawQuery =
+      rfqs.push(rfq);
+      requestTrade.rfqs.push(rfq);
+    });
 
     if (persist) {
       await requestTrade.save();
     }
 
-    return [rfq];
+    return rfqs;
+  }
+
+  async createOrder(
+    requestTrade: RequestTradeDocument,
+    request: CreateRequestTradeOrderRequestDto,
+    user: UserDocument,
+    persist = true,
+  ): Promise<RequestTradeOrderDocument> {
+    const clientId = uuidv4();
+
+    const rfq = requestTrade.rfqs.find((rfq) => rfq.id === request.rfqId);
+
+    if (!rfq) {
+      throw new NotFoundException(`couldn't find rfq with id ${request.rfqId}`);
+    }
+    const order = new this.requestTradeOrderModel();
+    order.initiator = user;
+    order.brokerId = rfq.brokerId;
+    if (request.validUntil) {
+      order.validUntil = new Date(request.validUntil);
+    } else if (requestTrade.limitTime) {
+      order.validUntil = new Date(requestTrade.limitTime);
+    } else {
+      order.validUntil = new Date(Date.now() + this.ORDER_VALID_UNTIL);
+    }
+    order.rfqId = rfq.id;
+    order.clientOrderId = clientId;
+    order.quantity = rfq.quantity;
+    order.instrument = rfq.instrument;
+    order.price = new BigNumber(rfq.price)
+      .times(new BigNumber(rfq.quantity))
+      .toString();
+    order.type = request.orderType;
+    // order.trades = [];
+    const orderResponse = await this.brokersService.order(
+      rfq.brokerId,
+      clientId,
+      rfq.instrument,
+      rfq.side,
+      rfq.quantity,
+      order.price,
+      order.validUntil,
+    );
+    order.executedPrice = orderResponse.executed_price;
+    order.rawResponse = JSON.stringify(orderResponse);
+    // type: RequestTradeOrderType;
+    // status;
+    // orderId;
+    // side: RequestTradeRfqSide;
+    // executingUnit;
+    // rawQuery;
+    orderResponse.trades.forEach((trade) => {
+      order.trades.push(new this.requestTradeOrderTradeModel(trade));
+    });
+
+    requestTrade.orders.push(order);
+
+    if (persist) {
+      await requestTrade.save();
+    }
+
+    return order;
   }
 
   async getRequestFundById(

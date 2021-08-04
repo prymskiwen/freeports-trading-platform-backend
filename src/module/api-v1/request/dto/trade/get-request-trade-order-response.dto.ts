@@ -1,6 +1,6 @@
 import { RequestTradeRfqSide } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 
-export class GetRequestTradeRfqResponseDto {
+export class GetRequestTradeOrderResponseDto {
   id: string;
   brokerId: string;
   createdAt: Date;
@@ -8,4 +8,5 @@ export class GetRequestTradeRfqResponseDto {
   quantity: string;
   side: RequestTradeRfqSide;
   price: string;
+  executedPrice: string;
 }

@@ -36,6 +36,7 @@ export class RequestTradeMapper {
     dto.quantity = document.quantity;
     dto.limitPrice = document.limitPrice;
     dto.limitTime = document.limitTime;
+    dto.orders = document.orders;
 
     return dto;
   }

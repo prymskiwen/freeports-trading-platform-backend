@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Account } from 'src/schema/account/account.schema';
+import { RequestTradeOrderDocument } from 'src/schema/request/embedded/request-trade-order.embedded';
 import { RequestTradeType } from 'src/schema/request/request-trade.schema';
 import { RequestStatus } from 'src/schema/request/request.schema';
 
@@ -21,4 +22,6 @@ export class GetRequestTradeResponseDto {
   type: RequestTradeType;
   limitPrice?: string;
   limitTime?: Date;
+
+  orders: RequestTradeOrderDocument[];
 }
