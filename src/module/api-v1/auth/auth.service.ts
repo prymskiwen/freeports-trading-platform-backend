@@ -41,11 +41,16 @@ export class AuthService {
     };
   }
 
-  async updatePassword(
+  async changePassword(
     userId: string,
+    currentPassword: string,
     newPassword: string,
   ): Promise<UserDocument> {
-    return await this.userService.updatePassword(userId, newPassword);
+    return await this.userService.changePassword(
+      userId,
+      currentPassword,
+      newPassword,
+    );
   }
 
   async login2FA(user: UserDocument): Promise<LoginResponseDto> {
@@ -178,7 +183,11 @@ export class AuthService {
     return { success: true };
   }
 
-  async resetPassword(userId: string, password: string, resetPasswordToken: string): Promise<ResetPasswordResponseDto> {
+  async resetPassword(
+    userId: string, 
+    password: string, 
+    resetPasswordToken: string,
+  ): Promise<ResetPasswordResponseDto> {
     try {
       const token = this.jwtService.verify(resetPasswordToken);
       const user = await this.userService.getById(token.user_id);
@@ -186,15 +195,15 @@ export class AuthService {
       if (!user) {
         throw new InvalidTokenException();
       }
-      
-      if (user && (JSON.stringify(user._id) !== JSON.stringify(userId))) {
+
+      if (user && JSON.stringify(user._id) !== JSON.stringify(userId)) {
         throw new InvalidTokenException();
       }
 
       await this.userService.updatePassword(userId, password);
 
-      return {success: true};
-      
+      return { success: true };
+
     } catch (error) {
       if (error.name && error.name === 'TokenExpiredError') {
         throw new ExpiredTokenException();

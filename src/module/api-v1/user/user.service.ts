@@ -446,10 +446,34 @@ export class UserService {
     );
   }
 
-  async sendResetPasswordEmail(user: UserDocument, clearerUser: boolean): Promise<any> {
+  async sendResetPasswordEmail(
+    user: UserDocument, 
+    clearerUser: boolean,
+  ): Promise<any> {
     const resetPasswordToken = this.jwtService.sign({ 
       user_id: user._id 
     });
-    return this.mailService.sendResetPasswordEmail(user, resetPasswordToken, clearerUser);
+    return this.mailService.sendResetPasswordEmail(
+      user, 
+      resetPasswordToken, 
+      clearerUser,
+    );
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<UserDocument> {
+    const user = await this.userModel.findById(userId).exec();
+    if (
+      !user || 
+      !(await bcrypt.compare(currentPassword, user.personal.password))
+    ) {
+      return null;
+    }
+    user.personal.password = await bcrypt.hash(newPassword, 13);
+    await user.save();
+    return user;
   }
 }
