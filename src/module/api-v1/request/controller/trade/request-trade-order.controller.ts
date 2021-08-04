@@ -1,7 +1,6 @@
 import {
   Controller,
   UseGuards,
-  Get,
   Param,
   NotFoundException,
   Post,
@@ -50,7 +49,7 @@ export class RequestTradeOrderController {
 
   @Post()
   @Permissions(PermissionDesk.requestTrade)
-  @ApiOperation({ summary: 'Get and persist recent RFQ for trade request' })
+  @ApiOperation({ summary: 'Make an order to broker' })
   @ApiOkResponse({ type: [GetRequestTradeRfqResponseDto] })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid Id',
@@ -97,31 +96,36 @@ export class RequestTradeOrderController {
       throw new NotFoundException();
     }
 
-    //TODO validate order price
-
-    const quantityOrder = new BigNumber(0);
-    const quantityRequest = new BigNumber(request.quantity);
-    const quantityRequestTrade = new BigNumber(requestTrade.quantity);
-    if (
-      !quantityRequest.gt(0) ||
-      quantityRequest.gt(quantityRequestTrade.minus(quantityOrder))
-    ) {
-      throw new InvalidFormException([
-        {
-          path: 'quantity',
-          constraints: {
-            IsMatch: `order quantity should be positive and less or equal trade request quantity (${quantityRequestTrade}) - order quantity (${quantityOrder})`,
+    if (request.quantity) {
+      //TODO validate order price
+      const quantityOrder = new BigNumber(0);
+      const quantityRequest = new BigNumber(request.quantity);
+      const quantityRequestTrade = new BigNumber(requestTrade.quantity);
+      if (
+        !quantityRequest.gt(0) ||
+        quantityRequest.gt(quantityRequestTrade.minus(quantityOrder))
+      ) {
+        throw new InvalidFormException([
+          {
+            path: 'quantity',
+            constraints: {
+              IsMatch: `order quantity should be positive and less or equal trade request quantity (${quantityRequestTrade}) - order quantity (${quantityOrder})`,
+            },
           },
-        },
-      ]);
+        ]);
+      }
     }
 
-    const order = await this.requestService.createOrder(
-      requestTrade,
-      request,
-      userCurrent,
-    );
-
-    return RequestTradeOrderMapper.toGetDto(order);
+    try {
+      const order = await this.requestService.createOrder(
+        requestTrade,
+        request,
+        userCurrent,
+      );
+      return RequestTradeOrderMapper.toGetDto(order);
+    } catch (error) {
+      console.log('error ', error);
+      throw error;
+    }
   }
 }

@@ -45,10 +45,11 @@ import {
   RequestTradeOrder,
   RequestTradeOrderDocument,
 } from 'src/schema/request/embedded/request-trade-order.embedded';
+import { BigNumber } from 'bignumber.js';
 
 @Injectable()
 export class RequestService {
-  static readonly ORDER_VALID_UNTIL = 10000;
+  readonly ORDER_VALID_UNTIL = 10000;
 
   constructor(
     @InjectModel(RequestTrade.name)
@@ -231,7 +232,7 @@ export class RequestService {
       clientId,
       instrument,
       'buy',
-      requestTrade.quantity,
+      request.quantity,
     );
 
     const rfqs = [];
@@ -250,7 +251,11 @@ export class RequestService {
       rfq.clientRfqId = clientId;
       rfq.side = rfqResponse['side'];
       rfq.instrument = rfqResponse['instrument'];
-      rfq.price = rfqResponse['price'];
+      // that case is for b2c2 only
+      rfq.price = new BigNumber(rfqResponse['price'])
+        .times(new BigNumber(rfqResponse['quantity']))
+        .toString();
+
       rfq.createdAt = new Date();
       rfq.rawResponse = JSON.stringify(rfqResponse);
       // rfq.rawQuery =
@@ -281,12 +286,20 @@ export class RequestService {
     const order = new this.requestTradeOrderModel();
     order.initiator = user;
     order.brokerId = rfq.brokerId;
-    order.validUntil = new Date(request.validUntil);
+    if (request.validUntil) {
+      order.validUntil = new Date(request.validUntil);
+    } else if (requestTrade.limitTime) {
+      order.validUntil = new Date(requestTrade.limitTime);
+    } else {
+      order.validUntil = new Date(Date.now() + this.ORDER_VALID_UNTIL);
+    }
     order.rfqId = rfq.id;
     order.clientOrderId = clientId;
     order.quantity = rfq.quantity;
     order.instrument = rfq.instrument;
-    order.price = rfq.price;
+    order.price = new BigNumber(rfq.price)
+      .times(new BigNumber(rfq.quantity))
+      .toString();
     order.type = request.orderType;
     // order.trades = [];
     const orderResponse = await this.brokersService.order(
@@ -295,8 +308,8 @@ export class RequestService {
       rfq.instrument,
       rfq.side,
       rfq.quantity,
-      request.price,
-      request.validUntil,
+      order.price,
+      order.validUntil,
     );
     order.executedPrice = orderResponse.executed_price;
     order.rawResponse = JSON.stringify(orderResponse);

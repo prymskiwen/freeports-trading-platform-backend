@@ -1,16 +1,24 @@
-import { IsNotEmpty, IsNumberString } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsNumberString,
+  IsOptional,
+  ValidateIf,
+} from 'class-validator';
 import { RequestTradeOrderType } from 'src/schema/request/embedded/request-trade-order.embedded';
 
 export class CreateRequestTradeOrderRequestDto {
-  @IsNotEmpty()
+  @ValidateIf((o) => !o.rfqId)
   @IsNumberString()
   quantity: string;
 
-  @IsNotEmpty()
+  @ValidateIf((o) => !o.rfqId)
   @IsNumberString()
   price: string;
 
-  validUntil?: string;
+  @IsOptional()
+  @IsDateString()
+  validUntil?: Date;
 
   orderType?: RequestTradeOrderType;
 

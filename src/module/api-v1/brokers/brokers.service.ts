@@ -11,7 +11,6 @@ export class BrokersService {
     @Inject(BrokersConfig.KEY)
     brokersConfig: ConfigType<typeof BrokersConfig>,
   ) {
-    console.log('vaultConfig', brokersConfig);
     const b2c2Config = brokersConfig.find((config) => config.name === 'B2C2');
     if (b2c2Config) {
       this.brokers.push(new B2C2(b2c2Config));
@@ -19,8 +18,12 @@ export class BrokersService {
   }
   async rfqs(id, instrument, side, quantity): Promise<RFQResponse[]> {
     // TODO: handle errors and multiple brokers
-    const rfq = await this.brokers[0].rfq(id, instrument, side, quantity);
-    return [rfq.data];
+    try {
+      const rfq = await this.brokers[0].rfq(id, instrument, side, quantity);
+      return [rfq.data];
+    } catch (error) {
+      throw error;
+    }
   }
 
   async order(
@@ -30,7 +33,7 @@ export class BrokersService {
     side: RequestTradeRfqSide,
     quantity: string,
     price: string,
-    validUntil: string,
+    validUntil: Date,
   ): Promise<OrderResponse> {
     const broker = this.brokers.find((broker) => broker.name === brokerId);
     if (!broker) {

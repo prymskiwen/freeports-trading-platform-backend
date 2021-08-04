@@ -41,6 +41,7 @@ import {
   RequestTradeOrderTrade,
   RequestTradeOrderTradeSchema,
 } from 'src/schema/request/embedded/request-trade-order-trade.embedded';
+import { RequestTradeOrderController } from './controller/trade/request-trade-order.controller';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import {
     RequestTradeMyController,
     RequestTradeController,
     RequestTradeRfqController,
+    RequestTradeOrderController,
     RequestFundController,
     RequestRefundController,
     RequestMoveController,
