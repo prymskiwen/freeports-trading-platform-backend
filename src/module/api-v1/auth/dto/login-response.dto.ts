@@ -1,8 +1,8 @@
-import { GetUserResponseDto } from '../../user/dto/get-user-response.dto';
+import { GetUserDetailsResponseDto } from '../../user/dto/get-user-details-response.dto';
 import { TokenDto } from './token.dto';
 
 export class LoginResponseDto {
-  user: GetUserResponseDto;
+  user: GetUserDetailsResponseDto;
   token: TokenDto;
   isOTPDefined: boolean;
 }

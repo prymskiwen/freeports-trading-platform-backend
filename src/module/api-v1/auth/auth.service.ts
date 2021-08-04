@@ -28,8 +28,9 @@ export class AuthService {
   ) {}
 
   async login(user: UserDocument): Promise<LoginResponseDto> {
+    const userDetails = await UserMapper.toGetDetailsDto(user);
     return {
-      user: UserMapper.toGetDto(user),
+      user: userDetails,
       token: this.generateAuthToken({
         sub: user.id,
         name: user.personal.nickname,
@@ -54,8 +55,9 @@ export class AuthService {
   }
 
   async login2FA(user: UserDocument): Promise<LoginResponseDto> {
+    const userDetails = await UserMapper.toGetDetailsDto(user);
     return {
-      user: UserMapper.toGetDto(user),
+      user: userDetails,
       token: this.generateAuthToken({
         sub: user.id,
         name: user.personal.nickname,
@@ -184,8 +186,8 @@ export class AuthService {
   }
 
   async resetPassword(
-    userId: string, 
-    password: string, 
+    userId: string,
+    password: string,
     resetPasswordToken: string,
   ): Promise<ResetPasswordResponseDto> {
     try {
@@ -203,7 +205,6 @@ export class AuthService {
       await this.userService.updatePassword(userId, password);
 
       return { success: true };
-
     } catch (error) {
       if (error.name && error.name === 'TokenExpiredError') {
         throw new ExpiredTokenException();
