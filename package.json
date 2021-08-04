@@ -59,6 +59,7 @@
     "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.11",
     "@types/jest": "^26.0.22",
+    "@types/luxon": "^1.27.1",
     "@types/node": "^14.14.36",
     "@types/passport-jwt": "^3.0.5",
     "@types/passport-local": "^1.0.33",
