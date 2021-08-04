@@ -350,11 +350,19 @@ export class RoleService {
     await user.save();
   }
 
-  async unassignRoleClearer(roles: string[], user: UserDocument) {
+  async unassignRoleClearer(
+    roles: string[],
+    user: UserDocument,
+    forceSystem = false,
+  ) {
     await Promise.all(
       roles.map(async (roleId) => {
         const role = await this.getRoleClearerById(roleId);
         if (!role) {
+          return;
+        }
+
+        if (!forceSystem && role.system) {
           return;
         }
 
@@ -389,12 +397,13 @@ export class RoleService {
     }
   }
 
-  async resetRoleClearerOfUser(user: UserDocument) {
+  async resetRoleClearerOfUser(user: UserDocument, forceSystem = false) {
     return this.unassignRoleClearer(
       user.roles.map((r) => {
         return r.role.toString();
       }),
       user,
+      forceSystem,
     );
   }
 
@@ -437,11 +446,16 @@ export class RoleService {
     roles: string[],
     organization: OrganizationDocument,
     user: UserDocument,
+    forceSystem = false,
   ) {
     await Promise.all(
       roles.map(async (roleId) => {
         const role = await this.getRoleOrganizationById(roleId, organization);
         if (!role) {
+          return;
+        }
+
+        if (!forceSystem && role.system) {
           return;
         }
 
@@ -480,6 +494,7 @@ export class RoleService {
   async resetRoleOrganizationOfUser(
     organization: OrganizationDocument,
     user: UserDocument,
+    forceSystem = false,
   ) {
     return this.unassignRoleOrganization(
       user.roles.map((r) => {
@@ -487,6 +502,7 @@ export class RoleService {
       }),
       organization,
       user,
+      forceSystem,
     );
   }
 
