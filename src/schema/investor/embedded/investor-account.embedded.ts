@@ -22,6 +22,9 @@ export class InvestorAccount {
    */
   @Prop()
   vaultWalletId?: string;
+
+  @Prop()
+  hdPath?: string;
 }
 
 export const InvestorAccountSchema = SchemaFactory.createForClass(

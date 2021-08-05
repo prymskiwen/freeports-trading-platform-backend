@@ -75,6 +75,7 @@ export class AccountMapper {
     } else if (document.type === AccountType.crypto) {
       dto.publicAddress = document.publicAddress;
       dto.vaultWalletId = document.vaultWalletId;
+      dto.hdPath = document.hdPath;
     }
 
     return dto;

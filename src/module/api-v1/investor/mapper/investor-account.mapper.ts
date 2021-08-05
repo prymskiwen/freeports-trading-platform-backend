@@ -36,6 +36,7 @@ export class InvestorAccountMapper {
     dto.balance = document.balance;
     dto.publicAddress = document.publicAddress;
     dto.vaultWalletId = document.vaultWalletId;
+    dto.hdPath = document.hdPath;
 
     return dto;
   }
