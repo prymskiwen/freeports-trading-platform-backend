@@ -4,7 +4,7 @@ import { User } from 'src/schema/user/user.schema';
 
 export enum RequestTradeRfqSide {
   buy = 'buy',
-  sale = 'sale',
+  sale = 'sell',
 }
 
 export type RequestTradeRfqDocument = RequestTradeRfq & Document;
