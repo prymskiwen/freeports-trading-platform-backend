@@ -482,4 +482,10 @@ export class UserService {
     await user.save();
     return user;
   }
+
+  async resetOTP(user: UserDocument): Promise<any> {
+    user.twoFactorAuthenticationSecret = '';
+    await user.save();
+    return { success: true };
+  }
 }

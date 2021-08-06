@@ -320,4 +320,26 @@ export class UserClearerController {
       user.organization ? false : true,
     );
   }
+
+  @Post(':userId/reset-otp')
+  @ApiOperation({ summary: 'Reset user OTP key' })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User has not been found',
+    type: ExceptionDto,
+  })
+  async resetOTP(
+    @Param('userId', ParseObjectIdPipe) userId: string,
+  ): Promise<any> {
+    const user = await this.userService.getById(userId);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return await this.userService.resetOTP(user);
+  }
 }
