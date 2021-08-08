@@ -5,4 +5,5 @@ export class GetInvestorAccountResponseDto {
   balance: number;
   publicAddress?: string;
   vaultWalletId?: string;
+  hdPath?: string;
 }

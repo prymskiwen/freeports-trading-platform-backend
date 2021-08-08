@@ -14,6 +14,7 @@ import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 import {
   UserPublicKey,
   UserPublicKeyDocument,
+  UserPublicKeyStatus,
 } from 'src/schema/user/embedded/user-public-key.embedded';
 import { CreateUserPublicKeyRequestDto } from './dto/public-key/create-user-public-key-request.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -38,6 +39,7 @@ export class UserService {
 
     publicKey.key = request.key;
     publicKey.name = request.name;
+    publicKey.status = UserPublicKeyStatus.requesting;
 
     user.publicKeys.push(publicKey);
 
@@ -134,10 +136,14 @@ export class UserService {
 
     await this.mailService.sendUserConfirmation(user, user._id);
 
-    const resetPasswordToken = this.jwtService.sign({ 
-      user_id: user._id 
+    const resetPasswordToken = this.jwtService.sign({
+      user_id: user._id,
     });
-    await this.mailService.sendResetPasswordEmail(user, resetPasswordToken, clearerUser);
+    await this.mailService.sendResetPasswordEmail(
+      user,
+      resetPasswordToken,
+      clearerUser,
+    );
 
     return user;
   }
@@ -447,15 +453,15 @@ export class UserService {
   }
 
   async sendResetPasswordEmail(
-    user: UserDocument, 
+    user: UserDocument,
     clearerUser: boolean,
   ): Promise<any> {
-    const resetPasswordToken = this.jwtService.sign({ 
-      user_id: user._id 
+    const resetPasswordToken = this.jwtService.sign({
+      user_id: user._id,
     });
     return this.mailService.sendResetPasswordEmail(
-      user, 
-      resetPasswordToken, 
+      user,
+      resetPasswordToken,
       clearerUser,
     );
   }
@@ -467,7 +473,7 @@ export class UserService {
   ): Promise<UserDocument> {
     const user = await this.userModel.findById(userId).exec();
     if (
-      !user || 
+      !user ||
       !(await bcrypt.compare(currentPassword, user.personal.password))
     ) {
       return null;

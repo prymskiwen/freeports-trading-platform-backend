@@ -41,6 +41,9 @@ export class Account {
    */
   @Prop()
   vaultWalletId?: string;
+
+  @Prop({ unique: true, sparse: true })
+  hdPath?: string;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

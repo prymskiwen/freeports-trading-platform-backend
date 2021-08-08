@@ -8,6 +8,7 @@ import {
   UseGuards,
   NotFoundException,
   Put,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -44,6 +45,8 @@ import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 import { CreateVaultUserRequestDto } from './dto/create-vault-user-request.dto';
 import { VaultService } from '../vault/vault.service';
 import { VaultResourceCreatedResponseDto } from '../vault/dto/vault-resource-created.dto';
+import { RoleService } from '../role/role.service';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/user')
@@ -52,6 +55,7 @@ import { VaultResourceCreatedResponseDto } from '../vault/dto/vault-resource-cre
 export class UserClearerController {
   constructor(
     private readonly userService: UserService,
+    private readonly roleService: RoleService,
     private readonly vaultService: VaultService,
   ) {}
 
@@ -193,11 +197,26 @@ export class UserClearerController {
   })
   async suspendClearerUser(
     @Param('userId', ParseObjectIdPipe) userId: string,
+    @CurrentUser() userCurrent: UserDocument,
   ): Promise<UpdateUserResponseDto> {
     const user = await this.userService.getClearerUserById(userId);
 
     if (!user) {
       throw new NotFoundException();
+    }
+
+    if (user.equals(userCurrent)) {
+      throw new ForbiddenException(
+        'There is not much sense to suspend yourself',
+      );
+    }
+
+    const roleClearerManager = await this.roleService.getRoleClearerManager();
+    const isClearerManager = roleClearerManager.users.some((userId) => {
+      return userId.toString() === user.id;
+    });
+    if (isClearerManager) {
+      throw new ForbiddenException('Clearer manager should not be suspended');
     }
 
     user.suspended = true;
