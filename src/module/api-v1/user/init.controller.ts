@@ -56,6 +56,8 @@ export class InitController {
     }
 
     const user = await this.userService.create(request, false);
+    user.vaultUserId = '1';
+
     const roleManager = await this.roleService.createRoleClearerManager(user);
 
     await this.roleService.assignRoleClearer([roleManager.id], user, user);
