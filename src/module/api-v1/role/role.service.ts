@@ -32,6 +32,7 @@ import {
 import { UserService } from '../user/user.service';
 import { UpdateRoleOrganizationRequestDto } from './dto/organization/update-role-organization-request.dto';
 import { DeskService } from '../desk/desk.service';
+import { AssignRoleMultideskRequestDto } from './dto/multidesk/assign-role-multidesk-request.dto';
 
 @Injectable()
 export class RoleService {
@@ -507,16 +508,15 @@ export class RoleService {
   }
 
   async assignRoleMultidesk(
-    roles: string[],
-    desks: string[],
+    request: AssignRoleMultideskRequestDto[],
     organization: OrganizationDocument,
     user: UserDocument,
     assignedBy: UserDocument,
   ) {
     await Promise.all(
-      roles.map(async (roleId) => {
+      request.map(async (req) => {
         const effectiveDesks = [];
-        const role = await this.getRoleMultideskById(roleId, organization);
+        const role = await this.getRoleMultideskById(req.role, organization);
         if (!role) {
           return;
         }
@@ -529,7 +529,7 @@ export class RoleService {
         }
 
         await Promise.all(
-          desks.map(async (deskId) => {
+          req.desks.map(async (deskId) => {
             const desk = await this.deskService.getById(deskId);
 
             if (!desk) {
@@ -590,22 +590,15 @@ export class RoleService {
   }
 
   async updateRoleMultideskOfUser(
-    roles: string[],
-    desks: string[],
+    request: AssignRoleMultideskRequestDto[],
     organization: OrganizationDocument,
     user: UserDocument,
     assignedBy: UserDocument,
   ) {
     await this.resetRoleMultideskOfUser(organization, user);
 
-    if (roles.length) {
-      return this.assignRoleMultidesk(
-        roles,
-        desks,
-        organization,
-        user,
-        assignedBy,
-      );
+    if (request.length) {
+      return this.assignRoleMultidesk(request, organization, user, assignedBy);
     } else {
       await user.save();
     }

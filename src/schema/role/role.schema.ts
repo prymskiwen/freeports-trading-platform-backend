@@ -9,6 +9,13 @@ import { PermissionAny } from './permission.helper';
 
 export const ROLE_MANAGER = 'Manager';
 
+export const RoleKind = [
+  RoleClearer.name,
+  RoleOrganization.name,
+  RoleMultidesk.name,
+  RoleDesk.name,
+];
+
 export type RoleDocument = Role & Document;
 
 @Schema({ versionKey: false, discriminatorKey: 'kind' })
@@ -16,12 +23,7 @@ export class Role {
   @Prop({
     type: String,
     required: true,
-    enum: [
-      RoleClearer.name,
-      RoleOrganization.name,
-      RoleMultidesk.name,
-      RoleDesk.name,
-    ],
+    enum: RoleKind,
   })
   kind: string;
 
