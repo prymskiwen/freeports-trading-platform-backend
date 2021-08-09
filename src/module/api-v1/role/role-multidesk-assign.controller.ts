@@ -154,6 +154,7 @@ export class RoleMultideskAssignController {
   @Patch('user/:userId/role')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiOperation({ summary: 'Update multi-desk roles of user' })
+  @ApiBody({ type: [AssignRoleMultideskRequestDto] })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
