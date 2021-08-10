@@ -44,6 +44,7 @@ import { CreateRequestTradeOrderRequestDto } from './dto/trade/create-request-tr
 import {
   RequestTradeOrder,
   RequestTradeOrderDocument,
+  RequestTradeOrderStatus,
 } from 'src/schema/request/embedded/request-trade-order.embedded';
 import { BigNumber } from 'bignumber.js';
 
@@ -224,43 +225,40 @@ export class RequestService {
   ): Promise<RequestTradeRfqDocument[]> {
     const clientId = uuidv4();
 
-    const instrument =
-      requestTrade.currencyFrom.toUpperCase() +
-      requestTrade.currencyTo.toUpperCase() +
-      '.SPOT';
     const rfqsResponses = await this.brokersService.rfqs(
       clientId,
-      instrument,
-      'buy',
+      requestTrade.currencyFrom,
+      requestTrade.currencyTo,
+
       request.quantity,
     );
 
     const rfqs = [];
     rfqsResponses.forEach((rfqResponse) => {
-      const rfq = new this.requestTradeRfqModel();
-      rfq.initiator = user;
-      rfq.quantity = request.quantity;
+      if (rfqResponse.response) {
+        const rfq = new this.requestTradeRfqModel();
+        rfq.initiator = user;
+        rfq.quantity = request.quantity;
 
-      // TODO: broker API request here
-      rfq.brokerId = 'B2C2';
-      // calculate side and instrument
-      // get quantity from request
+        // TODO: broker API request here
+        rfq.brokerId = rfqResponse.brokerId;
+        // calculate side and instrument
+        // get quantity from request
 
-      rfq.validUntil = new Date(rfqResponse['valid_until']);
-      rfq.rfqId = rfqResponse['rfq_id'];
-      rfq.clientRfqId = clientId;
-      rfq.side = rfqResponse['side'];
-      rfq.instrument = rfqResponse['instrument'];
-      // that case is for b2c2 only
-      rfq.price = new BigNumber(rfqResponse['price'])
-        .times(new BigNumber(rfqResponse['quantity']))
-        .toString();
+        rfq.validUntil = new Date(rfqResponse.response['valid_until']);
+        rfq.rfqId = rfqResponse.response['rfq_id'];
+        rfq.clientRfqId = clientId;
+        rfq.side = rfqResponse.response['side'];
+        rfq.instrument = rfqResponse.response['instrument'];
 
-      rfq.createdAt = new Date();
-      rfq.rawResponse = JSON.stringify(rfqResponse);
-      // rfq.rawQuery =
-      rfqs.push(rfq);
-      requestTrade.rfqs.push(rfq);
+        rfq.price = rfqResponse.response['price'];
+
+        rfq.createdAt = new Date();
+        rfq.rawResponse = JSON.stringify(rfqResponse.response);
+        // rfq.rawQuery =
+        rfqs.push(rfq);
+        requestTrade.rfqs.push(rfq);
+      }
     });
 
     if (persist) {
@@ -293,35 +291,41 @@ export class RequestService {
     } else {
       order.validUntil = new Date(Date.now() + this.ORDER_VALID_UNTIL);
     }
+    order.createdAt = new Date();
+
     order.rfqId = rfq.id;
     order.clientOrderId = clientId;
     order.quantity = rfq.quantity;
     order.instrument = rfq.instrument;
-    order.price = new BigNumber(rfq.price)
-      .times(new BigNumber(rfq.quantity))
-      .toString();
+
+    order.price = rfq.price;
     order.type = request.orderType;
+    try {
+      const orderResponse = await this.brokersService.order(
+        rfq.brokerId,
+        clientId,
+        requestTrade.currencyFrom,
+        requestTrade.currencyTo,
+        rfq.quantity,
+        order.price,
+        order.validUntil,
+      );
+      order.executedPrice = orderResponse.executed_price;
+      order.rawResponse = JSON.stringify(orderResponse);
+      order.status = RequestTradeOrderStatus.requesting;
+    } catch (error) {
+      order.status = RequestTradeOrderStatus.failed;
+    }
     // order.trades = [];
-    const orderResponse = await this.brokersService.order(
-      rfq.brokerId,
-      clientId,
-      rfq.instrument,
-      rfq.side,
-      rfq.quantity,
-      order.price,
-      order.validUntil,
-    );
-    order.executedPrice = orderResponse.executed_price;
-    order.rawResponse = JSON.stringify(orderResponse);
     // type: RequestTradeOrderType;
     // status;
     // orderId;
     // side: RequestTradeRfqSide;
     // executingUnit;
     // rawQuery;
-    orderResponse.trades.forEach((trade) => {
-      order.trades.push(new this.requestTradeOrderTradeModel(trade));
-    });
+    // orderResponse.trades.forEach((trade) => {
+    //   order.trades.push(new this.requestTradeOrderTradeModel(trade));
+    // });
 
     requestTrade.orders.push(order);
 

@@ -34,6 +34,8 @@ export class RequestTradeOrderMapper {
     dto.quantity = document.quantity;
     dto.side = document.side;
     dto.price = document.price;
+    dto.status = document.status;
+    dto.executedPrice = document.executedPrice;
 
     return dto;
   }

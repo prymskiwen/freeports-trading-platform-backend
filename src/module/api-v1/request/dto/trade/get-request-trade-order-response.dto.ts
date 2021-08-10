@@ -1,3 +1,4 @@
+import { RequestTradeOrderStatus } from 'src/schema/request/embedded/request-trade-order.embedded';
 import { RequestTradeRfqSide } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 
 export class GetRequestTradeOrderResponseDto {
@@ -9,4 +10,5 @@ export class GetRequestTradeOrderResponseDto {
   side: RequestTradeRfqSide;
   price: string;
   executedPrice: string;
+  status: RequestTradeOrderStatus;
 }
