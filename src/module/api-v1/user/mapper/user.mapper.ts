@@ -1,3 +1,6 @@
+import { RoleDesk } from 'src/schema/role/role-desk.schema';
+import { RoleMultidesk } from 'src/schema/role/role-multidesk.schema';
+import { RoleOrganization } from 'src/schema/role/role-organization.schema';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { CreateUserResponseDto } from '../dto/create-user-response.dto';
 import { GetUserDetailsResponseDto } from '../dto/get-user-details-response.dto';
@@ -54,6 +57,16 @@ export class UserMapper {
         id: userRole.role['id'],
         name: userRole.role.name,
         system: userRole.role.system,
+        kind: userRole.role.kind,
+        organization:
+          userRole.role.kind === RoleOrganization.name || RoleMultidesk.name
+            ? userRole.role['organization']
+            : undefined,
+        desk:
+          userRole.role.kind === RoleDesk.name
+            ? userRole.role['desk']
+            : undefined,
+        effectiveDesks: userRole.effectiveDesks,
         permissions: userRole.role.permissions,
       };
     });

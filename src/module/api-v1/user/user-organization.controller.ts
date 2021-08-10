@@ -8,6 +8,7 @@ import {
   UseGuards,
   NotFoundException,
   Put,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -42,6 +43,8 @@ import { PaginationHelper } from 'src/pagination/pagination.helper';
 import JwtTwoFactorGuard from '../auth/guard/jwt-two-factor.guard';
 import { PermissionOrganization } from 'src/schema/role/permission.helper';
 import { UniqueFieldException } from 'src/exeption/unique-field.exception';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { RoleService } from '../role/role.service';
 
 @UseGuards(JwtTwoFactorGuard, PermissionsGuard)
 @Controller('api/v1/organization/:organizationId/user')
@@ -50,6 +53,7 @@ import { UniqueFieldException } from 'src/exeption/unique-field.exception';
 export class UserOrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
+    private readonly roleService: RoleService,
     private readonly userService: UserService,
   ) {}
 
@@ -258,6 +262,7 @@ export class UserOrganizationController {
   async suspendOrganizationUser(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
+    @CurrentUser() userCurrent: UserDocument,
   ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
 
@@ -272,6 +277,26 @@ export class UserOrganizationController {
 
     if (!user) {
       throw new NotFoundException();
+    }
+
+    if (user.equals(userCurrent)) {
+      throw new ForbiddenException(
+        'There is not much sense to suspend yourself',
+      );
+    }
+
+    const roleOrganizationManager = await this.roleService.getRoleOrganizationManager(
+      organization,
+    );
+    const isOrganizationManager = roleOrganizationManager.users.some(
+      (userId) => {
+        return userId.toString() === user.id;
+      },
+    );
+    if (isOrganizationManager) {
+      throw new ForbiddenException(
+        'Organization manager should not be suspended',
+      );
     }
 
     user.suspended = true;

@@ -7,4 +7,5 @@ export class GetAccountResponseDto {
   iban?: string;
   publicAddress?: string;
   vaultWalletId?: string;
+  hdPath?: string;
 }

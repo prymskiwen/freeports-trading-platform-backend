@@ -6,10 +6,12 @@ import {
   UseGuards,
   NotFoundException,
   Patch,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -52,6 +54,7 @@ export class RoleMultideskAssignController {
   @Post('user/:userId/role/assign')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiOperation({ summary: 'Assign multi-desk roles to user' })
+  @ApiBody({ type: [AssignRoleMultideskRequestDto] })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -71,7 +74,8 @@ export class RoleMultideskAssignController {
   async assignRoleMultideskListToUser(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleMultideskRequestDto,
+    @Body(new ParseArrayPipe({ items: AssignRoleMultideskRequestDto })) // Validate array as type
+    request: AssignRoleMultideskRequestDto[],
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
@@ -90,8 +94,7 @@ export class RoleMultideskAssignController {
     }
 
     await this.roleService.assignRoleMultidesk(
-      request.roles,
-      request.desks,
+      request,
       organization,
       user,
       userCurrent,
@@ -151,6 +154,7 @@ export class RoleMultideskAssignController {
   @Patch('user/:userId/role')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiOperation({ summary: 'Update multi-desk roles of user' })
+  @ApiBody({ type: [AssignRoleMultideskRequestDto] })
   @ApiCreatedResponse({
     description: 'Successfully updated user id',
     type: UpdateUserResponseDto,
@@ -170,7 +174,8 @@ export class RoleMultideskAssignController {
   async updateRoleOrganizationListOfUser(
     @Param('organizationId', ParseObjectIdPipe) organizationId: string,
     @Param('userId', ParseObjectIdPipe) userId: string,
-    @Body() request: AssignRoleMultideskRequestDto,
+    @Body(new ParseArrayPipe({ items: AssignRoleMultideskRequestDto })) // Validate array as type
+    request: AssignRoleMultideskRequestDto[],
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<UpdateUserResponseDto> {
     const organization = await this.organizationService.getById(organizationId);
@@ -189,8 +194,7 @@ export class RoleMultideskAssignController {
     }
 
     await this.roleService.updateRoleMultideskOfUser(
-      request.roles,
-      request.desks,
+      request,
       organization,
       user,
       userCurrent,

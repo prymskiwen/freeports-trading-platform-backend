@@ -32,6 +32,7 @@ import {
 import { UserService } from '../user/user.service';
 import { UpdateRoleOrganizationRequestDto } from './dto/organization/update-role-organization-request.dto';
 import { DeskService } from '../desk/desk.service';
+import { AssignRoleMultideskRequestDto } from './dto/multidesk/assign-role-multidesk-request.dto';
 
 @Injectable()
 export class RoleService {
@@ -350,11 +351,19 @@ export class RoleService {
     await user.save();
   }
 
-  async unassignRoleClearer(roles: string[], user: UserDocument) {
+  async unassignRoleClearer(
+    roles: string[],
+    user: UserDocument,
+    forceSystem = false,
+  ) {
     await Promise.all(
       roles.map(async (roleId) => {
         const role = await this.getRoleClearerById(roleId);
         if (!role) {
+          return;
+        }
+
+        if (!forceSystem && role.system) {
           return;
         }
 
@@ -389,12 +398,13 @@ export class RoleService {
     }
   }
 
-  async resetRoleClearerOfUser(user: UserDocument) {
+  async resetRoleClearerOfUser(user: UserDocument, forceSystem = false) {
     return this.unassignRoleClearer(
       user.roles.map((r) => {
         return r.role.toString();
       }),
       user,
+      forceSystem,
     );
   }
 
@@ -437,11 +447,16 @@ export class RoleService {
     roles: string[],
     organization: OrganizationDocument,
     user: UserDocument,
+    forceSystem = false,
   ) {
     await Promise.all(
       roles.map(async (roleId) => {
         const role = await this.getRoleOrganizationById(roleId, organization);
         if (!role) {
+          return;
+        }
+
+        if (!forceSystem && role.system) {
           return;
         }
 
@@ -480,6 +495,7 @@ export class RoleService {
   async resetRoleOrganizationOfUser(
     organization: OrganizationDocument,
     user: UserDocument,
+    forceSystem = false,
   ) {
     return this.unassignRoleOrganization(
       user.roles.map((r) => {
@@ -487,20 +503,20 @@ export class RoleService {
       }),
       organization,
       user,
+      forceSystem,
     );
   }
 
   async assignRoleMultidesk(
-    roles: string[],
-    desks: string[],
+    request: AssignRoleMultideskRequestDto[],
     organization: OrganizationDocument,
     user: UserDocument,
     assignedBy: UserDocument,
   ) {
     await Promise.all(
-      roles.map(async (roleId) => {
+      request.map(async (req) => {
         const effectiveDesks = [];
-        const role = await this.getRoleMultideskById(roleId, organization);
+        const role = await this.getRoleMultideskById(req.role, organization);
         if (!role) {
           return;
         }
@@ -513,7 +529,7 @@ export class RoleService {
         }
 
         await Promise.all(
-          desks.map(async (deskId) => {
+          req.desks.map(async (deskId) => {
             const desk = await this.deskService.getById(deskId);
 
             if (!desk) {
@@ -574,22 +590,15 @@ export class RoleService {
   }
 
   async updateRoleMultideskOfUser(
-    roles: string[],
-    desks: string[],
+    request: AssignRoleMultideskRequestDto[],
     organization: OrganizationDocument,
     user: UserDocument,
     assignedBy: UserDocument,
   ) {
     await this.resetRoleMultideskOfUser(organization, user);
 
-    if (roles.length) {
-      return this.assignRoleMultidesk(
-        roles,
-        desks,
-        organization,
-        user,
-        assignedBy,
-      );
+    if (request.length) {
+      return this.assignRoleMultidesk(request, organization, user, assignedBy);
     } else {
       await user.save();
     }

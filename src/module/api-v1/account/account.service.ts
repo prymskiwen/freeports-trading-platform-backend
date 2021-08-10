@@ -39,10 +39,9 @@ export class AccountService {
       account.iban = request.iban;
     } else if (request.type === AccountType.crypto) {
       // TODO: vault request here
-      // account.cryptotDetails = {
-      //   vaultWalletId: requestVault.id,
-      //   publicAddress: requestVault.address,
-      // };
+      // account.vaultWalletId = requestVault.id;
+      // account.publicAddress = requestVault.address;
+      // account.hdPath = requestVault.hdPath;
     }
 
     if (persist) {

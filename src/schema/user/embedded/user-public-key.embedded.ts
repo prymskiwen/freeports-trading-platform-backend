@@ -3,10 +3,9 @@ import { SchemaTypes, Document } from 'mongoose';
 import { User } from '../user.schema';
 
 export enum UserPublicKeyStatus {
-  'requested',
-  'confirmed',
-  'revocation_request',
-  'revocation_done',
+  requesting = 'requesting',
+  approved = 'approved',
+  revoked = 'revoked',
 }
 
 export type UserPublicKeyDocument = UserPublicKey & Document;

@@ -27,6 +27,7 @@ import { GetUserPublicKeyResponseDto } from './dto/public-key/get-user-public-ke
 import { CreateUserPublicKeyRequestDto } from './dto/public-key/create-user-public-key-request.dto';
 import { ParseObjectIdPipe } from 'src/pipe/parse-objectid.pipe';
 import { UserService } from './user.service';
+import { UserPublicKeyStatus } from 'src/schema/user/embedded/user-public-key.embedded';
 
 @UseGuards(JwtTwoFactorGuard)
 @Controller('api/v1/my/public-key')
@@ -53,6 +54,7 @@ export class UserPublicKeyController {
       return {
         id: publicKey.id,
         key: publicKey.key,
+        status: publicKey.status,
       };
     });
   }
@@ -89,13 +91,56 @@ export class UserPublicKeyController {
     return {
       id: publicKey.id,
       key: publicKey.key,
+      status: publicKey.status,
+    };
+  }
+
+  @Post(':keyId/revoke')
+  @ApiOperation({ summary: 'Revoke user public key' })
+  @ApiOkResponse({
+    description: 'Successfully revoked user public key list',
+    type: GetUserPublicKeyResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authenticated',
+    type: ExceptionDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid Id',
+    type: ExceptionDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User public key has not been found',
+    type: ExceptionDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Server error',
+    type: ExceptionDto,
+  })
+  async revokeUserPublicKey(
+    @Param('keyId', ParseObjectIdPipe) keyId: string,
+    @CurrentUser() userCurrent: UserDocument,
+  ): Promise<GetUserPublicKeyResponseDto> {
+    const publicKey = userCurrent.publicKeys.id(keyId);
+
+    if (!publicKey) {
+      throw new NotFoundException();
+    }
+
+    publicKey.status = UserPublicKeyStatus.revoked;
+    await userCurrent.save();
+
+    return {
+      id: publicKey.id,
+      key: publicKey.key,
+      status: publicKey.status,
     };
   }
 
   @Delete(':keyId')
   @ApiOperation({ summary: 'Delete user public key' })
   @ApiOkResponse({
-    description: 'Successfully updated  user public key list',
+    description: 'Successfully updated user public key list',
     type: [GetUserPublicKeyResponseDto],
   })
   @ApiUnauthorizedResponse({
@@ -131,6 +176,7 @@ export class UserPublicKeyController {
       return {
         id: publicKey.id,
         key: publicKey.key,
+        status: publicKey.status,
       };
     });
   }
