@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { RequestTradeRfqSide } from 'src/schema/request/embedded/request-trade-rfq.embedded';
 import { DateTime } from 'luxon';
+import { response } from 'express';
 
 // import { io, Socket } from 'socket.io-client';
 
@@ -52,8 +53,8 @@ export interface RFQResponse {
 }
 
 export enum OrderType {
-  'FOK',
-  'MKT',
+  'FOK' = 'FOK',
+  'MKT' = 'MKT',
 }
 const instruments = [
   { name: 'LTCUSD.SPOT', underlier: 'LTCUSD', type: 'SPOT' },
@@ -189,40 +190,75 @@ export class B2C2 {
     });
   }
 
-  rfq(
+  async rfq(
     id: string,
-    instrument: string,
-    side: RequestTradeRfqSide,
+    currencyFrom: string,
+    currencyTo: string,
     quantity: string,
-  ): Promise<AxiosResponse<RFQResponse>> {
-    return this.axiosInstance.post<RFQResponse>('/request_for_quote/', {
-      instrument: instrument,
-      side: side,
-      quantity: quantity,
-      client_rfq_id: id,
-    });
+  ): Promise<{ response?: RFQResponse; brokerId: string; error?: any }> {
+    const instrument = this.constructInstrument(currencyFrom, currencyTo);
+    const side = this.getSide(currencyFrom, instrument);
+    try {
+      const response = await this.axiosInstance.post<RFQResponse>(
+        '/request_for_quote/',
+        {
+          instrument: instrument,
+          side,
+          quantity: quantity,
+          client_rfq_id: id,
+        },
+      );
+
+      return { response: response.data, brokerId: this.name };
+    } catch (error) {
+      console.error(error.response.data?.errors[0]);
+      return { error, brokerId: this.name };
+    }
   }
 
   order(
     id: string,
-    instrument: string,
-    side: RequestTradeRfqSide,
+    currencyFrom: string,
+    currencyTo: string,
     quantity: string,
     price: string,
     validUntil: Date,
     executing_unit?: string,
   ): Promise<AxiosResponse<OrderResponse>> {
+    const instrument = this.constructInstrument(currencyFrom, currencyTo);
     return this.axiosInstance.post<OrderResponse>('/order/', {
       instrument: instrument,
-      side: side,
+      side: this.getSide(currencyFrom, instrument),
       quantity: quantity,
       client_order_id: id,
-      price,
+
       valid_until: DateTime.fromJSDate(validUntil).toFormat(
         "y'-'MM'-'dd'T'HH':'mm':'ss",
       ),
       //TODO allow other order types
-      order_type: 'FOK',
+      order_type: OrderType.MKT,
     });
+  }
+
+  private constructInstrument(
+    currencyFrom: string,
+    currencyTo: string,
+  ): string {
+    if (
+      instruments.find((i) =>
+        i.name.startsWith(
+          currencyFrom.toUpperCase() + currencyTo.toUpperCase(),
+        ),
+      )
+    ) {
+      return currencyFrom.toUpperCase() + currencyTo.toUpperCase() + '.SPOT';
+    }
+
+    return currencyTo.toUpperCase() + currencyFrom.toUpperCase() + '.SPOT';
+  }
+
+  private getSide(currencyFrom: string, instrument: string): string {
+    // check which account is crypto
+    return instrument.startsWith(currencyFrom.toUpperCase()) ? 'sell' : 'buy';
   }
 }
