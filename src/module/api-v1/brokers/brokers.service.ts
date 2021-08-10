@@ -16,11 +16,20 @@ export class BrokersService {
       this.brokers.push(new B2C2(b2c2Config));
     }
   }
-  async rfqs(id, instrument, side, quantity): Promise<RFQResponse[]> {
+  async rfqs(
+    id,
+    currencyFrom: string,
+    currencyTo: string,
+    quantity,
+  ): Promise<any> {
     // TODO: handle errors and multiple brokers
     try {
-      const rfq = await this.brokers[0].rfq(id, instrument, side, quantity);
-      return [rfq.data];
+      const rfqs = await Promise.all(
+        this.brokers.map((broker) => {
+          return broker.rfq(id, currencyFrom, currencyTo, quantity);
+        }),
+      );
+      return rfqs;
     } catch (error) {
       throw error;
     }
@@ -29,12 +38,12 @@ export class BrokersService {
   async order(
     brokerId: string,
     id: string,
-    instrument: string,
-    side: RequestTradeRfqSide,
+    currencyFrom: string,
+    currencyTo: string,
     quantity: string,
     price: string,
     validUntil: Date,
-  ): Promise<OrderResponse> {
+  ): Promise<any> {
     const broker = this.brokers.find((broker) => broker.name === brokerId);
     if (!broker) {
       throw new NotFoundException(`No broker with id ${brokerId}`);
@@ -42,8 +51,8 @@ export class BrokersService {
 
     const response = await broker.order(
       id,
-      instrument,
-      side,
+      currencyFrom,
+      currencyTo,
       quantity,
       price,
       validUntil,
