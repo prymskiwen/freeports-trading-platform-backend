@@ -211,6 +211,7 @@ export class B2C2 {
 
       return { response: response.data, brokerId: this.name };
     } catch (error) {
+      console.error(error.response.data?.errors[0]);
       return { error, brokerId: this.name };
     }
   }
