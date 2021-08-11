@@ -5,7 +5,6 @@ import {
   Param,
   UseGuards,
   NotFoundException,
-  Patch,
   ParseArrayPipe,
 } from '@nestjs/common';
 import {
@@ -151,7 +150,7 @@ export class RoleMultideskAssignController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Patch('user/:userId/role')
+  @Post('user/:userId/role')
   @Permissions(PermissionOrganization.roleAssign)
   @ApiOperation({ summary: 'Update multi-desk roles of user' })
   @ApiBody({ type: [AssignRoleMultideskRequestDto] })

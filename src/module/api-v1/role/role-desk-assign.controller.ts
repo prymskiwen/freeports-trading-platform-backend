@@ -5,7 +5,6 @@ import {
   Param,
   UseGuards,
   NotFoundException,
-  Patch,
   Delete,
   Put,
 } from '@nestjs/common';
@@ -249,7 +248,7 @@ export class RoleDeskAssignController {
     return UserMapper.toUpdateDto(user);
   }
 
-  @Patch('user/:userId/role')
+  @Post('user/:userId/role')
   @Permissions(PermissionOrganization.roleAssign, PermissionDesk.roleAssign)
   @ApiOperation({ summary: 'Update desk roles of user' })
   @ApiCreatedResponse({
