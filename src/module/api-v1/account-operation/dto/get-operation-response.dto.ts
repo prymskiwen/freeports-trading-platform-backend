@@ -9,4 +9,5 @@ export class GetOperationResponseDto {
   label: string;
   createdAt: Date;
   reconciledId: string;
+  importId: string;
 }

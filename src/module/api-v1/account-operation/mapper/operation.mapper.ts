@@ -37,6 +37,7 @@ export class OperationMapper {
     dto.createdAt = document.details.createdAt;
     dto.date = document.details.date;
     dto.label = document.details.label;
+    dto.importId = document.details.importId;
 
     return dto;
   }
