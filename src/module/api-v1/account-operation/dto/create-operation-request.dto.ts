@@ -14,4 +14,6 @@ export class CreateOperationRequestDto {
   @IsNotEmpty()
   @IsEnum(AccountOperationDetailsType)
   type: AccountOperationDetailsType;
+
+  importId?: string;
 }

@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Get,
   Put,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -125,17 +126,27 @@ export class OperationController {
   })
   async createOperation(
     @Param('accountId', ParseObjectIdPipe) accountId: string,
-    @Body() request: CreateOperationRequestDto,
+    @Body() request: Array<CreateOperationRequestDto>,
     @CurrentUser() userCurrent: UserDocument,
   ): Promise<CreateOperationResponseDto> {
+    let response = null;
     const account = await this.accountService.getAccountById(accountId);
-    const operation = await this.operationService.createOperation(
-      request,
-      account,
-      userCurrent,
-    );
-
-    return OperationMapper.toCreateDto(operation);
+    for (let i = 0; i < request.length; i++) {
+      if (request[i].importId) {
+        const exist = await this.operationService.getOperationByImportId(
+          request[i].importId,
+        );
+        if (exist) {
+          throw new BadRequestException('The import ID is duplicated.');
+        }
+      }
+      response = await this.operationService.createOperation(
+        request[i],
+        account,
+        userCurrent,
+      ); 
+    }
+    return OperationMapper.toCreateDto(response);
   }
 
   @Put(':operationId')

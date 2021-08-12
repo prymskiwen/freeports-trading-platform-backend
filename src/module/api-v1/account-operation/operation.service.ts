@@ -33,6 +33,7 @@ export class OperationService {
       amount: request.amount,
       date: request.date,
       createdAt: new Date(),
+      importId: request.importId,
     };
 
     await operation.save();
@@ -139,5 +140,15 @@ export class OperationService {
     }
 
     return operation;
+  }
+
+  async getOperationByImportId(
+    importId: string,
+  ): Promise<AccountOperationDocument> {
+    return this.accountOperationModel
+      .findOne({
+        'details.importId': importId,
+      })
+      .exec();
   }
 }

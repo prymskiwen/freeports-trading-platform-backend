@@ -30,6 +30,9 @@ export class AccountOperationDetails {
 
   @Prop()
   createdAt?: Date;
+
+  @Prop()
+  importId?: string;
 }
 
 export const AccountOperationDetailsSchema = SchemaFactory.createForClass(

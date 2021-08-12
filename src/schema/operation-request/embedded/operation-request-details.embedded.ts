@@ -19,6 +19,9 @@ export class OperationRequestDetails {
 
   @Prop()
   amount?: number;
+
+  @Prop()
+  importId?: number;
 }
 
 export const OperationRequestDetailsSchema = SchemaFactory.createForClass(
