@@ -705,4 +705,54 @@ export class RoleService {
       user,
     );
   }
+
+  async updateFromOrganizationRoleDeskOfUser(
+    roles: string[],
+    organization: OrganizationDocument,
+    user: UserDocument,
+    assignedBy: UserDocument,
+  ) {
+    const desks = await this.deskService.getDeskList(organization);
+    const deskIds = desks.map((desk) => desk._id);
+    const rolesOld = await this.getOrganizationRoleDeskList(desks);
+
+    await Promise.all(
+      rolesOld.map(async (role) => {
+        await this.roleDeskModel.updateOne(
+          { _id: role.id },
+          { $pull: { users: user._id } },
+        );
+
+        await this.userService.unassignRole(role, user);
+      }),
+    );
+
+    await Promise.all(
+      roles.map(async (roleId) => {
+        const role = await this.roleDeskModel
+          .findOne({
+            _id: roleId,
+            desk: { $in: deskIds },
+            $or: [{ system: { $exists: false } }, { system: false }],
+          })
+          .exec();
+
+        if (!role) {
+          return;
+        }
+
+        user.roles.push({
+          role: role.id,
+          assignedAt: new Date(),
+          assignedBy: assignedBy.id,
+        });
+
+        role.users.push(user.id);
+
+        await role.save();
+      }),
+    );
+
+    await user.save();
+  }
 }
