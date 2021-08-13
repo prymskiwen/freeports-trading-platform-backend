@@ -7,6 +7,7 @@ import { InvestorMapper } from '../../investor/mapper/investor.mapper';
 import { InvestorDocument } from 'src/schema/investor/investor.schema';
 import { DeskMapper } from '../../desk/mapper/desk.mapper';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
+import { RequestMapper } from './request.mapper';
 
 export class RequestTradeMapper {
   public static toCreateDto(
@@ -22,12 +23,11 @@ export class RequestTradeMapper {
   public static toGetDto(
     document: RequestTradeDocument,
   ): GetRequestTradeResponseDto {
-    const dto = new GetRequestTradeResponseDto();
+    const dto = Object.assign(
+      new GetRequestTradeResponseDto(),
+      RequestMapper.toGetDto(document),
+    );
 
-    dto.id = document.id;
-    dto.friendlyId = document.friendlyId;
-    dto.status = document.status;
-    dto.createdAt = document.createdAt;
     dto.accountFrom = document.accountFrom;
     dto.accountTo = document.accountTo;
     dto.currencyFrom = document.currencyFrom;

@@ -13,7 +13,11 @@ import { InvestorDocument } from 'src/schema/investor/investor.schema';
 import { CreateRequestTradeRequestDto } from './dto/trade/create-request-trade-request.dto';
 import { UserDocument } from 'src/schema/user/user.schema';
 import { OrganizationClearing } from 'src/schema/organization/embedded/organization-clearing.embedded';
-import { RequestStatus } from 'src/schema/request/request.schema';
+import {
+  Request,
+  RequestDocument,
+  RequestStatus,
+} from 'src/schema/request/request.schema';
 import {
   RequestTradeRfq,
   RequestTradeRfqDocument,
@@ -46,13 +50,15 @@ import {
   RequestTradeOrderDocument,
   RequestTradeOrderStatus,
 } from 'src/schema/request/embedded/request-trade-order.embedded';
-import { BigNumber } from 'bignumber.js';
+import { AccountDocument } from 'src/schema/account/account.schema';
 
 @Injectable()
 export class RequestService {
   readonly ORDER_VALID_UNTIL = 10000;
 
   constructor(
+    @InjectModel(Request.name)
+    private requestModel: Model<RequestDocument>,
     @InjectModel(RequestTrade.name)
     private requestTradeModel: Model<RequestTradeDocument>,
     @InjectModel(RequestTradeRfq.name)
@@ -70,6 +76,10 @@ export class RequestService {
     private readonly investorService: InvestorService,
     private readonly brokersService: BrokersService,
   ) {}
+
+  hydrateRequest(request: any): RequestDocument {
+    return this.requestModel.hydrate(request);
+  }
 
   hydrateRequestTrade(request: any): RequestTradeDocument {
     return this.requestTradeModel.hydrate(request);
@@ -567,5 +577,58 @@ export class RequestService {
     }
 
     return move;
+  }
+
+  async getRequestOfAccountById(
+    requestId: string,
+    account: AccountDocument,
+  ): Promise<RequestFundDocument> {
+    return await this.requestFundModel
+      .findOne({
+        _id: requestId,
+        $or: [{ accountFrom: account._id }, { accountTo: account._id }],
+      })
+      .exec();
+  }
+
+  async getRequestOfAccountPaginated(
+    account: AccountDocument,
+    pagination: PaginationRequest,
+  ): Promise<any[]> {
+    const {
+      skip,
+      limit,
+      order,
+      params: { search },
+    } = pagination;
+
+    const query: any[] = [
+      {
+        $match: {
+          $or: [{ accountFrom: account._id }, { accountTo: account._id }],
+        },
+      },
+    ];
+
+    if (search) {
+      query.push({
+        $match: {
+          friendlyId: { $regex: '.*' + search + '.*', $options: 'i' },
+        },
+      });
+    }
+    if (Object.keys(order).length) {
+      query.push({ $sort: order });
+    }
+
+    return await this.requestFundModel.aggregate([
+      ...query,
+      {
+        $facet: {
+          paginatedResult: [{ $skip: skip }, { $limit: limit }],
+          totalResult: [{ $count: 'total' }],
+        },
+      },
+    ]);
   }
 }

@@ -16,6 +16,13 @@ const friendlyPreffix = {
   [RequestMove.name]: 'MO',
 };
 
+export const RequestKind = [
+  RequestTrade.name,
+  RequestFund.name,
+  RequestRefund.name,
+  RequestMove.name,
+];
+
 export enum RequestStatus {
   requesting = 'requesting',
   pending = 'pending', // wait for approve
@@ -34,12 +41,7 @@ export class Request {
   @Prop({
     type: String,
     required: true,
-    enum: [
-      RequestTrade.name,
-      RequestFund.name,
-      RequestRefund.name,
-      RequestMove.name,
-    ],
+    enum: RequestKind,
   })
   kind: string;
 

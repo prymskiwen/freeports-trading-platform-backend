@@ -7,6 +7,7 @@ import { InvestorMapper } from '../../investor/mapper/investor.mapper';
 import { InvestorDocument } from 'src/schema/investor/investor.schema';
 import { DeskMapper } from '../../desk/mapper/desk.mapper';
 import { DeskDocument } from 'src/schema/desk/desk.schema';
+import { RequestMapper } from './request.mapper';
 
 export class RequestRefundMapper {
   public static toCreateDto(
@@ -22,13 +23,11 @@ export class RequestRefundMapper {
   public static toGetDto(
     document: RequestRefundDocument,
   ): GetRequestRefundResponseDto {
-    const dto = new GetRequestRefundResponseDto();
+    const dto = Object.assign(
+      new GetRequestRefundResponseDto(),
+      RequestMapper.toGetDto(document),
+    );
 
-    dto.id = document.id;
-    dto.friendlyId = document.friendlyId;
-    dto.quantity = document.quantity;
-    dto.status = document.status;
-    dto.createdAt = document.createdAt;
     dto.accountFrom = document.accountFrom;
     dto.accountTo = document.accountTo;
 

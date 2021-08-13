@@ -1,14 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { InvestorAccount } from 'src/schema/investor/embedded/investor-account.embedded';
-import { RequestStatus } from 'src/schema/request/request.schema';
+import { GetRequestResponseDto } from '../get-request-response.dto';
 
-export class GetRequestMoveResponseDto {
-  id: string;
-  friendlyId: string;
-  quantity: string;
-  status: RequestStatus;
-  createdAt: Date;
-
+export class GetRequestMoveResponseDto extends GetRequestResponseDto {
   @ApiProperty({
     type: InvestorAccount,
     description: 'Investor account from Id',
